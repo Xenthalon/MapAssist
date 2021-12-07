@@ -222,6 +222,25 @@ namespace MapAssist.Helpers
             }
         }
 
+        public static void DumpUnits()
+        {
+            for (var i = 0; i < 12; i++)
+            {
+                var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
+                var unitType = (UnitType)i;
+                foreach (var pUnitAny in unitHashTable.UnitTable)
+                {
+                    var unitAny = new UnitAny(pUnitAny);
+                    while (unitAny.IsValidUnit())
+                    {
+                        _log.Info($"${i} ${unitAny.UnitId}: ${unitAny.UnitType.ToString()} ${unitAny.Name} ${unitAny.Position.ToString()}");
+                        
+                        unitAny = unitAny.ListNext;
+                    }
+                }
+            }
+        }
+        
         private static void GetUnits(HashSet<Room> rooms, ref List<UnitAny> monsterList, ref List<UnitAny> itemList)
         {
             foreach (var room in rooms)

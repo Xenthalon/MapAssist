@@ -563,6 +563,52 @@ namespace MapAssist.Helpers
             }
         }
 
+        public void DrawESP(GameOverlay.Drawing.Graphics gfx, GameData gameData, Size windowSize, Pathing pathing) {
+            var playerPositionScreen = new System.Drawing.Point(windowSize.Width / 2, (int)(windowSize.Height * 0.49));
+
+            gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Green), windowSize.Width / 2, (float)(windowSize.Height * 0.49), 24, 12, 1.0f);
+
+            foreach (Types.UnitAny monster in gameData.Monsters)
+            {
+                GameOverlay.Drawing.Point screenPosition = translateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
+                gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+            }
+
+            foreach (Types.UnitAny item in gameData.Items)
+            {
+                GameOverlay.Drawing.Point screenPosition = translateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
+                gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+            }
+
+            if (_pointsOfInterest.Count > 0)
+            {
+                var path =
+                    pathing.GetPathToLocation(gameData.MapSeed, gameData.Difficulty, true, gameData.PlayerPosition, _pointsOfInterest[0].Position);
+
+                foreach (System.Drawing.Point point in path)
+                {
+                    gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Blue), translateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen), 24, 12, 1.0f);
+                }
+            }
+        }
+
+        public GameOverlay.Drawing.Point translateToScreenOffset(System.Drawing.Point playerPositionWorld, System.Drawing.Point targetPositionWorld, System.Drawing.Point playerPositionScreen)
+        {
+            var beta = 45f * Math.PI / 180d;
+
+            var relativePosition = new Point(targetPositionWorld.X - playerPositionWorld.X, targetPositionWorld.Y - playerPositionWorld.Y);
+            var s0 = (Math.Cos(beta) * relativePosition.X) - (Math.Sin(beta) * relativePosition.Y);
+            var s1 = (Math.Sin(beta) * relativePosition.X) + (Math.Cos(beta) * relativePosition.Y);
+
+            // calculate vector to screen coordinate vector
+            // I suppose this is my approximation of a screen matrix
+            var diffX = (s0 * 1.2) * 42.66;
+            var diffY = (s1 * 0.7) * 37.16;
+            // maybe try around dividing screen width and height through 28,085
+            
+            return new GameOverlay.Drawing.Point((int)(playerPositionScreen.X + diffX), (int)(playerPositionScreen.Y + diffY));
+        }
+
         public void DrawGameInfo(Graphics gfx, Point anchor,
             DrawGraphicsEventArgs e, bool errorLoadingAreaData)
         {

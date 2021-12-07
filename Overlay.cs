@@ -36,6 +36,12 @@ namespace MapAssist
         private GameDataReader _gameDataReader;
         private GameData _gameData;
         private Compositor _compositor;
+        private AreaData _areaData;
+        private List<PointOfInterest> _pointsOfInterests;
+        private Pathing _pathing;
+        private BackgroundWorker _teleportWorker;
+        private bool _teleporting = false;
+        private List<System.Drawing.Point> _teleportPath;
         private bool _show = true;
         private static readonly object _lock = new object();
 
@@ -62,6 +68,11 @@ namespace MapAssist
                 if (disposed) return;
 
                 var gfx = e.Graphics;
+
+                if (_teleporting && _teleportWorker != null && !_teleportWorker.IsBusy)
+                {
+                    _teleportWorker.RunWorkerAsync();
+                }
 
                 try
                 {
@@ -108,6 +119,7 @@ namespace MapAssist
                         }
 
                         _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
+                        _compositor.DrawESP(gfx, _currentGameData, WindowSize(), _pathing);
                     }
                 }
                 catch (Exception ex)
@@ -128,10 +140,76 @@ namespace MapAssist
             return _gameData != null && _gameData.MainWindowHandle != IntPtr.Zero;
         }
 
+        public void dumpUnitData()
+        {
+            GameMemory.DumpUnits();
+        }
+
+        public void StartAutoTele()
+        {
+            if (_teleportWorker != null && _teleportWorker.IsBusy)
+            {
+                _teleportWorker.CancelAsync();
+                _teleportWorker.Dispose();
+                _teleporting = false;
+            }
+
+            _log.Debug($"Teleporting to {_pointsOfInterests[0].Label}");
+
+            _teleportPath = _pathing.GetPathToLocation(_currentGameData.MapSeed, _currentGameData.Difficulty, true, _currentGameData.PlayerPosition, _pointsOfInterests[0].Position);
+
+            _teleporting = true;
+
+            _teleportWorker = new BackgroundWorker();
+            _teleportWorker.DoWork += new DoWorkEventHandler(autoTele);
+            _teleportWorker.WorkerSupportsCancellation = true;
+            _teleportWorker.RunWorkerAsync();
+        }
+
+        public void autoTele(object sender, DoWorkEventArgs e)
+        {
+            if (_currentGameData != null && _pointsOfInterests != null && _pointsOfInterests.Count > 0 && _pathing != null)
+            {
+                Size windowSize = WindowSize();
+                var playerPositionScreen = new Point(windowSize.Width / 2, (int)(windowSize.Height * 0.49));
+
+                var nextMousePos = _compositor.translateToScreenOffset(_currentGameData.PlayerPosition, _teleportPath[0], playerPositionScreen);
+
+                var point = new InputOperations.MousePoint((int)nextMousePos.X, (int)nextMousePos.Y);
+                InputOperations.ClientToScreen(_currentGameData.MainWindowHandle, ref point);
+                InputOperations.SetCursorPosition(point.X, point.Y);
+                SendKeys.SendWait("{F3}");
+
+                _log.Debug($"Teleported to {nextMousePos.X}/{nextMousePos.Y}");
+
+                _teleportPath.RemoveAt(0);
+
+                if (_teleportPath.Count > 0)
+                {
+                    System.Threading.Thread.Sleep(500);
+                }
+                else
+                {
+                    _log.Debug($"Done teleporting!");
+                    _teleporting = false;
+                }
+            }
+        }
+
         public void KeyPressHandler(object sender, KeyPressEventArgs args)
         {
             if (InGame())
             {
+                if (args.KeyChar == 'l')
+                {
+                    dumpUnitData();
+                }
+
+                if (args.KeyChar == 'v')
+                {
+                    StartAutoTele();
+                }
+
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)
                 {
                     _show = !_show;
