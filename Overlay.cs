@@ -178,7 +178,7 @@ namespace MapAssist
                 var point = new InputOperations.MousePoint((int)nextMousePos.X, (int)nextMousePos.Y);
                 InputOperations.ClientToScreen(_currentGameData.MainWindowHandle, ref point);
                 InputOperations.SetCursorPosition(point.X, point.Y);
-                SendKeys.SendWait("{F3}");
+                SendKeys.SendWait("w");
 
                 _log.Debug($"Teleported to {nextMousePos.X}/{nextMousePos.Y}");
 
