@@ -97,15 +97,17 @@ namespace MapAssist
                 }
                 else
                 {
-                    _log.Warn("Teleport went wrong!");
-                    _teleporting = false;
-                    // retry here laters
+                    _log.Warn("Teleport went wrong, recalculating and retrying!");
+
+                    _teleportPath = _pathing.GetPathToLocation(_currentGameData.MapSeed, _currentGameData.Difficulty, true, _currentGameData.PlayerPosition, _pointsOfInterests[0].Position);
+
                     return;
                 }
 
                 if (_teleportPath.Count == 1)
                 {
                     var clickPosition = GetWindowCoordinates(_teleportPath[0]);
+                    clickPosition.X = clickPosition.X - 20;
                     MouseClick(clickPosition);
                     _log.Debug("Took exit.");
                 }

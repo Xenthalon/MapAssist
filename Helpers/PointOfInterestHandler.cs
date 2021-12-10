@@ -197,6 +197,30 @@ namespace MapAssist.Helpers
                     }
 
                     break;
+                case Area.CatacombsLevel4:
+                    pointOfInterest.Add(new PointOfInterest
+                    {
+                        Label = "",
+                        Position = new Point(22548, 9581),
+                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
+                    });
+                    break;
+                case Area.DuranceOfHateLevel3:
+                    pointOfInterest.Add(new PointOfInterest
+                    {
+                        Label = "",
+                        Position = new Point(17565, 8070),
+                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
+                    });
+                    break;
+                case Area.NihlathaksTemple:
+                    pointOfInterest.Add(new PointOfInterest
+                    {
+                        Label = "",
+                        Position = new Point(10058, 13234),
+                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
+                    });
+                    break;
                 default:
                     if (areaData.AdjacentLevels.Any())
                     {

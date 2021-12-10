@@ -32,7 +32,7 @@ namespace MapAssist.Helpers
     public class Pathing
     {
         // cache for calculated paths. each cache entry is only valid for a specified amount of time
-        private Dictionary<(uint, Difficulty, Area, Point), (List<Point>, long)> PathCache = new Dictionary<(uint, Difficulty, Area, Point), (List<Point>, long)>();
+        private Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)> PathCache = new Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)>();
 
         private readonly Grid Grid;
 
@@ -55,7 +55,7 @@ namespace MapAssist.Helpers
         public List<Point> GetPathToLocation(uint mapId, Difficulty difficulty, bool teleport, Point fromLocation, Point toLocation)
         {
             // check if we have a valid cache entry for this path. if thats the case we are done and can return the cache entry
-            (uint mapId, Difficulty difficulty, Area area, Point toLocation) pathCacheKey = (mapId, difficulty, _areaData.Area, toLocation);
+            (uint mapId, Difficulty difficulty, Area area, Point fromLocation, Point toLocation) pathCacheKey = (mapId, difficulty, _areaData.Area, fromLocation, toLocation);
 
             if (PathCache.ContainsKey(pathCacheKey) && ((DateTimeOffset.Now.ToUnixTimeMilliseconds() - PathCache[pathCacheKey].Item2) < 5000))
             {
