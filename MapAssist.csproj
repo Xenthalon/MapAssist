@@ -106,6 +106,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Automation.cs" />
     <Compile Include="Files\ConfigurationParser.cs" />
     <Compile Include="Files\FileManager.cs" />
     <Compile Include="Helpers\AudioPlayer.cs" />

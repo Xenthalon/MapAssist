@@ -23,6 +23,7 @@ using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Graphics = GameOverlay.Drawing.Graphics;
 
@@ -37,17 +38,17 @@ namespace MapAssist
         private GameData _gameData;
         private Compositor _compositor;
         private AreaData _areaData;
+        private bool _show = true;
+
+        private Automation _automation;
         private List<PointOfInterest> _pointsOfInterests;
         private Pathing _pathing;
-        private BackgroundWorker _teleportWorker;
-        private bool _teleporting = false;
-        private List<System.Drawing.Point> _teleportPath;
         private bool _show = true;
         private static readonly object _lock = new object();
-
         public Overlay()
         {
             _gameDataReader = new GameDataReader();
+            _automation = new Automation();
 
             GameOverlay.TimerService.EnableHighPrecisionTimers();
 
@@ -69,10 +70,7 @@ namespace MapAssist
 
                 var gfx = e.Graphics;
 
-                if (_teleporting && _teleportWorker != null && !_teleportWorker.IsBusy)
-                {
-                    _teleportWorker.RunWorkerAsync();
-                }
+                _automation.Update(_currentGameData, _pointsOfInterests, _pathing, WindowSize());
 
                 try
                 {
@@ -140,74 +138,18 @@ namespace MapAssist
             return _gameData != null && _gameData.MainWindowHandle != IntPtr.Zero;
         }
 
-        public void dumpUnitData()
-        {
-            GameMemory.DumpUnits();
-        }
-
-        public void StartAutoTele()
-        {
-            if (_teleportWorker != null && _teleportWorker.IsBusy)
-            {
-                _teleportWorker.CancelAsync();
-                _teleportWorker.Dispose();
-                _teleporting = false;
-            }
-
-            _log.Debug($"Teleporting to {_pointsOfInterests[0].Label}");
-
-            _teleportPath = _pathing.GetPathToLocation(_currentGameData.MapSeed, _currentGameData.Difficulty, true, _currentGameData.PlayerPosition, _pointsOfInterests[0].Position);
-
-            _teleporting = true;
-
-            _teleportWorker = new BackgroundWorker();
-            _teleportWorker.DoWork += new DoWorkEventHandler(autoTele);
-            _teleportWorker.WorkerSupportsCancellation = true;
-            _teleportWorker.RunWorkerAsync();
-        }
-
-        public void autoTele(object sender, DoWorkEventArgs e)
-        {
-            if (_currentGameData != null && _pointsOfInterests != null && _pointsOfInterests.Count > 0 && _pathing != null)
-            {
-                Size windowSize = WindowSize();
-                var playerPositionScreen = new Point(windowSize.Width / 2, (int)(windowSize.Height * 0.49));
-
-                var nextMousePos = _compositor.translateToScreenOffset(_currentGameData.PlayerPosition, _teleportPath[0], playerPositionScreen);
-
-                var point = new InputOperations.MousePoint((int)nextMousePos.X, (int)nextMousePos.Y);
-                InputOperations.ClientToScreen(_currentGameData.MainWindowHandle, ref point);
-                InputOperations.SetCursorPosition(point.X, point.Y);
-                SendKeys.SendWait("w");
-
-                _log.Debug($"Teleported to {nextMousePos.X}/{nextMousePos.Y}");
-
-                _teleportPath.RemoveAt(0);
-
-                if (_teleportPath.Count > 0)
-                {
-                    System.Threading.Thread.Sleep(500);
-                }
-                else
-                {
-                    _log.Debug($"Done teleporting!");
-                    _teleporting = false;
-                }
-            }
-        }
-
         public void KeyPressHandler(object sender, KeyPressEventArgs args)
         {
             if (InGame())
             {
                 if (args.KeyChar == 'l')
                 {
-                    dumpUnitData();
+                    _automation.dumpUnitData();
                 }
 
                 if (args.KeyChar == 'v')
                 {
-                    StartAutoTele();
+                    _automation.StartAutoTele();
                 }
 
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)
