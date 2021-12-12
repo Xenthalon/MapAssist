@@ -171,10 +171,11 @@ namespace MapAssist.Helpers
         {
             foreach (var poi in _pointsOfInterest)
             {
-                if (poi.PoiMatchesPortal(_gameData.Objects, _gameData.Difficulty))
+                if (poi.PoiMatchesPortal(_gameData.Objects, _gameData.Difficulty) || poi.Type == PoiType.NormalChest)
                 {
                     continue;
                 }
+
                 if (poi.RenderingSettings.CanDrawIcon())
                 {
                     DrawIcon(gfx, poi.RenderingSettings, poi.Position);
@@ -190,7 +191,7 @@ namespace MapAssist.Helpers
 
             foreach (var poi in _pointsOfInterest)
             {
-                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine && poi.Type != PoiType.NormalChest)
+                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine)
                 {
                     if (poi.PoiMatchesPortal(_gameData.Objects, _gameData.Difficulty))
                     {
