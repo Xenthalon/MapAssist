@@ -144,6 +144,7 @@
     <Compile Include="Structs\Skills.cs" />
     <Compile Include="Structs\UnitAny.cs" />
     <Compile Include="Structs\UnitHashTable.cs" />
+    <Compile Include="Types\Chest.cs" />
     <Compile Include="Types\Items.cs" />
     <Compile Include="Types\Roster.cs" />
     <Compile Include="Types\Session.cs" />
