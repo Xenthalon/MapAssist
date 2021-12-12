@@ -42,7 +42,10 @@ namespace MapAssist.Structs
         public ushort Id;
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string Name;
+        public string ObjectName;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string ObjectType;
     }
 
     public enum ShrineType : byte

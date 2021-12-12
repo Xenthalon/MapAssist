@@ -128,7 +128,7 @@ namespace MapAssist.Helpers
             GameObject.ExpansionSpecialChest,
         };
 
-        public static readonly HashSet<GameObject> NormalChests = new HashSet<GameObject>
+        private static readonly HashSet<GameObject> NormalChests = new HashSet<GameObject>
         {
             GameObject.LargeChestRight,
             GameObject.LargeChestLeft,

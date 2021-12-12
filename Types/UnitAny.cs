@@ -255,7 +255,7 @@ namespace MapAssist.Types
         public bool IsChest()
         {
             return UnitType == UnitType.Object && _objectData.pObjectTxt != IntPtr.Zero && _unitAny.Mode == 0 &&
-                PointOfInterestHandler.NormalChests.Contains((GameObject)_objectTxt.Id);
+                Chest.Types.Contains(_objectTxt.ObjectType);
         }
         public bool IsMonster()
         {
