@@ -125,11 +125,11 @@ MapConfiguration:
     IconShape: Square
     IconSize: 4
   NormalChest:
-    IconColor: '17, 128, 00'
+    IconColor: '17, 128, 0'
     IconShape: Square
     IconSize: 3
   LockedChest:
-    IconColor: '128, 00, 00'
+    IconColor: '128, 0, 0'
     IconShape: Square
     IconSize: 3
   Shrine:
