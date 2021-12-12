@@ -247,10 +247,21 @@ namespace MapAssist.Helpers
 
                 if (gameObject.IsChest())
                 {
-                    if (MapAssistConfiguration.Loaded.MapConfiguration.NormalChest.CanDrawIcon())
+                    if (gameObject.ObjectData.InteractType != 0) // locked type
                     {
-                        DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.NormalChest, gameObject.Position);
+                        if (MapAssistConfiguration.Loaded.MapConfiguration.LockedChest.CanDrawIcon())
+                        {
+                            DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.LockedChest, gameObject.Position);
+                        }
                     }
+                    else
+                    {
+                        if (MapAssistConfiguration.Loaded.MapConfiguration.NormalChest.CanDrawIcon())
+                        {
+                            DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.NormalChest, gameObject.Position);
+                        }
+                    }
+
                 }
             }
         }
