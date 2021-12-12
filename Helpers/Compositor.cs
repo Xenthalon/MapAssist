@@ -191,7 +191,7 @@ namespace MapAssist.Helpers
 
             foreach (var poi in _pointsOfInterest)
             {
-                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine)
+                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine && poi.Type != PoiType.NormalChest)
                 {
                     if (poi.PoiMatchesPortal(_gameData.Objects, _gameData.Difficulty))
                     {
