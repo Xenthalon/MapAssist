@@ -190,7 +190,7 @@ namespace MapAssist.Helpers
 
             foreach (var poi in _pointsOfInterest)
             {
-                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine)
+                if (!string.IsNullOrWhiteSpace(poi.Label) && poi.Type != PoiType.Shrine && poi.Type != PoiType.NormalChest)
                 {
                     if (poi.PoiMatchesPortal(_gameData.Objects, _gameData.Difficulty))
                     {
@@ -242,6 +242,14 @@ namespace MapAssist.Helpers
                         DrawText(gfx, MapAssistConfiguration.Loaded.MapConfiguration.Portal, gameObject.Position, label);
                     }
                     continue;
+                }
+
+                if (gameObject.IsChest())
+                {
+                    if (MapAssistConfiguration.Loaded.MapConfiguration.NormalChest.CanDrawIcon())
+                    {
+                        DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.NormalChest, gameObject.Position);
+                    }
                 }
             }
         }

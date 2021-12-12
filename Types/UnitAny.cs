@@ -38,6 +38,7 @@ namespace MapAssist.Types
         private MonsterData _monsterData;
         private ItemData _itemData;
         private ObjectData _objectData;
+        private ObjectTxt _objectTxt;
         private Dictionary<Stat, int> _statList;
         private List<Resist> _immunities;
         private uint[] _stateFlags;
@@ -119,6 +120,12 @@ namespace MapAssist.Types
                                 break;
                             case UnitType.Object:
                                 _objectData = processContext.Read<ObjectData>(_unitAny.pUnitData);
+                                var ownerBytes = processContext.Read<byte>(IntPtr.Add(_unitAny.pUnitData, 0x34), 16);
+                                _objectOwner = Encoding.ASCII.GetString(ownerBytes).Trim((char)0);
+                                if (_objectData.pObjectTxt != IntPtr.Zero)
+                                {
+                                    _objectTxt = processContext.Read<ObjectTxt>(_objectData.pObjectTxt);
+                                }
                                 break;
                         }
                         _updated = true;
@@ -143,6 +150,8 @@ namespace MapAssist.Types
         public MonsterData MonsterData => _monsterData;
         public ItemData ItemData => _itemData;
         public ObjectData ObjectData => _objectData;
+        public string ObjectOwner => _objectOwner;
+        public ObjectTxt ObjectTxt => _objectTxt;
         public Act Act => _act;
         public Path Path => _path;
         public IntPtr StatsListExPtr => _unitAny.pStatsListEx;
@@ -242,6 +251,10 @@ namespace MapAssist.Types
                 return true;
             }
             return false;
+        }
+        public bool IsChest()
+        {
+            return UnitType == UnitType.Object && _objectData.pObjectTxt != IntPtr.Zero && PointOfInterestHandler.NormalChests.Contains((GameObject)_objectTxt.Id);
         }
         public bool IsMonster()
         {
