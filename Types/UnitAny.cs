@@ -120,8 +120,6 @@ namespace MapAssist.Types
                                 break;
                             case UnitType.Object:
                                 _objectData = processContext.Read<ObjectData>(_unitAny.pUnitData);
-                                var ownerBytes = processContext.Read<byte>(IntPtr.Add(_unitAny.pUnitData, 0x34), 16);
-                                _objectOwner = Encoding.ASCII.GetString(ownerBytes).Trim((char)0);
                                 if (_objectData.pObjectTxt != IntPtr.Zero)
                                 {
                                     _objectTxt = processContext.Read<ObjectTxt>(_objectData.pObjectTxt);
@@ -150,7 +148,6 @@ namespace MapAssist.Types
         public MonsterData MonsterData => _monsterData;
         public ItemData ItemData => _itemData;
         public ObjectData ObjectData => _objectData;
-        public string ObjectOwner => _objectOwner;
         public ObjectTxt ObjectTxt => _objectTxt;
         public Act Act => _act;
         public Path Path => _path;
