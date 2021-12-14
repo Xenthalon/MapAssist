@@ -40,11 +40,9 @@ namespace MapAssist.Structs
     public struct ObjectTxt
     {
         public ushort Id;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
         public string ObjectName;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
         public string ObjectType;
     }
 
