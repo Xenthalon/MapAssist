@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MapAssist.Types
 {
@@ -12,5 +13,13 @@ namespace MapAssist.Types
             "burialchestL", "burialchestR", "mrbox", "tomb1L", "tomb2L", "tomb3L", "tomb1", "tomb2", "tomb3",
             "groundtombL", "deadperson2"
         };
+
+        [Flags]
+        public enum InteractFlags
+        {
+            None = 0x00,
+            Trap = 0x04,
+            Locked = 0x80
+        }
     }
 }

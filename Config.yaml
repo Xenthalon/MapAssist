@@ -132,6 +132,11 @@ MapConfiguration:
     IconColor: '128, 0, 0'
     IconShape: Square
     IconSize: 3
+  TrappedChest:
+    IconColor: '255, 0, 0'
+    IconShape: SquareOutline
+    IconSize: 4
+    IconThickness: 1
   Shrine:
     IconColor: '255, 218, 100'
     IconShape: Polygon

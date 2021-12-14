@@ -247,9 +247,16 @@ namespace MapAssist.Helpers
 
                 if (gameObject.IsChest())
                 {
-                    if (gameObject.ObjectData.InteractType != 0)
+                    if ((gameObject.ObjectData.InteractType & ((byte)Chest.InteractFlags.Trap)) != ((byte)Chest.InteractFlags.None))
                     {
-                        // trapped and locked chests are shown in this color, trapped would be InteractType 7
+                        if (MapAssistConfiguration.Loaded.MapConfiguration.TrappedChest.CanDrawIcon())
+                        {
+                            DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.TrappedChest, gameObject.Position);
+                        }
+                    }
+
+                    if ((gameObject.ObjectData.InteractType & ((byte)Chest.InteractFlags.Locked)) != ((byte)Chest.InteractFlags.None))
+                    {
                         if (MapAssistConfiguration.Loaded.MapConfiguration.LockedChest.CanDrawIcon())
                         {
                             DrawIcon(gfx, MapAssistConfiguration.Loaded.MapConfiguration.LockedChest, gameObject.Position);
