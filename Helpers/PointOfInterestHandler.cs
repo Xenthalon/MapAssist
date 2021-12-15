@@ -128,60 +128,6 @@ namespace MapAssist.Helpers
             GameObject.ExpansionSpecialChest,
         };
 
-        private static readonly HashSet<GameObject> NormalChests = new HashSet<GameObject>
-        {
-            GameObject.LargeChestRight,
-            GameObject.LargeChestLeft,
-            GameObject.TombLargeChestL,
-            GameObject.TombLargeChestR,
-            GameObject.Act1LargeChestRight,
-            GameObject.Act1TallChestRight,
-            GameObject.Act1MediumChestRight,
-            GameObject.Act1LargeChest1,
-            GameObject.Act2MediumChestRight,
-            GameObject.Act2LargeChestRight,
-            GameObject.Act2LargeChestLeft,
-            GameObject.MediumChestLeft,
-            GameObject.LargeChestLeft2,
-            GameObject.JungleChest,
-            GameObject.JungleMediumChestLeft,
-            GameObject.TallChestLeft,
-            GameObject.Gchest1L,
-            GameObject.Gchest2R,
-            GameObject.Gchest3R,
-            GameObject.GLchest3L,
-            GameObject.MafistoLargeChestLeft,
-            GameObject.MafistoLargeChestRight,
-            GameObject.MafistoMediumChestLeft,
-            GameObject.MafistoMediumChestRight,
-            GameObject.SpiderLairLargeChestLeft,
-            GameObject.SpiderLairTallChestLeft,
-            GameObject.SpiderLairMediumChestRight,
-            GameObject.SpiderLairTallChestRight,
-            GameObject.HoradricCubeChest,
-            GameObject.HoradricScrollChest,
-            GameObject.StaffOfKingsChest,
-            GameObject.LargeChestR,
-            GameObject.InnerHellBoneChest,
-            GameObject.KhalimChest1,
-            GameObject.KhalimChest2,
-            GameObject.KhalimChest3,
-            GameObject.ExpansionChestRight,
-            GameObject.ExpansionWoodChestLeft,
-            GameObject.BurialChestLeft,
-            GameObject.BurialChestRight,
-            GameObject.ExpansionChestLeft,
-            GameObject.ExpansionWoodChestRight,
-            GameObject.ExpansionSmallChestLeft,
-            GameObject.ExpansionSmallChestRight,
-            GameObject.ExpansionExplodingChest,
-            GameObject.ExpansionSnowyWoodChestLeft,
-            GameObject.ExpansionSnowyWoodChestRight,
-            GameObject.ExpansionSnowyWoodChest2Left,
-            GameObject.ExpansionSnowyWoodChest2Right,
-            GameObject.NotSoGoodChest,
-        };
-
         private static readonly HashSet<GameObject> ArmorWeapRacks = new HashSet<GameObject>
         {
             GameObject.ExpansionArmorStandRight,
@@ -456,20 +402,6 @@ namespace MapAssist.Helpers
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.SuperChest,
                             Type = PoiType.SuperChest
-                        });
-                    }
-                }
-                // Normal Chest
-                else if (NormalChests.Contains(obj))
-                {
-                    foreach (var point in points)
-                    {
-                        pointOfInterest.Add(new PointOfInterest
-                        {
-                            Label = obj.ToString(),
-                            Position = point,
-                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NormalChest,
-                            Type = PoiType.NormalChest
                         });
                     }
                 }

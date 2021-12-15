@@ -141,6 +141,8 @@ namespace MapAssist.Types
             GameObject.TempleGroundTombLeft,
             GameObject.ExpansionDeadPerson2,
             GameObject.ExpansionDeadPerson3,
+            GameObject.GoodChest,
+            GameObject.NotSoGoodChest
         };
 
         [Flags]

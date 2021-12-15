@@ -60,7 +60,6 @@ namespace MapAssist.Types
         AreaPortal,
         Shrine,
         SuperChest,
-        NormalChest,
         ArmorWeapRack
     }
 }
