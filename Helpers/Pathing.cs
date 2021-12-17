@@ -17,13 +17,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-
+using GameOverlay.Drawing;
 using MapAssist.Types;
 using System.Collections.Generic;
 using Roy_T.AStar.Paths;
 using Roy_T.AStar.Primitives;
 using System.Linq;
-using System.Drawing;
 using System;
 using Roy_T.AStar.Grids;
 
@@ -84,8 +83,8 @@ namespace MapAssist.Helpers
             else
             {
                 var pathFinder = new PathFinder();
-                var fromGridPosition = new GridPosition(fromPosition.X, fromPosition.Y);
-                var toGridPosition = new GridPosition(toPosition.X, toPosition.Y);
+                var fromGridPosition = new GridPosition((int)fromPosition.X, (int)fromPosition.Y);
+                var toGridPosition = new GridPosition((int)toPosition.X, (int)toPosition.Y);
 
                 var path = pathFinder.FindPath(fromGridPosition, toGridPosition, Grid);
                 var endPosition = path.Edges.LastOrDefault()?.End.Position;
@@ -174,7 +173,7 @@ namespace MapAssist.Helpers
                 }
             }
 
-            m_distanceMatrix[toLocation.X, toLocation.Y] = 1;
+            m_distanceMatrix[(int)toLocation.X, (int)toLocation.Y] = 1;
         }
 
 
@@ -205,7 +204,7 @@ namespace MapAssist.Helpers
                 };
             }
 
-            if (!IsValidIndex(position.X, position.Y))
+            if (!IsValidIndex((int)position.X, (int)position.Y))
             {
                 return new BestMove
                 {
@@ -223,14 +222,14 @@ namespace MapAssist.Helpers
             {
                 for (var y = position.Y - TpRange; y <= position.Y + TpRange; y++)
                 {
-                    if (!IsValidIndex(x, y))
+                    if (!IsValidIndex((int)x, (int)y))
                         continue;
 
                     var p = new Point((ushort)x, (ushort)y);
 
-                    if (m_distanceMatrix[p.X, p.Y] < value && CalculateDistance(p, position) <= TpRange)
+                    if (m_distanceMatrix[(int)p.X, (int)p.Y] < value && CalculateDistance(p, position) <= TpRange)
                     {
-                        value = m_distanceMatrix[p.X, p.Y];
+                        value = m_distanceMatrix[(int)p.X, (int)p.Y];
                         best = p;
                     }
                 }
@@ -262,8 +261,8 @@ namespace MapAssist.Helpers
             {
                 for (var j = position.Y - nRange; j < position.Y + nRange; j++)
                 {
-                    if (IsValidIndex(i, j))
-                        m_distanceMatrix[i, j] = RangeInvalid;
+                    if (IsValidIndex((int)i, (int)j))
+                        m_distanceMatrix[(int)i, (int)j] = RangeInvalid;
                 }
             }
         }
@@ -285,7 +284,7 @@ namespace MapAssist.Helpers
             return x >= 0 && x < m_columns && y >= 0 && y < m_rows;
         }
 
-        private static double CalculateDistance(long x1, long y1, long x2, long y2)
+        private static double CalculateDistance(float x1, float y1, float x2, float y2)
         {
             return Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
         }

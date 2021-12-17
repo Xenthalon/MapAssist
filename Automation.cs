@@ -1,9 +1,9 @@
-﻿using MapAssist.Helpers;
+﻿using GameOverlay.Drawing;
+using MapAssist.Helpers;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,20 +20,20 @@ namespace MapAssist
         private Pathing _pathing;
         private BackgroundWorker _teleportWorker;
         private bool _teleporting = false;
-        private List<System.Drawing.Point> _teleportPath;
-        private Size _windowSize;
+        private List<Point> _teleportPath;
+        private Rectangle _windowRect;
 
         public Automation()
         {
 
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Size windowSize)
+        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
         {
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
             _pathing = pathing;
-            _windowSize = windowSize;
+            _windowRect = windowRect;
 
             if (_teleporting && _teleportWorker != null && !_teleportWorker.IsBusy)
             {
@@ -67,7 +67,7 @@ namespace MapAssist
             _teleportWorker.RunWorkerAsync();
         }
 
-        public static GameOverlay.Drawing.Point TranslateToScreenOffset(System.Drawing.Point playerPositionWorld, System.Drawing.Point targetPositionWorld, System.Drawing.Point playerPositionScreen)
+        public static Point TranslateToScreenOffset(Point playerPositionWorld, Point targetPositionWorld, Point playerPositionScreen)
         {
             var beta = 45f * Math.PI / 180d;
 
@@ -81,7 +81,7 @@ namespace MapAssist
             var diffY = (s1 * 0.7) * 37.16;
             // maybe try around dividing screen width and height through 28,085
 
-            return new GameOverlay.Drawing.Point((int)(playerPositionScreen.X + diffX), (int)(playerPositionScreen.Y + diffY));
+            return new Point((int)(playerPositionScreen.X + diffX), (int)(playerPositionScreen.Y + diffY));
         }
 
         private void autoTele(object sender, DoWorkEventArgs e)
@@ -122,7 +122,7 @@ namespace MapAssist
             }
         }
 
-        private bool TeleportTo(System.Drawing.Point worldPoint)
+        private bool TeleportTo(Point worldPoint)
         {
             var nextMousePos = GetWindowCoordinates(worldPoint);
 
@@ -141,10 +141,9 @@ namespace MapAssist
             return IsNear(_currentGameData.PlayerPosition, worldPoint);
         }
 
-        private GameOverlay.Drawing.Point GetWindowCoordinates(System.Drawing.Point worldPoint)
+        private Point GetWindowCoordinates(Point worldPoint)
         {
-            Size windowSize = _windowSize;
-            var playerPositionScreen = new Point(windowSize.Width / 2, (int)(windowSize.Height * 0.49));
+            var playerPositionScreen = new Point(_windowRect.Width / 2, (int)(_windowRect.Height * 0.49));
             return TranslateToScreenOffset(_currentGameData.PlayerPosition, worldPoint, playerPositionScreen);
         }
 
@@ -156,7 +155,7 @@ namespace MapAssist
                 (p1.Y < p2.Y + range) && (p1.Y > p2.Y - range);
         }
 
-        private void MouseMove(GameOverlay.Drawing.Point p)
+        private void MouseMove(Point p)
         {
             var point = new InputOperations.MousePoint((int)p.X, (int)p.Y);
             InputOperations.ClientToScreen(_currentGameData.MainWindowHandle, ref point);

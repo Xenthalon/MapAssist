@@ -43,7 +43,6 @@ namespace MapAssist
         private Automation _automation;
         private List<PointOfInterest> _pointsOfInterests;
         private Pathing _pathing;
-        private bool _show = true;
         private static readonly object _lock = new object();
         public Overlay()
         {
@@ -70,17 +69,17 @@ namespace MapAssist
 
                 var gfx = e.Graphics;
 
-                _automation.Update(_currentGameData, _pointsOfInterests, _pathing, WindowSize());
-
                 try
                 {
-                    (_compositor, _gameData) = _gameDataReader.Get();
+                    (_compositor, _gameData, _pathing, _pointsOfInterests) = _gameDataReader.Get();
 
                     gfx.ClearScene();
 
                     if (_compositor != null && InGame() && _compositor != null && _gameData != null)
                     {
                         UpdateLocation();
+
+                        _automation.Update(_gameData, _pointsOfInterests, _pathing, WindowRect());
 
                         var errorLoadingAreaData = _compositor._areaData == null;
 
@@ -117,7 +116,7 @@ namespace MapAssist
                         }
 
                         _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
-                        _compositor.DrawESP(gfx, _currentGameData, WindowSize(), _pathing);
+                        _compositor.DrawESP(gfx, _gameData, WindowRect(), _pathing);
                     }
                 }
                 catch (Exception ex)

@@ -563,13 +563,13 @@ namespace MapAssist.Helpers
             }
         }
 
-        public void DrawESP(GameOverlay.Drawing.Graphics gfx, GameData gameData, Size windowSize, Pathing pathing) {
+        public void DrawESP(Graphics gfx, GameData gameData, Rectangle windowRect, Pathing pathing) {
             if (!MapAssistConfiguration.Loaded.GameInfo.ShowOverlayFPS)
                 return;
 
-            var playerPositionScreen = new System.Drawing.Point(windowSize.Width / 2, (int)(windowSize.Height * 0.49));
+            var playerPositionScreen = new Point(windowRect.Width / 2, (int)(windowRect.Height * 0.49));
 
-            gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Green), windowSize.Width / 2, (float)(windowSize.Height * 0.49), 24, 12, 1.0f);
+            gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Green), windowRect.Width / 2, (float)(windowRect.Height * 0.49), 24, 12, 1.0f);
 
             foreach (Types.UnitAny monster in gameData.Monsters)
             {
@@ -588,7 +588,7 @@ namespace MapAssist.Helpers
                 var path =
                     pathing.GetPathToLocation(gameData.MapSeed, gameData.Difficulty, true, gameData.PlayerPosition, _pointsOfInterest[0].Position);
 
-                foreach (System.Drawing.Point point in path)
+                foreach (Point point in path)
                 {
                     gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Blue), Automation.TranslateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen), 24, 12, 1.0f);
                 }

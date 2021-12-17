@@ -10,9 +10,11 @@ namespace MapAssist.Helpers
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private Compositor _compositor;
         private volatile GameData _gameData;
+        private List<PointOfInterest> _pointsOfInterest;
+        private Pathing _pathing;
         private MapApi _mapApi;
 
-        public (Compositor, GameData) Get()
+        public (Compositor, GameData, Pathing, List<PointOfInterest>) Get()
         {
             var gameData = GameMemory.GetGameData();
 
@@ -35,10 +37,11 @@ namespace MapAssist.Helpers
 
                         if (areaData != null)
                         {
-                            var pointsOfInterest = PointOfInterestHandler.Get(_mapApi, areaData, gameData);
-                            _log.Info($"Found {pointsOfInterest.Count} points of interest");
+                            _pointsOfInterest = PointOfInterestHandler.Get(_mapApi, areaData, gameData);
+                            _log.Info($"Found {_pointsOfInterest.Count} points of interest");
 
-                            compositor = new Compositor(areaData, pointsOfInterest);
+                            compositor = new Compositor(areaData, _pointsOfInterest);
+                            _pathing = new Pathing(areaData);
                         }
                         else
                         {
@@ -52,7 +55,7 @@ namespace MapAssist.Helpers
 
             _gameData = gameData;
 
-            return (_compositor, _gameData);
+            return (_compositor, _gameData, _pathing, _pointsOfInterest);
         }
     }
 }

@@ -127,7 +127,7 @@ namespace MapAssist.Types
                 var rows = areaData.CollisionGrid.GetLength(0);
                 if (rows == 0)
                 {
-                    relativePoint = new Point(0x0);
+                    relativePoint = new Point();
                     return false;
 
                 }
@@ -143,7 +143,7 @@ namespace MapAssist.Types
 
             }
 
-            relativePoint = new Point(0x0); ;
+            relativePoint = new Point();
             return false;
         }
 
