@@ -17,7 +17,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using MapAssist.Properties;
 using MapAssist.Settings;
 using MapAssist.Types;
 using Microsoft.Win32;
@@ -46,29 +45,27 @@ namespace MapAssist.Helpers
         private static Thread _pipeReaderThread;
         private static readonly object _pipeRequestLock = new object();
         private static BlockingCollection<(uint, string)> collection = new BlockingCollection<(uint, string)>();
+        private static CancellationTokenSource cancelToken;
+        private const string _procName = "MAServer.exe";
 
         private readonly ConcurrentDictionary<Area, AreaData> _cache;
         private Difficulty _difficulty;
         private uint _mapSeed;
-        private const string _procName = "MAServer.exe";
-
-        public static bool StartPipedChild()
         
+        public static bool StartPipedChild()
         {
             // We have an exclusive lock on the MA process.
             // So we can kill off any previously lingering pipe servers
             // in case we had a weird shutdown that didn't clean up appropriately.
             StopPipeServers();
 
-            var procFile = Path.Combine(Environment.CurrentDirectory.TrimEnd('\\') + "\\", _procName);
-            File.WriteAllBytes(procFile, Resources.piped);
+            var procFile = Path.Combine(Environment.CurrentDirectory, _procName);
             if (!File.Exists(procFile))
             {
                 throw new Exception("Unable to start map server. Check Anti Virus settings.");
             }
 
             var path = FindD2();
-            
             _pipeClient = new Process();
             _pipeClient.StartInfo.FileName = procFile;
             _pipeClient.StartInfo.Arguments = "\"" + path + "\"";
@@ -98,7 +95,7 @@ namespace MapAssist.Helpers
                     return !disposed && !_pipeClient.HasExited ? data : null;
                 };
 
-                _log.Info($"{_procName} has start");
+                _log.Info($"{_procName} has started");
 
                 while (!disposed && !_pipeClient.HasExited)
                 {
@@ -116,6 +113,7 @@ namespace MapAssist.Helpers
                     JObject jsonObj = null;
                     try
                     {
+                        _log.Info($"Reading {length} bytes from {_procName}");
                         var readJson = await ReadBytes((int)length);
                         if (readJson == null) break; // null is only returned when pipe has exited
                         json = Encoding.UTF8.GetString(readJson);
@@ -138,7 +136,7 @@ namespace MapAssist.Helpers
                         collection.Add((length, null));
                         continue;
                     }
-                    
+
                     if (jsonObj.ContainsKey("error"))
                     {
                         _log.Error(jsonObj["error"].ToString());
@@ -165,13 +163,20 @@ namespace MapAssist.Helpers
 
             var (startupLength, _) = collection.Take();
 
+            // Cancel requests on the previous pipe only after the current pipe has successfully started
+            if (cancelToken != null)
+            {
+                cancelToken.Cancel();
+                cancelToken.Dispose();
+            }
+            cancelToken = new CancellationTokenSource();
+
             return startupLength == 0;
         }
         
         private static string FindD2()
         {
             var providedPath = MapAssistConfiguration.Loaded.D2Path;
-            if (providedPath.Length > 0) providedPath = providedPath.TrimEnd('\\') + "\\";
             if (!string.IsNullOrEmpty(providedPath))
             {
                 if (Path.HasExtension(providedPath))
@@ -190,7 +195,6 @@ namespace MapAssist.Helpers
             }
             
             var installPath = Registry.GetValue("HKEY_CURRENT_USER\\SOFTWARE\\Blizzard Entertainment\\Diablo II", "InstallPath", "INVALID") as string;
-            if (installPath != "INVALID") installPath = installPath.TrimEnd('\\') + "\\";
             if (installPath == "INVALID" || !IsValidD2Path(installPath))
             {
                 _log.Info("Registry-provided D2 path not found or invalid");
@@ -306,7 +310,24 @@ namespace MapAssist.Helpers
                 writer.BaseStream.Write(data, 0, data.Length);
                 writer.BaseStream.Flush();
 
-                var (length, json) = collection.Take();
+                uint length = 0;
+                string json = null;
+                var retry = false;
+
+                do
+                {
+                    retry = false;
+
+                    try
+                    {
+                        (length, json) = collection.Take(cancelToken.Token);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        _log.Info("MapApi operation cancelled, retrying");
+                        retry = true;
+                    }
+                } while (retry && length == 0);
 
                 if (json == null)
                 {
@@ -354,6 +375,7 @@ namespace MapAssist.Helpers
             {
                 disposed = true;
 
+                cancelToken.Dispose();
                 if (!_pipeClient.HasExited)
                 {
                     try { _pipeClient.Kill(); } catch (Exception) { }
