@@ -573,13 +573,13 @@ namespace MapAssist.Helpers
 
             foreach (Types.UnitAny monster in gameData.Monsters)
             {
-                GameOverlay.Drawing.Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
+                Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
             }
 
             foreach (Types.UnitAny item in gameData.Items)
             {
-                GameOverlay.Drawing.Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
+                Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
             }
 

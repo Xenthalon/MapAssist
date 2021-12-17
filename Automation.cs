@@ -69,6 +69,7 @@ namespace MapAssist
 
         public static Point TranslateToScreenOffset(Point playerPositionWorld, Point targetPositionWorld, Point playerPositionScreen)
         {
+            var magic = 51.192;
             var beta = 45f * Math.PI / 180d;
 
             var relativePosition = new Point(targetPositionWorld.X - playerPositionWorld.X, targetPositionWorld.Y - playerPositionWorld.Y);
@@ -77,8 +78,10 @@ namespace MapAssist
 
             // calculate vector to screen coordinate vector
             // I suppose this is my approximation of a screen matrix
-            var diffX = (s0 * 1.2) * 42.66;
-            var diffY = (s1 * 0.7) * 37.16;
+            // var diffX = (s0 * 1.2) * 42.66;
+            // var diffY = (s1 * 0.7) * 37.16;
+            var diffX = s0 * magic;
+            var diffY = s1 * magic * 0.5;
             // maybe try around dividing screen width and height through 28,085
 
             return new Point((int)(playerPositionScreen.X + diffX), (int)(playerPositionScreen.Y + diffY));
@@ -149,7 +152,7 @@ namespace MapAssist
 
         private bool IsNear(Point p1, Point p2)
         {
-            var range = 3;
+            var range = 5;
 
             return (p1.X < p2.X + range) && (p1.X > p2.X - range) &&
                 (p1.Y < p2.Y + range) && (p1.Y > p2.Y - range);
