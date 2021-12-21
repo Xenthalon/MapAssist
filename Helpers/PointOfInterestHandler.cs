@@ -214,7 +214,7 @@ namespace MapAssist.Helpers
 
                     break;
                 case Area.CatacombsLevel4:
-                    pointOfInterest.Add(new PointOfInterest
+                    pointsOfInterest.Add(new PointOfInterest
                     {
                         Label = "",
                         Position = new Point(22548, 9581),
@@ -222,7 +222,7 @@ namespace MapAssist.Helpers
                     });
                     break;
                 case Area.DuranceOfHateLevel3:
-                    pointOfInterest.Add(new PointOfInterest
+                    pointsOfInterest.Add(new PointOfInterest
                     {
                         Label = "",
                         Position = new Point(17565, 8070),
@@ -230,7 +230,7 @@ namespace MapAssist.Helpers
                     });
                     break;
                 case Area.NihlathaksTemple:
-                    pointOfInterest.Add(new PointOfInterest
+                    pointsOfInterest.Add(new PointOfInterest
                     {
                         Label = "",
                         Position = new Point(10058, 13234),
