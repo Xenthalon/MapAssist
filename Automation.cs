@@ -43,7 +43,8 @@ namespace MapAssist
 
         public void dumpUnitData()
         {
-            GameMemory.DumpUnits();
+            var rosterData = new Roster(GameManager.RosterDataOffset);
+            GameMemory.DumpUnits(rosterData);
         }
 
         public void StartAutoTele()

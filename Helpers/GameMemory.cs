@@ -223,7 +223,7 @@ namespace MapAssist.Helpers
             }
         }
 
-        public static void DumpUnits()
+        public static void DumpUnits(Roster rosterData)
         {
             for (var i = 0; i < 12; i++)
             {
@@ -236,7 +236,7 @@ namespace MapAssist.Helpers
                     {
                         _log.Info($"${i} ${unitAny.UnitId}: ${unitAny.UnitType.ToString()} ${unitAny.Name} ${unitAny.Position.ToString()}");
                         
-                        unitAny = unitAny.ListNext;
+                        unitAny = unitAny.ListNext(rosterData);
                     }
                 }
             }
