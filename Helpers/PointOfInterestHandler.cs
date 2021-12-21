@@ -62,10 +62,6 @@ namespace MapAssist.Helpers
 
         private static readonly Dictionary<Area, Dictionary<GameObject, string>> AreaSpecificQuestObjects = new Dictionary<Area, Dictionary<GameObject, string>>()
         {
-            [Area.StonyField] = new Dictionary<GameObject, string>()
-            {
-                [GameObject.CairnStoneAlpha] = "Tristram",
-            },
             [Area.MatronsDen] = new Dictionary<GameObject, string>()
             {
                 [GameObject.SparklyChest] = "Lilith",
@@ -159,10 +155,29 @@ namespace MapAssist.Helpers
 
         public static List<PointOfInterest> Get(MapApi mapApi, AreaData areaData, GameData gameData)
         {
-            var pointOfInterest = new List<PointOfInterest>();
+            var pointsOfInterest = GetArea(mapApi, areaData, gameData);
+
+            if (AreaExtensions.RequiresStitching(areaData.Area))
+            {
+                foreach (var adjacentArea in areaData.AdjacentAreas.Values.ToList())
+                {
+                    if (AreaExtensions.RequiresStitching(adjacentArea.Area))
+                    {
+                        var adjacentPoi = GetArea(mapApi, adjacentArea, gameData).Where(a => !pointsOfInterest.Any(b => a.Position.Subtract(b.Position).Length() < 5)).ToList(); // Prevent poi in an adjacent area from overlapping with poi in the current area
+                        pointsOfInterest.AddRange(adjacentPoi);
+                    }
+                }
+            }
+
+            return pointsOfInterest;
+        }
+
+        public static List<PointOfInterest> GetArea(MapApi mapApi, AreaData areaData, GameData gameData)
+        {
+            var pointsOfInterest = new List<PointOfInterest>();
             var areaRenderDecided = new List<Area>();
 
-            if (areaData.Area == Area.UberTristram) return pointOfInterest; // No actual points of interest here, Wirt's leg appears without this line
+            if (areaData.Area == Area.UberTristram) return pointsOfInterest; // No actual points of interest here, Wirt's leg appears without this line
 
             switch (areaData.Area)
             {
@@ -187,8 +202,9 @@ namespace MapAssist.Helpers
 
                     if (realTomb != Area.None && areaData.AdjacentLevels[realTomb].Exits.Any())
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = Utils.GetAreaLabel(realTomb, gameData.Difficulty),
                             Position = areaData.AdjacentLevels[realTomb].Exits[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
@@ -232,22 +248,86 @@ namespace MapAssist.Helpers
                             var monasteryArea = mapApi.GetMapData(Area.MonasteryGate);
                             var outerCloister = monasteryArea.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
 
-                            pointOfInterest.Add(new PointOfInterest
+                            pointsOfInterest.Add(new PointOfInterest
                             {
-                                Label = Utils.GetAreaLabel(monastery.Area, gameData.Difficulty),
+                                Area = areaData.Area,
+                                Label = Utils.GetAreaLabel(Area.MonasteryGate, gameData.Difficulty),
                                 Position = new Point(outerCloister.Exits[0].X, monastery.Exits[0].Y),
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                 Type = PoiType.NextArea
                             });
                             areaRenderDecided.Add(Area.MonasteryGate);
                         }
+                        else if (areaData.Area == Area.OuterCloister)
+                        {
+                            // Barracks Door is based on waypoint position
+                            var waypoint = areaData.Objects.First(obj => obj.Key == GameObject.WaypointPortal).Value.First();
+                            switch (waypoint.X)
+                            {
+                                case 15129:
+                                    // Waypoint = { X: 15129, Y: 4954 }
+                                    // SE Door = { X: 15280, Y: 4940 }
+                                    pointsOfInterest.Add(new PointOfInterest
+                                    {
+                                        Area = areaData.Area,
+                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        Position = new Point(15280, 4940),
+                                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                        Type = PoiType.NextArea
+                                    });
+                                    areaRenderDecided.Add(Area.OuterCloister);
+                                    break;
+
+                                case 15154:
+                                    // Waypoint = { X: 15154, Y: 4919 }
+                                    // NE Door = { X: 15141, Y: 4802 }
+                                    pointsOfInterest.Add(new PointOfInterest
+                                    {
+                                        Area = areaData.Area,
+                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        Position = new Point(15141, 4802),
+                                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                        Type = PoiType.NextArea
+                                    });
+                                    areaRenderDecided.Add(Area.OuterCloister);
+                                    break;
+
+                                case 15159:
+                                    // Waypoint = { X: 15159, Y: 4934 }
+                                    // NW Door = { X: 15002, Y: 4943 }
+                                    pointsOfInterest.Add(new PointOfInterest
+                                    {
+                                        Area = areaData.Area,
+                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        Position = new Point(15002, 4943),
+                                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                        Type = PoiType.NextArea
+                                    });
+                                    areaRenderDecided.Add(Area.OuterCloister);
+                                    break;
+                            }
+                        }
+                        else if (areaData.Area == Area.InnerCloister)
+                        {
+                            // Cathedral door
+                            pointsOfInterest.Add(new PointOfInterest
+                            {
+                                Area = areaData.Area,
+                                Label = Utils.GetAreaLabel(Area.Cathedral, gameData.Difficulty),
+                                Position = new Point(20053, 5000),
+                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                Type = PoiType.NextArea
+                            });
+                            areaRenderDecided.Add(Area.InnerCloister);
+                        }
                         else if (AreaPreferredNextArea.TryGetValue(areaData.Area, out var nextArea))
                         {
                             var nextLevel = areaData.AdjacentLevels[nextArea];
                             if (nextLevel.Exits.Any())
                             {
-                                pointOfInterest.Add(new PointOfInterest
+                                pointsOfInterest.Add(new PointOfInterest
                                 {
+                                    Area = areaData.Area,
                                     Label = Utils.GetAreaLabel(nextArea, gameData.Difficulty),
                                     Position = nextLevel.Exits[0],
                                     RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
@@ -264,8 +344,9 @@ namespace MapAssist.Helpers
                                 var nextLevel = areaData.AdjacentLevels[maxAdjacentArea];
                                 if (nextLevel.Exits.Any())
                                 {
-                                    pointOfInterest.Add(new PointOfInterest
+                                    pointsOfInterest.Add(new PointOfInterest
                                     {
+                                        Area = areaData.Area,
                                         Label = Utils.GetAreaLabel(maxAdjacentArea, gameData.Difficulty),
                                         Position = nextLevel.Exits[0],
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
@@ -282,8 +363,9 @@ namespace MapAssist.Helpers
                             var questLevel = areaData.AdjacentLevels[questArea];
                             if (questLevel.Exits.Any())
                             {
-                                pointOfInterest.Add(new PointOfInterest
+                                pointsOfInterest.Add(new PointOfInterest
                                 {
+                                    Area = areaData.Area,
                                     Label = Utils.GetAreaLabel(questArea, gameData.Difficulty),
                                     Position = questLevel.Exits[0],
                                     RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
@@ -299,10 +381,26 @@ namespace MapAssist.Helpers
                             var outerCloister = areaData.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
                             var tamoe = areaData.AdjacentLevels.First(level => level.Key == Area.TamoeHighland).Value;
 
-                            pointOfInterest.Add(new PointOfInterest
+                            pointsOfInterest.Add(new PointOfInterest
                             {
+                                Area = areaData.Area,
                                 Label = Utils.GetAreaLabel(tamoe.Area, gameData.Difficulty),
                                 Position = new Point(outerCloister.Exits[0].X, tamoe.Exits[0].Y),
+                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
+                                Type = PoiType.PreviousArea
+                            });
+                        }
+                        else if (areaData.Area == Area.Barracks)
+                        {
+                            var outerCloisterArea = mapApi.GetMapData(Area.OuterCloister);
+                            var barracksAreaData = GetArea(mapApi, outerCloisterArea, gameData);
+                            var barracks = barracksAreaData.FirstOrDefault(poi => poi.Type == PoiType.NextArea);
+
+                            pointsOfInterest.Add(new PointOfInterest
+                            {
+                                Area = areaData.Area,
+                                Label = Utils.GetAreaLabel(Area.OuterCloister, gameData.Difficulty),
+                                Position = barracks.Position,
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
                                 Type = PoiType.PreviousArea
                             });
@@ -319,8 +417,9 @@ namespace MapAssist.Helpers
 
                                 foreach (var position in level.Exits)
                                 {
-                                    pointOfInterest.Add(new PointOfInterest
+                                    pointsOfInterest.Add(new PointOfInterest
                                     {
+                                        Area = areaData.Area,
                                         Label = Utils.GetAreaLabel(level.Area, gameData.Difficulty),
                                         Position = position,
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
@@ -349,8 +448,9 @@ namespace MapAssist.Helpers
                 {
                     if (AreaSpecificQuestObjects[areaData.Area].ContainsKey(obj))
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = AreaSpecificQuestObjects[areaData.Area][obj],
                             Position = points[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
@@ -364,8 +464,9 @@ namespace MapAssist.Helpers
                 {
                     if (AreaPortals[areaData.Area].ContainsKey(obj))
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = Utils.GetPortalName(AreaPortals[areaData.Area][obj], gameData.Difficulty),
                             Position = points[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Portal,
@@ -377,8 +478,9 @@ namespace MapAssist.Helpers
                 // Waypoints
                 if (obj.IsWaypoint())
                 {
-                    pointOfInterest.Add(new PointOfInterest
+                    pointsOfInterest.Add(new PointOfInterest
                     {
+                        Area = areaData.Area,
                         Label = areaData.Area.Name(),
                         Position = points[0],
                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Waypoint,
@@ -393,8 +495,9 @@ namespace MapAssist.Helpers
 
                     foreach (var point in usePoints)
                     { 
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = questObjectName,
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
@@ -406,8 +509,9 @@ namespace MapAssist.Helpers
                 {
                     foreach (var point in points)
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = obj.ToString(),
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Shrine,
@@ -420,8 +524,9 @@ namespace MapAssist.Helpers
                 {
                     foreach (var point in points)
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = obj.ToString(),
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.SuperChest,
@@ -434,8 +539,9 @@ namespace MapAssist.Helpers
                 {
                     foreach (var point in points)
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = obj.ToString(),
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.ArmorWeapRack,
@@ -450,8 +556,9 @@ namespace MapAssist.Helpers
                 case Area.PlainsOfDespair:
                     foreach (var objAndPoints in areaData.NPCs)
                     {
-                        pointOfInterest.Add(new PointOfInterest
+                        pointsOfInterest.Add(new PointOfInterest
                         {
+                            Area = areaData.Area,
                             Label = "Izual",
                             Position = objAndPoints.Value[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
@@ -460,7 +567,7 @@ namespace MapAssist.Helpers
                     break;
             }
 
-            return pointOfInterest;
+            return pointsOfInterest;
         }
     }
 }

@@ -48,14 +48,26 @@ namespace MapAssist.Types
         private bool _updated;
         private Skill _skill;
         private bool _isPlayerUnit;
+        private Roster _rosterData;
+        private bool _hostileToPlayer;
+        private bool _inPlayerParty;
 
         public UnitAny(IntPtr pUnit)
         {
             _pUnit = pUnit;
             Update();
         }
-
+        public UnitAny(IntPtr pUnit, Roster rosterData)
+        {
+            _pUnit = pUnit;
+            Update(rosterData);
+        }
         public UnitAny Update()
+        {
+            return Update(null);
+        }
+
+        public UnitAny Update(Roster rosterData = null)
         {
             if (IsValidPointer())
             {
@@ -86,26 +98,49 @@ namespace MapAssist.Types
                         switch (_unitAny.UnitType)
                         {
                             case UnitType.Player:
+                                _name = Encoding.ASCII.GetString(processContext.Read<byte>(_unitAny.pUnitData, 16))
+                                    .TrimEnd((char)0);
+                                _inventory = processContext.Read<Inventory>(_unitAny.pInventory);
+                                _act = new Act(_unitAny.pAct);
                                 if (IsPlayer())
                                 {
-                                    if (IsPlayerUnit())
-                                    {
-                                        _skill = new Skill(_unitAny.pSkills);
-                                        _stateList = GetStateList();
-                                    }
                                     _name = Encoding.ASCII.GetString(processContext.Read<byte>(_unitAny.pUnitData, 16))
                                         .TrimEnd((char)0);
                                     _inventory = processContext.Read<Inventory>(_unitAny.pInventory);
                                     _act = new Act(_unitAny.pAct);
+                                    _rosterData = rosterData;
+                                    if (IsPlayerUnit())
+                                    {
+                                        _skill = new Skill(_unitAny.pSkills);
+                                        _stateList = GetStateList();
+                                    } else
+                                    {
+                                        if (GameManager.PlayerFound && _rosterData != null)
+                                        {
+                                            if (PartyId == ushort.MaxValue)
+                                            {
+                                                _hostileToPlayer = IsHostileTo(GameManager.PlayerUnit);
+                                                _inPlayerParty = false;
+                                            } else
+                                            {
+                                                if(PartyId != GameManager.PlayerUnit.PartyId)
+                                                {
+                                                    _hostileToPlayer = IsHostileTo(GameManager.PlayerUnit);
+                                                    _inPlayerParty = false;
+                                                } else
+                                                {
+                                                    _inPlayerParty = true;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-
                                 break;
                             case UnitType.Monster:
                                 if (IsMonster())
                                 {
                                     _monsterData = processContext.Read<MonsterData>(_unitAny.pUnitData);
                                 }
-
                                 break;
                             case UnitType.Item:
                                 if (MapAssistConfiguration.Loaded.ItemLog.Enabled)
@@ -153,16 +188,18 @@ namespace MapAssist.Types
         public Path Path => _path;
         public IntPtr StatsListExPtr => _unitAny.pStatsListEx;
         public Inventory Inventory => _inventory;
-        public uint OwnerType => _unitAny.OwnerType;
         public ushort X => IsMovable() ? _path.DynamicX : _path.StaticX;
         public ushort Y => IsMovable() ? _path.DynamicY : _path.StaticY;
         public Point Position => new Point(X, Y);
-        public UnitAny ListNext => new UnitAny(_unitAny.pListNext);
+        public UnitAny ListNext(Roster rosterData) => new UnitAny(_unitAny.pListNext, rosterData);
         public UnitAny RoomNext => new UnitAny(_unitAny.pRoomNext);
         public List<Resist> Immunities => _immunities;
         public uint[] StateFlags => _stateFlags;
         public List<State> StateList => _stateList;
         public Skill Skill => _skill;
+        public ushort PartyId => GetPartyId();
+        public bool HostileToPlayer => _hostileToPlayer;
+        public bool InPlayerParty => _inPlayerParty;
 
         public bool IsMovable()
         {
@@ -180,7 +217,7 @@ namespace MapAssist.Types
 
         public bool IsPlayer()
         {
-            return UnitType == UnitType.Player;
+            return UnitType == UnitType.Player && _unitAny.pAct != IntPtr.Zero;
         }
 
         public bool IsPlayerUnit()
@@ -214,7 +251,9 @@ namespace MapAssist.Types
                     }
                     if (IsPlayer() && _unitAny.pInventory != IntPtr.Zero)
                     {
-                        var expansionCharacter = processContext.Read<byte>(GameManager.ExpansionCheckOffset) == 1;
+                        var playerInfoPtr = processContext.Read<PlayerInfo>(GameManager.ExpansionCheckOffset);
+                        var playerInfo = processContext.Read<PlayerInfoStrc>(playerInfoPtr.pPlayerInfo);
+                        var expansionCharacter = playerInfo.Expansion;
                         var userBaseOffset = 0x30;
                         var checkUser1 = 1;
                         if (expansionCharacter)
@@ -328,6 +367,52 @@ namespace MapAssist.Types
                 }
             }
             return stateList;
+        }
+
+        public bool IsHostileTo(UnitAny otherUnit)
+        {
+            if(UnitType != UnitType.Player || otherUnit.UnitType != UnitType.Player)
+            {
+                return false;
+            }
+            var otherUnitId = otherUnit.UnitId;
+            if (otherUnitId == UnitId)
+            {
+                return false;
+            }
+            if (_rosterData != null)
+            {
+                using (var processContext = GameManager.GetProcessContext())
+                {
+                    if (_rosterData.EntriesByUnitId.TryGetValue(UnitId, out var rosterEntry))
+                    {
+                        var hostileInfo = rosterEntry.HostileInfo;
+                        while (hostileInfo.NextHostileInfo != IntPtr.Zero)
+                        {
+                            if (hostileInfo.UnitId == otherUnitId)
+                            {
+                                return hostileInfo.HostileFlag > 0;
+                            }
+                            hostileInfo = processContext.Read<HostileInfo>(hostileInfo.NextHostileInfo);
+                        }
+                        if (hostileInfo.UnitId == otherUnitId)
+                        {
+                            return hostileInfo.HostileFlag > 0;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        private ushort GetPartyId()
+        {
+            if (_rosterData != null){
+                if(_rosterData.EntriesByUnitId.TryGetValue(UnitId, out var rosterEntry))
+                {
+                    return rosterEntry.PartyID;
+                }
+            }
+            return ushort.MaxValue; //maxvalue = not in party
         }
 
         public override bool Equals(object obj) => obj is UnitAny other && Equals(other);

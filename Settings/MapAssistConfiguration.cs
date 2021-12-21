@@ -44,9 +44,6 @@ namespace MapAssist.Settings
         [YamlMember(Alias = "D2Path", ApplyNamingConventions = false)]
         public string D2Path { get; set; }
 
-        [YamlMember(Alias = "HuntingIP", ApplyNamingConventions = false)]
-        public string HuntingIP { get; set; }
-
         [YamlMember(Alias = "PrefetchAreas", ApplyNamingConventions = false)]
         public Area[] PrefetchAreas { get; set; }
 
@@ -116,6 +113,9 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "NonPartyPlayer", ApplyNamingConventions = false)]
         public PointOfInterestRendering NonPartyPlayer { get; set; }
+
+        [YamlMember(Alias = "HostilePlayer", ApplyNamingConventions = false)]
+        public PointOfInterestRendering HostilePlayer { get; set; }
 
         [YamlMember(Alias = "Portal", ApplyNamingConventions = false)]
         public PortalRendering Portal { get; set; }
@@ -187,18 +187,27 @@ public class HotkeyConfiguration
 
     [YamlMember(Alias = "ZoomOutKey", ApplyNamingConventions = false)]
     public char ZoomOutKey { get; set; }
-
-    [YamlMember(Alias = "GameInfoKey", ApplyNamingConventions = false)]
-    public char GameInfoKey { get; set; }
 }
 
 public class GameInfoConfiguration
 {
-    [YamlMember(Alias = "Enabled", ApplyNamingConventions = false)]
-    public bool Enabled { get; set; }
+    [YamlMember(Alias = "ShowGameIP", ApplyNamingConventions = false)]
+    public bool ShowGameIP { get; set; }
+
+    [YamlMember(Alias = "HuntingIP", ApplyNamingConventions = false)]
+    public string HuntingIP { get; set; }
+
+    [YamlMember(Alias = "ShowAreaLevel", ApplyNamingConventions = false)]
+    public bool ShowAreaLevel { get; set; }
 
     [YamlMember(Alias = "ShowOverlayFPS", ApplyNamingConventions = false)]
     public bool ShowOverlayFPS { get; set; }
+    
+    [YamlMember(Alias = "LabelFont", ApplyNamingConventions = false)]
+    public string LabelFont { get; set; }
+
+    [YamlMember(Alias = "LabelFontSize", ApplyNamingConventions = false)]
+    public int LabelFontSize { get; set; }
 }
 
 public class ItemLogConfiguration

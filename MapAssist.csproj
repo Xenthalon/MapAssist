@@ -109,6 +109,10 @@
     <Compile Include="Automation.cs" />
     <Compile Include="Files\ConfigurationParser.cs" />
     <Compile Include="Files\FileManager.cs" />
+    <Compile Include="Files\Font\ExocetFont.cs" />
+    <Compile Include="Files\Font\ResourceFontFileEnumerator.cs" />
+    <Compile Include="Files\Font\ResourceFontFileStream.cs" />
+    <Compile Include="Files\Font\ResourceFontLoader.cs" />
     <Compile Include="Helpers\AudioPlayer.cs" />
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
@@ -139,6 +143,7 @@
     <Compile Include="Structs\Level.cs" />
     <Compile Include="Structs\MonsterData.cs" />
     <Compile Include="Structs\ObjectData.cs" />
+    <Compile Include="Structs\PlayerInfo.cs" />
     <Compile Include="Structs\RosterMember.cs" />
     <Compile Include="Structs\Path.cs" />
     <Compile Include="Structs\Room.cs" />
@@ -176,6 +181,7 @@
     <Compile Include="Settings\Utils.cs" />
     <Compile Include="Types\UnitAny.cs" />
     <Compile Include="Types\UnitType.cs" />
+    <EmbeddedResource Include="Fonts\exocetblizzardot-medium.otf" />
     <None Include="Resources\Icon1.ico" />
   </ItemGroup>
   <ItemGroup>
