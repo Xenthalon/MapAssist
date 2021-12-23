@@ -51,6 +51,8 @@ namespace MapAssist.Types
         private Roster _rosterData;
         private bool _hostileToPlayer;
         private bool _inPlayerParty;
+        private PlayerClass _playerClass;
+        private Area _initialArea;
 
         public UnitAny(IntPtr pUnit)
         {
@@ -98,10 +100,6 @@ namespace MapAssist.Types
                         switch (_unitAny.UnitType)
                         {
                             case UnitType.Player:
-                                _name = Encoding.ASCII.GetString(processContext.Read<byte>(_unitAny.pUnitData, 16))
-                                    .TrimEnd((char)0);
-                                _inventory = processContext.Read<Inventory>(_unitAny.pInventory);
-                                _act = new Act(_unitAny.pAct);
                                 if (IsPlayer())
                                 {
                                     _name = Encoding.ASCII.GetString(processContext.Read<byte>(_unitAny.pUnitData, 16))
@@ -109,6 +107,8 @@ namespace MapAssist.Types
                                     _inventory = processContext.Read<Inventory>(_unitAny.pInventory);
                                     _act = new Act(_unitAny.pAct);
                                     _rosterData = rosterData;
+                                    _playerClass = _unitAny.playerClass;
+                                    _initialArea = Path.Room.RoomEx.Level.LevelId;
                                     if (IsPlayerUnit())
                                     {
                                         _skill = new Skill(_unitAny.pSkills);
@@ -121,13 +121,15 @@ namespace MapAssist.Types
                                             {
                                                 _hostileToPlayer = IsHostileTo(GameManager.PlayerUnit);
                                                 _inPlayerParty = false;
-                                            } else
+                                            }
+                                            else
                                             {
-                                                if(PartyId != GameManager.PlayerUnit.PartyId)
+                                                if (PartyId != GameManager.PlayerUnit.PartyId)
                                                 {
                                                     _hostileToPlayer = IsHostileTo(GameManager.PlayerUnit);
                                                     _inPlayerParty = false;
-                                                } else
+                                                }
+                                                else
                                                 {
                                                     _inPlayerParty = true;
                                                 }
@@ -200,6 +202,9 @@ namespace MapAssist.Types
         public ushort PartyId => GetPartyId();
         public bool HostileToPlayer => _hostileToPlayer;
         public bool InPlayerParty => _inPlayerParty;
+        public bool IsCorpse => _unitAny.isCorpse;
+        public PlayerClass PlayerClass => _playerClass;
+        public Area InitialArea => _initialArea;
 
         public bool IsMovable()
         {
@@ -414,6 +419,10 @@ namespace MapAssist.Types
             }
             return ushort.MaxValue; //maxvalue = not in party
         }
+        public double DistanceTo(Point position)
+        {
+            return Math.Sqrt((Math.Pow(position.X - Position.X, 2) + Math.Pow(position.Y - Position.Y, 2)));
+        }
 
         public override bool Equals(object obj) => obj is UnitAny other && Equals(other);
 
@@ -424,5 +433,10 @@ namespace MapAssist.Types
         public static bool operator ==(UnitAny unit1, UnitAny unit2) => unit1.Equals(unit2);
 
         public static bool operator !=(UnitAny unit1, UnitAny unit2) => !(unit1 == unit2);
+        public UnitAny Clone()
+        {
+            var unitAny = new UnitAny(_pUnit);
+            return unitAny;
+        }
     }
 }

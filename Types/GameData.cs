@@ -41,6 +41,7 @@ namespace MapAssist.Types
         public UnitAny PlayerUnit;
         public byte MenuPanelOpen;
         public MenuData MenuOpen;
+        public int ProcessId;
 
         public bool HasGameChanged(GameData other)
         {

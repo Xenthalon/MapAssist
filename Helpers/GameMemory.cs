@@ -31,6 +31,7 @@ namespace MapAssist.Helpers
         private static int _currentProcessId;
 
         public static Dictionary<int, UnitAny> PlayerUnits = new Dictionary<int, UnitAny>();
+        public static Dictionary<int, Dictionary<uint, UnitAny>> Corpses = new Dictionary<int, Dictionary<uint, UnitAny>>();
 
         public static GameData GetGameData()
         {
@@ -51,6 +52,15 @@ namespace MapAssist.Helpers
                 using (processContext)
                 {
                     _currentProcessId = processContext.ProcessId;
+
+                    var menuOpen = processContext.Read<byte>(GameManager.MenuOpenOffset);
+                    var menuData = processContext.Read<Structs.MenuData>(GameManager.MenuDataOffset);
+
+                    if (!menuData.InGame && Corpses.TryGetValue(_currentProcessId, out var _))
+                    {
+                        Corpses[_currentProcessId].Clear();
+                    }
+
                     var playerUnit = GameManager.PlayerUnit;
 
                     if(!PlayerUnits.TryGetValue(_currentProcessId, out var _))
@@ -97,12 +107,17 @@ namespace MapAssist.Helpers
                                 Items.ItemUnitIdsSeen[_currentProcessId].Clear();
                                 Items.ItemLog[_currentProcessId].Clear();
                             }
+                            if(!Corpses.TryGetValue(_currentProcessId, out var _))
+                            {
+                                Corpses.Add(_currentProcessId, new Dictionary<uint, UnitAny>());
+                            }
+                            else
+                            {
+                                Corpses[_currentProcessId].Clear();
+                            }
                         }
 
                         var session = new Session(GameManager.GameIPOffset);
-
-                        var menuOpen = processContext.Read<byte>(GameManager.MenuOpenOffset);
-                        var menuData = processContext.Read<Structs.MenuData>(GameManager.MenuDataOffset);
 
                         var actId = playerUnit.Act.ActId;
 
@@ -149,7 +164,8 @@ namespace MapAssist.Helpers
                                 Roster = rosterData,
                                 PlayerUnit = playerUnit,
                                 MenuOpen = menuData,
-                                MenuPanelOpen = menuOpen
+                                MenuPanelOpen = menuOpen,
+                                ProcessId = _currentProcessId
                             };
                         }
                     }
@@ -211,7 +227,7 @@ namespace MapAssist.Helpers
                                 }
                                 break;
                             case UnitType.Player:
-                                if (!playerList.TryGetValue(unitAny.UnitId, out var _))
+                                if (!playerList.TryGetValue(unitAny.UnitId, out var _) && unitAny.IsPlayer())
                                 {
                                     playerList.Add(unitAny.UnitId, unitAny);
                                 }

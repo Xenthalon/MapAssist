@@ -39,8 +39,8 @@ namespace MapAssist.Files
 
         /**
          * Parses the dual configuration setup so that the custom configuration can override individual values in the
-         * default configuration. Note that for fields like PrefetchAreas and the MapConfiguration.Mapcolors, 
-         * the entire value will be overwritten.
+         * default configuration. Note that for fields like the MapConfiguration.Mapcolors, the entire value will
+         * be overwritten.
          * 
          * The approach here is to first deserialize the yaml configs into Dictionary<object, object>, then perform
          * a recursive merge on a field by field basis. The result of this merging is then serialized back to yaml, 

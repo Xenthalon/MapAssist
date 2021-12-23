@@ -42,7 +42,7 @@ namespace MapAssist.Structs
         [FieldOffset(0x100)] public IntPtr pSkills;
         [FieldOffset(0x150)] public IntPtr pListNext;
         [FieldOffset(0x158)] public IntPtr pRoomNext;
-        [FieldOffset(0x174)] public PlayerClass charClass;
+        [FieldOffset(0x174)] public PlayerClass playerClass;
         //[FieldOffset(0x194)] public ushort unk1;
         //[FieldOffset(0x19D)] public byte isAlive2; //could be = 16 for alive players
         [MarshalAs(UnmanagedType.U1)]
