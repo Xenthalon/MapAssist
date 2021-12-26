@@ -154,6 +154,11 @@ namespace MapAssist
                     _automation.StartAutoTele();
                 }
 
+                if (args.KeyChar == 'n')
+                {
+                    _automation.dumpItemData();
+                }
+
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)
                 {
                     _show = !_show;

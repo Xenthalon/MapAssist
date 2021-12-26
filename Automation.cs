@@ -126,10 +126,41 @@ namespace MapAssist
             return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
         }
 
+        public void dumpItemData()
+        {
+            _log.Info("Belt items:");
+            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))
+            {
+                // belt is nodePos 2/2 ... or InvPage NULL, BodyLoc NULL
+                _log.Info($"{Items.ItemName(item.TxtFileNo)} {(item.X % 4) + 1}/{item.X / 4}");
+            }
+
+            _log.Info("Inventory items:");
+            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.INVENTORY))
+            {
+                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
+            }
+        }
+
         public void dumpUnitData()
         {
             var rosterData = new Roster(GameManager.RosterDataOffset);
-            GameMemory.DumpUnits(rosterData);
+
+            for (var i = 0; i < 12; i++)
+            {
+                var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
+                var unitType = (UnitType)i;
+                foreach (var pUnitAny in unitHashTable.UnitTable)
+                {
+                    var unitAny = new UnitAny(pUnitAny);
+                    while (unitAny.IsValidUnit())
+                    {
+                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType.ToString()} {unitAny.Name} {unitAny.Position.ToString()}");
+
+                        unitAny = unitAny.ListNext(rosterData);
+                    }
+                }
+            }
         }
 
         public void StartAutoTele()

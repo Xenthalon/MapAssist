@@ -229,25 +229,6 @@ namespace MapAssist.Helpers
             }
         }
 
-        public static void DumpUnits(Roster rosterData)
-        {
-            for (var i = 0; i < 12; i++)
-            {
-                var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
-                var unitType = (UnitType)i;
-                foreach (var pUnitAny in unitHashTable.UnitTable)
-                {
-                    var unitAny = new UnitAny(pUnitAny);
-                    while (unitAny.IsValidUnit())
-                    {
-                        _log.Info($"${i} ${unitAny.UnitId}: ${unitAny.UnitType.ToString()} ${unitAny.Name} ${unitAny.Position.ToString()}");
-                        
-                        unitAny = unitAny.ListNext(rosterData);
-                    }
-                }
-            }
-        }
-
         private static HashSet<Room> GetRooms(Room startingRoom, ref HashSet<Room> roomsList)
         {
             var roomsNear = startingRoom.RoomsNear;
