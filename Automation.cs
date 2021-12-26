@@ -19,13 +19,21 @@ namespace MapAssist
         private List<PointOfInterest> _pointsOfInterests;
         private Pathing _pathing;
         private BackgroundWorker _teleportWorker;
+        private BackgroundWorker _chickenWorker;
         private bool _teleporting = false;
+        private bool _chicken = true;
+        private double potionPercentage = 0.25;
+        private int playerHealth = -1;
+        private int playerHealthMax = -1;
+        private int mercHealth = -1;
         private List<Point> _teleportPath;
         private Rectangle _windowRect;
 
         public Automation()
         {
-
+            _chickenWorker = new BackgroundWorker();
+            _chickenWorker.DoWork += new DoWorkEventHandler(chickenWatcher);
+            _chickenWorker.WorkerSupportsCancellation = true;
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -39,6 +47,83 @@ namespace MapAssist
             {
                 _teleportWorker.RunWorkerAsync();
             }
+
+            if (_chicken == true)
+            {
+                refreshHealthValues(gameData);
+                if (!_chickenWorker.IsBusy)
+                {
+                    _chickenWorker.RunWorkerAsync();
+                }
+            }
+        }
+
+        public void chickenWatcher(object sender, DoWorkEventArgs e)
+        {
+            if (_currentGameData == null || playerHealth == -1 || playerHealthMax == -1)
+            {
+                return;
+            }
+
+            var currentLifePercentage = (double)playerHealth / (double)playerHealthMax;
+
+            if (currentLifePercentage < potionPercentage)
+            {
+                _log.Info("Life at " + (currentLifePercentage * 100) + "%, eating a potion.");
+                SendKeys.SendWait("4");
+                System.Threading.Thread.Sleep(200);
+            }
+
+            if (mercHealth == -1)
+            {
+                return;
+            }
+
+            var mercCurrentLifePercentage = (double)mercHealth / 32768.0;
+
+            if (mercCurrentLifePercentage < potionPercentage)
+            {
+                _log.Info("Merc Life at " + (mercCurrentLifePercentage * 100) + "%, eating a potion.");
+                SendKeys.SendWait("+3");
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        public void refreshHealthValues(GameData gameData)
+        {
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit() && gameData.PlayerUnit.Stats != null)
+            {
+                var health = -1;
+
+                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_HITPOINTS))
+                {
+                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_HITPOINTS, out health);
+                    playerHealth = convertHexHealthToInt(health);
+                }
+
+                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_MAXHP))
+                {
+                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_MAXHP, out health);
+                    playerHealthMax = convertHexHealthToInt(health);
+                }
+
+                UnitAny merc = gameData.Monsters.Where(x => x.IsMerc()).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                if (merc.IsValidPointer() && merc.IsValidUnit())
+                {
+                    if (merc.Stats.ContainsKey(Stat.STAT_HITPOINTS))
+                    {
+                        merc.Stats.TryGetValue(Stat.STAT_HITPOINTS, out mercHealth);
+                    }
+                }
+            }
+        }
+
+        private int convertHexHealthToInt(int hexHealth)
+        {
+            var hexValue = hexHealth.ToString("X");
+            hexValue = hexValue.Substring(0, hexValue.Length - 2);
+            return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
         }
 
         public void dumpUnitData()
@@ -169,17 +254,18 @@ namespace MapAssist
         private void MouseClick(GameOverlay.Drawing.Point point, bool left = true)
         {
             MouseMove(point);
+            System.Threading.Thread.Sleep(50);
 
             if (left)
             {
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftDown);
-                System.Threading.Thread.Sleep(50);
+                System.Threading.Thread.Sleep(80);
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftUp);
             }
             else
             {
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightDown);
-                System.Threading.Thread.Sleep(50);
+                System.Threading.Thread.Sleep(80);
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightUp);
             }
         }

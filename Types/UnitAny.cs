@@ -45,6 +45,7 @@ namespace MapAssist.Types
         private List<State> _stateList;
         private string _name;
         private bool _isMonster;
+        private bool _isMerc;
         private bool _updated;
         private Skill _skill;
         private bool _isPlayerUnit;
@@ -139,7 +140,7 @@ namespace MapAssist.Types
                                 }
                                 break;
                             case UnitType.Monster:
-                                if (IsMonster())
+                                if (IsMonster() || IsMerc())
                                 {
                                     _monsterData = processContext.Read<MonsterData>(_unitAny.pUnitData);
                                 }
@@ -312,6 +313,24 @@ namespace MapAssist.Types
 
                 _isMonster = true;
                 return true;
+            }
+        }
+        public bool IsMerc()
+        {
+            if (_updated)
+            {
+                return _isMerc;
+            }
+            else
+            {
+                if (_unitAny.UnitType != UnitType.Monster) return false;
+                if (_unitAny.Mode == 0 || _unitAny.Mode == 12) return false;
+                if (NPC.Mercs.TryGetValue(_unitAny.TxtFileNo, out var _)) {
+                    _isMerc = true;
+                    return true;
+                }
+
+                return false;
             }
         }
 

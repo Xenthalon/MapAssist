@@ -93,6 +93,12 @@ namespace MapAssist.Types
             { 569, Npc.InjuredBarbarian3 },
             { 711, Npc.DemonHole },
         };
+
+        public static Dictionary<uint, Npc> Mercs = new Dictionary<uint, Npc> {
+            { 152, Npc.Rogue },
+            { 338, Npc.Guard },
+            { 359, Npc.IronWolf }
+        };
     }
     public enum Npc
     {

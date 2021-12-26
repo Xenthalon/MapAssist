@@ -209,7 +209,7 @@ namespace MapAssist.Helpers
                         switch (unitType)
                         {
                             case UnitType.Monster:
-                                if (!monsterList.Contains(unitAny) && unitAny.IsMonster())
+                                if (!monsterList.Contains(unitAny) && (unitAny.IsMonster() || unitAny.IsMerc()))
                                 {
                                     monsterList.Add(unitAny);
                                 }
