@@ -61,13 +61,13 @@ namespace MapAssist.Automation
             if (left)
             {
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftDown);
-                System.Threading.Thread.Sleep(80);
+                System.Threading.Thread.Sleep(50);
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftUp);
             }
             else
             {
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightDown);
-                System.Threading.Thread.Sleep(80);
+                System.Threading.Thread.Sleep(50);
                 InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightUp);
             }
         }

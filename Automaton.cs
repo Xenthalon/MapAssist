@@ -18,19 +18,17 @@ namespace MapAssist
 
         private GameData _currentGameData;
         private List<PointOfInterest> _pointsOfInterests;
-        private Pathing _pathing;
-        private BackgroundWorker _teleportWorker;
-        private bool _teleporting = false;
         private bool _useChicken = true;
         private Input _input;
         private Chicken _chicken;
         private Combat _combat;
-        private List<Point> _teleportPath;
+        private Movement _movement;
 
         public Automaton()
         {
             _input = new Input();
             _chicken = new Chicken();
+            _movement = new Movement(_input);
             _combat = new Combat(_input);
         }
 
@@ -38,20 +36,15 @@ namespace MapAssist
         {
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
-            _pathing = pathing;
 
             Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
             _input.Update(gameData, windowRect);
             _combat.Update(gameData);
+            _movement.Update(gameData, pathing);
 
             if (_useChicken == true)
             {
                 _chicken.Update(gameData);
-            }
-
-            if (_teleporting && _teleportWorker != null && !_teleportWorker.IsBusy)
-            {
-                _teleportWorker.RunWorkerAsync();
             }
         }
 
@@ -97,23 +90,8 @@ namespace MapAssist
 
         public void StartAutoTele()
         {
-            if (_teleportWorker != null && _teleportWorker.IsBusy)
-            {
-                _teleportWorker.CancelAsync();
-                _teleportWorker.Dispose();
-                _teleporting = false;
-            }
-
             _log.Debug($"Teleporting to {_pointsOfInterests[0].Label}");
-
-            _teleportPath = _pathing.GetPathToLocation(_currentGameData.MapSeed, _currentGameData.Difficulty, true, _currentGameData.PlayerPosition, _pointsOfInterests[0].Position);
-
-            _teleporting = true;
-
-            _teleportWorker = new BackgroundWorker();
-            _teleportWorker.DoWork += new DoWorkEventHandler(autoTele);
-            _teleportWorker.WorkerSupportsCancellation = true;
-            _teleportWorker.RunWorkerAsync();
+            _movement.MoveTo(_pointsOfInterests[0].Position);
         }
 
         public static Point TranslateToScreenOffset(Point playerPositionWorld, Point targetPositionWorld, Point playerPositionScreen)
@@ -134,64 +112,6 @@ namespace MapAssist
             // maybe try around dividing screen width and height through 28,085
 
             return new Point((int)(playerPositionScreen.X + diffX), (int)(playerPositionScreen.Y + diffY));
-        }
-
-        private void autoTele(object sender, DoWorkEventArgs e)
-        {
-            if (_currentGameData != null && _pointsOfInterests != null && _pointsOfInterests.Count > 0 && _pathing != null)
-            {
-                var teleportSuccess = TeleportTo(_teleportPath[0]);
-                System.Threading.Thread.Sleep(100);
-
-                if (teleportSuccess)
-                {
-                    _log.Debug($"Teleported to {_teleportPath[0].X}/{_teleportPath[0].Y}");
-                }
-                else
-                {
-                    _log.Warn("Teleport went wrong, recalculating and retrying!");
-
-                    _teleportPath = _pathing.GetPathToLocation(_currentGameData.MapSeed, _currentGameData.Difficulty, true, _currentGameData.PlayerPosition, _pointsOfInterests[0].Position);
-
-                    return;
-                }
-
-                if (_teleportPath.Count == 1)
-                {
-                    _input.DoInputAtWorldPosition("{LMB}", _teleportPath[0]);
-                    _log.Debug("Took exit.");
-                }
-
-                _teleportPath.RemoveAt(0);
-
-                if (_teleportPath.Count == 0)
-                {
-                    _log.Debug($"Done teleporting!");
-                    _teleporting = false;
-                }
-            }
-        }
-
-        private bool TeleportTo(Point worldPoint)
-        {
-            _input.DoInputAtWorldPosition("w", worldPoint);
-
-            for (var i = 0; i < 20; i++)
-            {
-                System.Threading.Thread.Sleep(50);
-
-                if (IsNear(_currentGameData.PlayerPosition, worldPoint))
-                    break;
-            }
-
-            return IsNear(_currentGameData.PlayerPosition, worldPoint);
-        }
-
-        private bool IsNear(Point p1, Point p2)
-        {
-            var range = 5;
-
-            return GetDistance(p1, p2) < range;
         }
 
         public static double GetDistance(Point p1, Point p2)

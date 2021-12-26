@@ -109,6 +109,7 @@
     <Compile Include="Automation\Combat.cs" />
     <Compile Include="Automation\CombatSkill.cs" />
     <Compile Include="Automation\Input.cs" />
+    <Compile Include="Automation\Movement.cs" />
     <Compile Include="Automaton.cs" />
     <Compile Include="Automation\Chicken.cs" />
     <Compile Include="Automation\Inventory.cs" />
