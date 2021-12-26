@@ -445,7 +445,7 @@ namespace MapAssist.Types
 
         public override bool Equals(object obj) => obj is UnitAny other && Equals(other);
 
-        public bool Equals(UnitAny unit) => UnitId == unit.UnitId;
+        public bool Equals(UnitAny unit) => !(unit is null) && UnitId == unit.UnitId;
 
         public override int GetHashCode() => UnitId.GetHashCode();
 

@@ -138,6 +138,15 @@ namespace MapAssist
                     backWorkOverlay.WorkerSupportsCancellation = true;
                     backWorkOverlay.RunWorkerAsync();
 
+                    GameManager.OnGameAccessDenied += (_, __) =>
+                    {
+                        var message = $"MapAssist could not read {GameManager.ProcessName} memory. Please reopen MapAssist as an administrator.";
+                        MessageBox.Show(message, $"{messageBoxTitle}: Error opening handle to {GameManager.ProcessName}", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+                        Dispose();
+                        Application.Exit();
+                        Environment.Exit(0);
+                    };
+
                     GameManager.MonitorForegroundWindow();
 
                     Application.Run();
@@ -278,7 +287,6 @@ namespace MapAssist
         private static void Dispose()
         {
             _log.Info("Disposing");
-            _log.Info(new StackTrace());
 
             GameManager.Dispose();
             MapApi.Dispose();

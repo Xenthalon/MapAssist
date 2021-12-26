@@ -263,7 +263,7 @@ namespace MapAssist.Types
             {ItemQuality.SET, ColorTranslator.FromHtml("#00FF00")},
             {ItemQuality.RARE, ColorTranslator.FromHtml("#FFFF00")},
             {ItemQuality.UNIQUE, ColorTranslator.FromHtml("#A59263")},
-            {ItemQuality.CRAFT, ColorTranslator.FromHtml("#FFA500")},
+            {ItemQuality.CRAFT, ColorTranslator.FromHtml("#FFAE00")},
         };
 
         public readonly static Dictionary<string, string> _SetFromCode = new Dictionary<string, string>()

@@ -18,6 +18,7 @@
  **/
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using MapAssist.Structs;
@@ -27,7 +28,7 @@ namespace MapAssist.Helpers
     public class GameManager
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly string ProcessName = Encoding.UTF8.GetString(new byte[] { 68, 50, 82 });
+        public static readonly string ProcessName = Encoding.UTF8.GetString(new byte[] { 68, 50, 82 });
         private static IntPtr _winHook;
         private static int _foregroundProcessId = 0;
 
@@ -35,6 +36,9 @@ namespace MapAssist.Helpers
         private static Process _lastGameProcess;
         private static int _lastGameProcessId = 0;
         private static ProcessContext _processContext;
+
+        public delegate void StatusUpdateHandler(object sender, EventArgs e);
+        public static event StatusUpdateHandler OnGameAccessDenied;
 
         private static Types.UnitAny _PlayerUnit = default;
         private static IntPtr _UnitHashTableOffset;
@@ -47,7 +51,6 @@ namespace MapAssist.Helpers
         private static WindowsExternal.WinEventDelegate _eventDelegate = null;
 
         private static bool _playerNotFoundErrorThrown = false;
-
         public static bool PlayerFound = false;
 
         public static void MonitorForegroundWindow()
@@ -105,6 +108,23 @@ namespace MapAssist.Helpers
             _log.Info($"Active window changed to a game window (handle: {hwnd})");
             ResetPlayerUnit();
 
+            try
+            {
+                using (var _ = new ProcessContext(process)) { } // Read memory test to see if game is running as an admin
+            }
+            catch (Win32Exception ex)
+            {
+                if (ex.Message == "Access is denied")
+                {
+                    OnGameAccessDenied(null, null);
+                    return;
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+
             _lastGameHwnd = hwnd;
             _lastGameProcess = process;
             _lastGameProcessId = _foregroundProcessId;
@@ -119,15 +139,8 @@ namespace MapAssist.Helpers
             }
             else if (_lastGameProcess != null && WindowsExternal.HandleExists(_lastGameHwnd))
             {
-                try
-                {
-                    _processContext = new ProcessContext(_lastGameProcess); // Rarely, the VirtualMemoryRead will cause an error, in that case return a null instead of a runtime error. The next frame will try again.
-                    return _processContext;
-                }
-                catch(Exception)
-                {
-                    return null;
-                }
+                _processContext = new ProcessContext(_lastGameProcess); // Rarely, the VirtualMemoryRead will cause an error, in that case return a null instead of a runtime error. The next frame will try again.
+                return _processContext;
             }
 
             return null;

@@ -1,7 +1,4 @@
-﻿using MapAssist.Settings;
-using MapAssist.Types;
-using System;
-using System.Collections.Generic;
+﻿using MapAssist.Types;
 
 namespace MapAssist.Helpers
 {
