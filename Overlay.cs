@@ -41,14 +41,14 @@ namespace MapAssist
         private AreaData _areaData;
         private bool _show = true;
 
-        private Automation _automation;
+        private Automaton _automation;
         private List<PointOfInterest> _pointsOfInterests;
         private Pathing _pathing;
         private static readonly object _lock = new object();
         public Overlay()
         {
             _gameDataReader = new GameDataReader();
-            _automation = new Automation();
+            _automation = new Automaton();
 
             GameOverlay.TimerService.EnableHighPrecisionTimers();
 
@@ -146,7 +146,7 @@ namespace MapAssist
             {
                 if (args.KeyChar == 'l')
                 {
-                    _automation.dumpUnitData();
+                    _automation.dumpGameData();
                 }
 
                 if (args.KeyChar == 'v')
@@ -156,7 +156,7 @@ namespace MapAssist
 
                 if (args.KeyChar == 'n')
                 {
-                    _automation.dumpItemData();
+                    // _automation.dumpItemData();
                 }
 
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)

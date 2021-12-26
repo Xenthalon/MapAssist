@@ -1,4 +1,5 @@
 ﻿using GameOverlay.Drawing;
+using MapAssist.Automation;
 using MapAssist.Helpers;
 using MapAssist.Types;
 using System;
@@ -11,7 +12,7 @@ using System.Windows.Forms;
 
 namespace MapAssist
 {
-    class Automation
+    class Automaton
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
@@ -19,21 +20,15 @@ namespace MapAssist
         private List<PointOfInterest> _pointsOfInterests;
         private Pathing _pathing;
         private BackgroundWorker _teleportWorker;
-        private BackgroundWorker _chickenWorker;
         private bool _teleporting = false;
-        private bool _chicken = true;
-        private double potionPercentage = 0.25;
-        private int playerHealth = -1;
-        private int playerHealthMax = -1;
-        private int mercHealth = -1;
+        private bool _useChicken = true;
+        private Chicken _chicken;
         private List<Point> _teleportPath;
         private Rectangle _windowRect;
 
-        public Automation()
+        public Automaton()
         {
-            _chickenWorker = new BackgroundWorker();
-            _chickenWorker.DoWork += new DoWorkEventHandler(chickenWatcher);
-            _chickenWorker.WorkerSupportsCancellation = true;
+            _chicken = new Chicken();
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -43,107 +38,22 @@ namespace MapAssist
             _pathing = pathing;
             _windowRect = windowRect;
 
+            Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
+
+            if (_useChicken == true)
+            {
+                _chicken.Update(gameData);
+            }
+
             if (_teleporting && _teleportWorker != null && !_teleportWorker.IsBusy)
             {
                 _teleportWorker.RunWorkerAsync();
             }
-
-            if (_chicken == true)
-            {
-                refreshHealthValues(gameData);
-                if (!_chickenWorker.IsBusy)
-                {
-                    _chickenWorker.RunWorkerAsync();
-                }
-            }
         }
 
-        public void chickenWatcher(object sender, DoWorkEventArgs e)
+        public void dumpGameData()
         {
-            if (_currentGameData == null || playerHealth == -1 || playerHealthMax == -1)
-            {
-                return;
-            }
-
-            var currentLifePercentage = (double)playerHealth / (double)playerHealthMax;
-
-            if (currentLifePercentage < potionPercentage)
-            {
-                _log.Info("Life at " + (currentLifePercentage * 100) + "%, eating a potion.");
-                SendKeys.SendWait("4");
-                System.Threading.Thread.Sleep(200);
-            }
-
-            if (mercHealth == -1)
-            {
-                return;
-            }
-
-            var mercCurrentLifePercentage = (double)mercHealth / 32768.0;
-
-            if (mercCurrentLifePercentage < potionPercentage)
-            {
-                _log.Info("Merc Life at " + (mercCurrentLifePercentage * 100) + "%, eating a potion.");
-                SendKeys.SendWait("+3");
-                System.Threading.Thread.Sleep(100);
-            }
-        }
-
-        public void refreshHealthValues(GameData gameData)
-        {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit() && gameData.PlayerUnit.Stats != null)
-            {
-                var health = -1;
-
-                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_HITPOINTS))
-                {
-                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_HITPOINTS, out health);
-                    playerHealth = convertHexHealthToInt(health);
-                }
-
-                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_MAXHP))
-                {
-                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_MAXHP, out health);
-                    playerHealthMax = convertHexHealthToInt(health);
-                }
-
-                UnitAny merc = gameData.Monsters.Where(x => x.IsMerc()).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
-
-                if (merc.IsValidPointer() && merc.IsValidUnit())
-                {
-                    if (merc.Stats.ContainsKey(Stat.STAT_HITPOINTS))
-                    {
-                        merc.Stats.TryGetValue(Stat.STAT_HITPOINTS, out mercHealth);
-                    }
-                }
-            }
-        }
-
-        private int convertHexHealthToInt(int hexHealth)
-        {
-            var hexValue = hexHealth.ToString("X");
-            hexValue = hexValue.Substring(0, hexValue.Length - 2);
-            return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
-        }
-
-        public void dumpItemData()
-        {
-            _log.Info("Belt items:");
-            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))
-            {
-                // belt is nodePos 2/2 ... or InvPage NULL, BodyLoc NULL
-                _log.Info($"{Items.ItemName(item.TxtFileNo)} {(item.X % 4) + 1}/{item.X / 4}");
-            }
-
-            _log.Info("Inventory items:");
-            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.INVENTORY))
-            {
-                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
-            }
-        }
-
-        public void dumpUnitData()
-        {
+            _log.Info("Units:");
             var rosterData = new Roster(GameManager.RosterDataOffset);
 
             for (var i = 0; i < 12; i++)
@@ -155,11 +65,24 @@ namespace MapAssist
                     var unitAny = new UnitAny(pUnitAny);
                     while (unitAny.IsValidUnit())
                     {
-                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType.ToString()} {unitAny.Name} {unitAny.Position.ToString()}");
+                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.Name} {unitAny.Position}");
 
                         unitAny = unitAny.ListNext(rosterData);
                     }
                 }
+            }
+
+            _log.Info("Belt items:");
+            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))
+            {
+                // belt is nodePos 2/2 ... or InvPage NULL, BodyLoc NULL
+                _log.Info($"{Items.ItemName(item.TxtFileNo)} {(item.X % 4) + 1}/{item.X / 4}");
+            }
+
+            _log.Info("Inventory items:");
+            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.INVENTORY))
+            {
+                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
             }
         }
 

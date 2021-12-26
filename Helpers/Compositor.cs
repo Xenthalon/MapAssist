@@ -708,13 +708,13 @@ namespace MapAssist.Helpers
 
             foreach (Types.UnitAny monster in gameData.Monsters)
             {
-                Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
+                Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
             }
 
             foreach (Types.UnitAny item in gameData.Items)
             {
-                Point screenPosition = Automation.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
+                Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
             }
 
@@ -725,7 +725,7 @@ namespace MapAssist.Helpers
 
                 foreach (Point point in path)
                 {
-                    gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Blue), Automation.TranslateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen), 24, 12, 1.0f);
+                    gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Blue), Automaton.TranslateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen), 24, 12, 1.0f);
                 }
             }
         }
