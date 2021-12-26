@@ -22,13 +22,16 @@ namespace MapAssist
         private BackgroundWorker _teleportWorker;
         private bool _teleporting = false;
         private bool _useChicken = true;
+        private Input _input;
         private Chicken _chicken;
+        private Combat _combat;
         private List<Point> _teleportPath;
-        private Rectangle _windowRect;
 
         public Automaton()
         {
+            _input = new Input();
             _chicken = new Chicken();
+            _combat = new Combat(_input);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -36,9 +39,10 @@ namespace MapAssist
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
             _pathing = pathing;
-            _windowRect = windowRect;
 
             Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
+            _input.Update(gameData, windowRect);
+            _combat.Update(gameData);
 
             if (_useChicken == true)
             {
@@ -84,6 +88,11 @@ namespace MapAssist
             {
                 _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
             }
+        }
+
+        public void Fight()
+        {
+            _combat.ClearArea(_currentGameData.PlayerPosition);
         }
 
         public void StartAutoTele()
@@ -149,9 +158,7 @@ namespace MapAssist
 
                 if (_teleportPath.Count == 1)
                 {
-                    var clickPosition = GetWindowCoordinates(_teleportPath[0]);
-                    clickPosition.X = clickPosition.X - 20;
-                    MouseClick(clickPosition);
+                    _input.DoInputAtWorldPosition("{LMB}", _teleportPath[0]);
                     _log.Debug("Took exit.");
                 }
 
@@ -167,11 +174,7 @@ namespace MapAssist
 
         private bool TeleportTo(Point worldPoint)
         {
-            var nextMousePos = GetWindowCoordinates(worldPoint);
-
-            MouseMove(nextMousePos);
-
-            SendKeys.SendWait("w");
+            _input.DoInputAtWorldPosition("w", worldPoint);
 
             for (var i = 0; i < 20; i++)
             {
@@ -184,44 +187,16 @@ namespace MapAssist
             return IsNear(_currentGameData.PlayerPosition, worldPoint);
         }
 
-        private Point GetWindowCoordinates(Point worldPoint)
-        {
-            var playerPositionScreen = new Point(_windowRect.Width / 2, (int)(_windowRect.Height * 0.49));
-            return TranslateToScreenOffset(_currentGameData.PlayerPosition, worldPoint, playerPositionScreen);
-        }
-
         private bool IsNear(Point p1, Point p2)
         {
             var range = 5;
 
-            return (p1.X < p2.X + range) && (p1.X > p2.X - range) &&
-                (p1.Y < p2.Y + range) && (p1.Y > p2.Y - range);
+            return GetDistance(p1, p2) < range;
         }
 
-        private void MouseMove(Point p)
+        public static double GetDistance(Point p1, Point p2)
         {
-            var point = new InputOperations.MousePoint((int)p.X, (int)p.Y);
-            InputOperations.ClientToScreen(_currentGameData.MainWindowHandle, ref point);
-            InputOperations.SetCursorPosition(point.X, point.Y);
-        }
-
-        private void MouseClick(GameOverlay.Drawing.Point point, bool left = true)
-        {
-            MouseMove(point);
-            System.Threading.Thread.Sleep(50);
-
-            if (left)
-            {
-                InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftDown);
-                System.Threading.Thread.Sleep(80);
-                InputOperations.MouseEvent(InputOperations.MouseEventFlags.LeftUp);
-            }
-            else
-            {
-                InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightDown);
-                System.Threading.Thread.Sleep(80);
-                InputOperations.MouseEvent(InputOperations.MouseEventFlags.RightUp);
-            }
+            return Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
         }
     }
 }
