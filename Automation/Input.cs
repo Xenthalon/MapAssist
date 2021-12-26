@@ -32,9 +32,19 @@ namespace MapAssist.Automation
         {
             Point screenPosition = Automaton.TranslateToScreenOffset(_playerPositionWorld, worldPosition, _playerPositionScreen);
 
+            DoInputAtScreenPosition(input, screenPosition);
+        }
+
+        public void DoInputAtScreenPosition(string input, Point screenPosition)
+        {
             MouseMove(screenPosition);
             System.Threading.Thread.Sleep(10);
 
+            DoInput(input);
+        }
+
+        public void DoInput(string input)
+        {
             if (input == "{LMB}")
             {
                 MouseClick();

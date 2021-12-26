@@ -27,7 +27,7 @@ namespace MapAssist
         public Automaton()
         {
             _input = new Input();
-            _chicken = new Chicken();
+            _chicken = new Chicken(_input);
             _movement = new Movement(_input);
             _combat = new Combat(_input);
         }

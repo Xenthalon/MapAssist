@@ -14,17 +14,21 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
         private BackgroundWorker _chickenWorker;
+        private Input _input;
 
         public int potionDrinkWaitInterval = 500;
         public double potionLifePercentage = 25.0;
         public double mercPotionLifePercentage = 15.0;
+        public string[] potionKeys = { "1", "2", "3", "4" };
 
         public int playerHealth = -1;
         public int playerHealthMax = -1;
         public int mercHealth = -1;
 
-        public Chicken()
+        public Chicken(Input input)
         {
+            _input = input;
+
             _chickenWorker = new BackgroundWorker();
             _chickenWorker.DoWork += new DoWorkEventHandler(Watch);
             _chickenWorker.WorkerSupportsCancellation = true;
@@ -83,7 +87,7 @@ namespace MapAssist.Automation
             if (currentLifePercentage < potionLifePercentage / 100)
             {
                 _log.Info($"Life at {currentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
-                SendKeys.SendWait(nextPotionSlot.ToString());
+                _input.DoInput(potionKeys[nextPotionSlot]);
                 System.Threading.Thread.Sleep(potionDrinkWaitInterval);
             }
 
@@ -105,7 +109,7 @@ namespace MapAssist.Automation
             if (mercCurrentLifePercentage < mercPotionLifePercentage / 100)
             {
                 _log.Info($"Merc Life at {mercCurrentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
-                SendKeys.SendWait("+" + nextPotionSlot.ToString());
+                _input.DoInput("+" + potionKeys[nextPotionSlot]);
                 System.Threading.Thread.Sleep(potionDrinkWaitInterval);
             }
         }

@@ -40,7 +40,7 @@ namespace MapAssist.Automation
             {
                 if (BeltSlotsOpen[i] < 4)
                 {
-                    result = i + 1;
+                    result = i;
                     break;
                 }
             }
