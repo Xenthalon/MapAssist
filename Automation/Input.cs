@@ -15,6 +15,7 @@ namespace MapAssist.Automation
         IntPtr _mainWindowHandle;
         Point _playerPositionWorld;
         Point _playerPositionScreen;
+        Rectangle _window;
 
         public Input() { }
 
@@ -25,12 +26,16 @@ namespace MapAssist.Automation
                 _mainWindowHandle = gameData.MainWindowHandle;
                 _playerPositionWorld = gameData.PlayerUnit.Position;
                 _playerPositionScreen = new Point(window.Width / 2, (int)(window.Height * 0.49));
+                _window = window;
             }
         }
 
         public void DoInputAtWorldPosition(string input, Point worldPosition)
         {
             Point screenPosition = Automaton.TranslateToScreenOffset(_playerPositionWorld, worldPosition, _playerPositionScreen);
+
+            // move Y axis up ever so slightly
+            screenPosition.Y = (float)(screenPosition.Y - (_window.Height * 0.02));
 
             DoInputAtScreenPosition(input, screenPosition);
         }
