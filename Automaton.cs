@@ -18,7 +18,8 @@ namespace MapAssist
 
         private GameData _currentGameData;
         private List<PointOfInterest> _pointsOfInterests;
-        private bool _useChicken = true;
+
+        private BuffBoy _buffBoy;
         private Input _input;
         private Chicken _chicken;
         private Combat _combat;
@@ -28,9 +29,10 @@ namespace MapAssist
         public Automaton()
         {
             _input = new Input();
+            _buffBoy = new BuffBoy(_input);
             _chicken = new Chicken(_input);
-            _movement = new Movement(_input);
             _combat = new Combat(_input);
+            _movement = new Movement(_input);
             _pickit = new PickIt(_movement, _input);
         }
 
@@ -41,14 +43,11 @@ namespace MapAssist
 
             Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
             _input.Update(gameData, windowRect);
+            _buffBoy.Update(gameData);
+            _chicken.Update(gameData);
             _combat.Update(gameData);
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);
-
-            if (_useChicken == true)
-            {
-                _chicken.Update(gameData);
-            }
         }
 
         public void dumpGameData()
@@ -88,10 +87,26 @@ namespace MapAssist
 
         public void Fight()
         {
-            _combat.ClearArea(_currentGameData.PlayerPosition);
-            
-            if (!_combat.Busy)
+            if (!_combat.IsSafe)
             {
+                _log.Info("Not safe, fighting!");
+                _combat.ClearArea(_currentGameData.PlayerPosition);
+            }
+            else
+            {
+                if (_buffBoy.HasWork && !_buffBoy.Busy)
+                {
+                    _log.Info("No buffs, buffing!");
+                    _buffBoy.Run();
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(200);
+                    }
+                    while (_buffBoy.Busy);
+                }
+
+                _log.Info("Lets search for treasure!");
                 _pickit.Run();
             }
         }

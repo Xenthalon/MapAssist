@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapAssist.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,5 +15,7 @@ namespace MapAssist.Automation
         public long LastUsage { get; set; }
         public bool IsRanged { get; set; }
         public bool IsAoe { get; set; }
+        public bool IsBuff { get; set; }
+        public State BuffState { get; set; }
     }
 }

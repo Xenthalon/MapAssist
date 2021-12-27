@@ -61,9 +61,17 @@ namespace MapAssist.Automation
 
             _targetLocation = worldPosition;
             _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
-            _moving = true;
 
-            _movementWorker.RunWorkerAsync();
+            if (_path.Count() > 0)
+            {
+                _moving = true;
+
+                _movementWorker.RunWorkerAsync();
+            }
+            else
+            {
+                _log.Error("Unable to find path to " + worldPosition);
+            }
         }
 
         private void Move(object sender, DoWorkEventArgs e)

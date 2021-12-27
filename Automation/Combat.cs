@@ -24,6 +24,7 @@ namespace MapAssist.Automation
         private UnitAny _target;
         private Point? _areaToClear;
 
+        public bool IsSafe => !_monsters.Any(x => Automaton.GetDistance(_playerPosition, x.Position) <= combatRange);
         public bool Busy => _fighting;
 
         public Combat(Input input)
