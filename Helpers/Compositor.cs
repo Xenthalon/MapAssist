@@ -698,7 +698,7 @@ namespace MapAssist.Helpers
             }
         }
 
-        public void DrawESP(Graphics gfx, GameData gameData, Rectangle windowRect, Pathing pathing) {
+        public void DrawESP(Graphics gfx, GameData gameData, Rectangle windowRect, Automation.Pathing pathing) {
             if (!MapAssistConfiguration.Loaded.GameInfo.ShowOverlayFPS)
                 return;
 

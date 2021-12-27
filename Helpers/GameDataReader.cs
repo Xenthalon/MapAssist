@@ -9,10 +9,10 @@ namespace MapAssist.Helpers
         private Compositor _compositor;
         private volatile GameData _gameData;
         private List<PointOfInterest> _pointsOfInterest;
-        private Pathing _pathing;
+        private Automation.Pathing _pathing;
         private MapApi _mapApi;
 
-        public (Compositor, GameData, Pathing, List<PointOfInterest>) Get()
+        public (Compositor, GameData, Automation.Pathing, List<PointOfInterest>) Get()
         {
             var gameData = GameMemory.GetGameData();
 
@@ -39,7 +39,7 @@ namespace MapAssist.Helpers
                             _log.Info($"Found {_pointsOfInterest.Count} points of interest");
 
                             compositor = new Compositor(areaData, _pointsOfInterest);
-                            _pathing = new Pathing(areaData);
+                            _pathing = new Automation.Pathing(areaData);
                         }
                         else
                         {

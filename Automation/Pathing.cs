@@ -26,7 +26,7 @@ using System.Linq;
 using System;
 using Roy_T.AStar.Grids;
 
-namespace MapAssist.Helpers
+namespace MapAssist.Automation
 {
     public class Pathing
     {
@@ -39,7 +39,7 @@ namespace MapAssist.Helpers
 
         // Stuff for teleport pathing
         private static readonly short RangeInvalid = 10000;
-        private static readonly short TpRange = 18;
+        private static readonly short TpRange = 20;
         private static readonly short BlockRange = 2;
         private short[,] m_distanceMatrix;
         private int m_rows;

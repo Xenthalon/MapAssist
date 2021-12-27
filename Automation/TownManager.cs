@@ -231,10 +231,6 @@ namespace MapAssist.Automation
                     System.Threading.Thread.Sleep(100);
                     _input.DoInput("{DOWN 2}{ENTER}");
 
-                    System.Threading.Thread.Sleep(500);
-                    _input.MouseMove(new Point(100, 100));
-                    System.Threading.Thread.Sleep(100);
-                    _input.DoInput("{DOWN}{ENTER}");
                     // not tested!
                     _state = TownState.IDLE;
                     break;

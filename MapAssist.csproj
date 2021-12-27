@@ -113,6 +113,7 @@
     <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\Movement.cs" />
     <Compile Include="Automation\NPC.cs" />
+    <Compile Include="Automation\Pathing.cs" />
     <Compile Include="Automation\PickIt.cs" />
     <Compile Include="Automation\TownManager.cs" />
     <Compile Include="Automaton.cs" />
@@ -129,7 +130,6 @@
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
     <Compile Include="Helpers\LootFilter.cs" />
-    <Compile Include="Helpers\Pathing.cs" />
     <Compile Include="Helpers\ProcessContext.cs" />
     <Compile Include="Helpers\YamlConverters.cs" />
     <Compile Include="Interfaces\IUpdatable.cs" />

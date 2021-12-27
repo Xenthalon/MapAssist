@@ -43,7 +43,7 @@ namespace MapAssist
 
         private Automaton _automation;
         private List<PointOfInterest> _pointsOfInterests;
-        private Pathing _pathing;
+        private Automation.Pathing _pathing;
         private static readonly object _lock = new object();
         public Overlay()
         {
