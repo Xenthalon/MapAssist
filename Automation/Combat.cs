@@ -36,7 +36,7 @@ namespace MapAssist.Automation
 
             _target = new UnitAny(IntPtr.Zero);
 
-            _skills.Add(new CombatSkill { Name = "Glacial Spike", Cooldown = 300, Key = "{LMB}", LastUsage = 0, IsRanged = true, IsAoe = false });
+            _skills.Add(new CombatSkill { Name = "Glacial Spike", Cooldown = 300, Key = "+{LMB}", LastUsage = 0, IsRanged = true, IsAoe = false });
             _skills.Add(new CombatSkill { Name = "Blizzard", Cooldown = 1800, Key = "{RMB}", LastUsage = 0, IsRanged = true, IsAoe = true });
         }
 

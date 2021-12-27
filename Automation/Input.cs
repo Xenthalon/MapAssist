@@ -45,7 +45,13 @@ namespace MapAssist.Automation
 
         public void DoInput(string input)
         {
-            if (input == "{LMB}")
+            if (input == "+{LMB}")
+            {
+                InputOperations.HoldLShift();
+                MouseClick();
+                InputOperations.ReleaseLShift();
+            }
+            else if (input == "{LMB}")
             {
                 MouseClick();
             }

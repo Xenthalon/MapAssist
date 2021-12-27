@@ -109,6 +109,7 @@
     <Compile Include="Automation\Combat.cs" />
     <Compile Include="Automation\CombatSkill.cs" />
     <Compile Include="Automation\Input.cs" />
+    <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\Movement.cs" />
     <Compile Include="Automaton.cs" />
     <Compile Include="Automation\Chicken.cs" />
@@ -123,7 +124,6 @@
     <Compile Include="Helpers\AudioPlayer.cs" />
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
-    <Compile Include="Helpers\InputOperations.cs" />
     <Compile Include="Helpers\LootFilter.cs" />
     <Compile Include="Helpers\Pathing.cs" />
     <Compile Include="Helpers\ProcessContext.cs" />
