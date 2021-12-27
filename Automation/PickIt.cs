@@ -87,7 +87,7 @@ namespace MapAssist.Automation
                 if (Automaton.GetDistance(item.Position, _playerPosition) > _pickRange)
                 {
                     _log.Info("Too far away, moving closer...");
-                    _movement.MoveTo(item.Position);
+                    _movement.TeleportTo(item.Position);
 
                     do
                     {

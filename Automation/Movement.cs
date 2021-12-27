@@ -19,6 +19,7 @@ namespace MapAssist.Automation
         private GameData _gameData;
         private Pathing _pathing;
 
+        private bool _useTeleport = false;
         private bool _moving = false;
         private List<Point> _path;
         private Point? _targetLocation;
@@ -48,7 +49,7 @@ namespace MapAssist.Automation
             }
         }
 
-        public void MoveTo(Point worldPosition)
+        public void TeleportTo(Point worldPosition)
         {
             if (_moving || _movementWorker.IsBusy)
             {
@@ -57,10 +58,36 @@ namespace MapAssist.Automation
                 _movementWorker.CancelAsync();
             }
 
-            _log.Debug($"Moving to {worldPosition}");
-
+            _log.Debug($"Teleporting to {worldPosition}");
+            _useTeleport = true;
             _targetLocation = worldPosition;
             _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
+
+            if (_path.Count() > 0)
+            {
+                _moving = true;
+
+                _movementWorker.RunWorkerAsync();
+            }
+            else
+            {
+                _log.Error("Unable to find path to " + worldPosition);
+            }
+        }
+
+        public void WalkTo(Point worldPosition)
+        {
+            if (_moving || _movementWorker.IsBusy)
+            {
+                // emergency abort
+                _moving = false;
+                _movementWorker.CancelAsync();
+            }
+
+            _log.Debug($"Walking to {worldPosition}");
+            _useTeleport = false;
+            _targetLocation = worldPosition;
+            _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, false, _gameData.PlayerPosition, worldPosition);
 
             if (_path.Count() > 0)
             {
@@ -78,18 +105,17 @@ namespace MapAssist.Automation
         {
             if (_gameData != null && _targetLocation != null && _pathing != null)
             {
-                var teleportSuccess = TeleportTo(_path[0]);
-                System.Threading.Thread.Sleep(100);
+                var success = _useTeleport ? Teleport(_path[0]) : Walk(_path[0]);
 
-                if (teleportSuccess)
+                if (success)
                 {
-                    _log.Debug($"Teleported to {_path[0].X}/{_path[0].Y}");
+                    _log.Debug($"Moved to {_path[0].X}/{_path[0].Y}");
                 }
                 else
                 {
-                    _log.Warn("Teleport went wrong, recalculating and retrying!");
+                    _log.Warn("Move went wrong, recalculating and retrying!");
 
-                    _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, (Point)_targetLocation);
+                    _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, _useTeleport, _gameData.PlayerPosition, (Point)_targetLocation);
 
                     return;
                 }
@@ -98,18 +124,35 @@ namespace MapAssist.Automation
 
                 if (_path.Count == 0)
                 {
-                    _log.Debug($"Done teleporting!");
+                    _log.Debug($"Done moving!");
                     _moving = false;
                     _targetLocation = null;
+                    _useTeleport = false;
                 }
             }
         }
 
-        private bool TeleportTo(Point worldPoint)
+        private bool Teleport(Point worldPoint)
         {
             _input.DoInputAtWorldPosition("w", worldPoint);
 
             for (var i = 0; i < 20; i++)
+            {
+                System.Threading.Thread.Sleep(50);
+
+                if (IsNear(_gameData.PlayerPosition, worldPoint))
+                    break;
+            }
+
+            System.Threading.Thread.Sleep(100);
+            return IsNear(_gameData.PlayerPosition, worldPoint);
+        }
+
+        private bool Walk(Point worldPoint)
+        {
+            _input.DoInputAtWorldPosition("{LMB}", worldPoint);
+
+            for (var i = 0; i < 50; i++)
             {
                 System.Threading.Thread.Sleep(50);
 

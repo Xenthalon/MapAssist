@@ -70,7 +70,7 @@ namespace MapAssist.Automation
             }
         }
 
-        private void MouseMove(Point p)
+        public void MouseMove(Point p)
         {
             var point = new InputOperations.MousePoint((int)p.X, (int)p.Y);
             InputOperations.ClientToScreen(_mainWindowHandle, ref point);

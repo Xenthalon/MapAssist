@@ -142,10 +142,11 @@ namespace MapAssist.Helpers
                     {
                         var monsterList = new HashSet<UnitAny>();
                         var mercList = new HashSet<UnitAny>();
+                        var npcList = new HashSet<UnitAny>();
                         var itemList = new HashSet<UnitAny>();
                         var objectList = new HashSet<UnitAny>();
                         var playerList = new Dictionary<uint, UnitAny>();
-                        GetUnits(rosterData, ref monsterList, ref itemList, ref playerList, ref objectList, ref mercList);
+                        GetUnits(rosterData, ref monsterList, ref itemList, ref playerList, ref objectList, ref mercList, ref npcList);
 
                         return new GameData
                         {
@@ -157,6 +158,7 @@ namespace MapAssist.Helpers
                             PlayerName = playerUnit.Name,
                             Monsters = monsterList,
                             Mercs = mercList,
+                            NPCs = npcList,
                             Items = itemList,
                             Objects = objectList,
                             Players = playerList,
@@ -175,7 +177,7 @@ namespace MapAssist.Helpers
             return null;
         }
 
-        private static void GetUnits(Roster rosterData, ref HashSet<UnitAny> monsterList, ref HashSet<UnitAny> itemList, ref Dictionary<uint, UnitAny> playerList, ref HashSet<UnitAny> objectList, ref HashSet<UnitAny> mercList)
+        private static void GetUnits(Roster rosterData, ref HashSet<UnitAny> monsterList, ref HashSet<UnitAny> itemList, ref Dictionary<uint, UnitAny> playerList, ref HashSet<UnitAny> objectList, ref HashSet<UnitAny> mercList, ref HashSet<UnitAny> npcList)
         {
             for (var i = 0; i <= 4; i++)
             {
@@ -206,6 +208,11 @@ namespace MapAssist.Helpers
                                 if (!mercList.Contains(unitAny) && unitAny.IsMerc())
                                 {
                                     mercList.Add(unitAny);
+                                }
+
+                                if (!npcList.Contains(unitAny) && unitAny.IsTownNpc())
+                                {
+                                    npcList.Add(unitAny);
                                 }
 
                                 break;

@@ -157,6 +157,7 @@ namespace MapAssist
                 if (args.KeyChar == 'n')
                 {
                     _automation.Fight();
+                    // _automation.DoTownStuff();
                 }
 
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)

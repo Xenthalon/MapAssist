@@ -99,12 +99,57 @@ namespace MapAssist.Types
             { 568, Npc.InjuredBarbarian2 },
             { 569, Npc.InjuredBarbarian3 },
             { 711, Npc.DemonHole },
+            // NPCs added by me
+            { 147, Npc.Gheed },
+            { 148, Npc.Akara },
+            { 150, Npc.Kashya },
+            { 154, Npc.Charsi },
+            { 177, Npc.Drognan },
+            { 178, Npc.Fara },
+            { 198, Npc.Greiz },
+            { 199, Npc.Elzix },
+            { 252, Npc.Asheara },
+            { 253, Npc.Hratli },
+            { 254, Npc.Alkor },
+            { 255, Npc.Ormus },
+            { 257, Npc.Halbu },
+            { 367, Npc.Tyrael2 },
+            { 405, Npc.Jamella },
+            { 511, Npc.Larzuk },
+            { 512, Npc.Drehya }, // anya
+            { 513, Npc.Malah },
+            { 514, Npc.NihlathakTown },
+            { 515, Npc.QualKehk },
         };
 
         public static Dictionary<uint, Npc> Mercs = new Dictionary<uint, Npc> {
             { 152, Npc.Rogue },
             { 338, Npc.Guard },
             { 359, Npc.IronWolf }
+        };
+
+        public static Dictionary<uint, Npc> NPCs = new Dictionary<uint, Npc>
+        {
+            { 147, Npc.Gheed },
+            { 148, Npc.Akara },
+            { 150, Npc.Kashya },
+            { 154, Npc.Charsi },
+            { 177, Npc.Drognan },
+            { 178, Npc.Fara },
+            { 198, Npc.Greiz },
+            { 199, Npc.Elzix },
+            { 252, Npc.Asheara },
+            { 253, Npc.Hratli },
+            { 254, Npc.Alkor },
+            { 255, Npc.Ormus },
+            { 257, Npc.Halbu },
+            { 367, Npc.Tyrael2 },
+            { 405, Npc.Jamella },
+            { 511, Npc.Larzuk },
+            { 512, Npc.Drehya }, // anya
+            { 513, Npc.Malah },
+            { 514, Npc.NihlathakTown },
+            { 515, Npc.QualKehk }
         };
     }
     public enum Npc

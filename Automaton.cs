@@ -25,6 +25,7 @@ namespace MapAssist
         private Combat _combat;
         private Movement _movement;
         private PickIt _pickit;
+        private TownManager _townManager;
 
         public Automaton()
         {
@@ -34,6 +35,7 @@ namespace MapAssist
             _combat = new Combat(_input);
             _movement = new Movement(_input);
             _pickit = new PickIt(_movement, _input);
+            _townManager = new TownManager(_movement, _input);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -48,6 +50,7 @@ namespace MapAssist
             _combat.Update(gameData);
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);
+            _townManager.Update(gameData);
         }
 
         public void dumpGameData()
@@ -64,7 +67,7 @@ namespace MapAssist
                     var unitAny = new UnitAny(pUnitAny);
                     while (unitAny.IsValidUnit())
                     {
-                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.Name} {unitAny.Position}");
+                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.TxtFileNo} {unitAny.Name} {unitAny.Position}");
 
                         unitAny = unitAny.ListNext(rosterData);
                     }
@@ -111,10 +114,15 @@ namespace MapAssist
             }
         }
 
+        public void DoTownStuff()
+        {
+            _townManager.OpenWaypointMenu();
+        }
+
         public void StartAutoTele()
         {
             _log.Debug($"Teleporting to {_pointsOfInterests[0].Label}");
-            _movement.MoveTo(_pointsOfInterests[0].Position);
+            _movement.TeleportTo(_pointsOfInterests[0].Position);
         }
 
         public static Point TranslateToScreenOffset(Point playerPositionWorld, Point targetPositionWorld, Point playerPositionScreen)

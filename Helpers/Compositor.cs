@@ -709,13 +709,35 @@ namespace MapAssist.Helpers
             foreach (Types.UnitAny monster in gameData.Monsters)
             {
                 Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, monster.Position, playerPositionScreen);
+                DrawText(gfx, screenPosition, monster.TxtFileNo.ToString(),
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+            }
+
+            foreach (Types.UnitAny npc in gameData.NPCs)
+            {
+                Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, npc.Position, playerPositionScreen);
+                DrawText(gfx, screenPosition, npc.TxtFileNo.ToString(),
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
             }
 
             foreach (Types.UnitAny item in gameData.Items)
             {
                 Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+            }
+
+            foreach (Types.UnitAny gameObject in gameData.Objects)
+            {
+                Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, gameObject.Position, playerPositionScreen);
+                DrawText(gfx, screenPosition, gameObject.TxtFileNo.ToString(),
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                    MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
             }
 
             if (_pointsOfInterest.Count > 0)

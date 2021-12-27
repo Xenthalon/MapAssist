@@ -37,6 +37,7 @@ namespace MapAssist.Types
         public HashSet<UnitAny> Objects;
         public Dictionary<uint, UnitAny> Players;
         public HashSet<UnitAny> Mercs;
+        public HashSet<UnitAny> NPCs;
         public Session Session;
         public Roster Roster;
         public UnitAny PlayerUnit;
