@@ -23,6 +23,8 @@ namespace MapAssist.Automation
         private List<Point> _path;
         private Point? _targetLocation;
 
+        public bool Busy => _moving;
+
         public Movement(Input input)
         {
             _input = input;

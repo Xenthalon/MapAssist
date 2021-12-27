@@ -23,6 +23,7 @@ namespace MapAssist
         private Chicken _chicken;
         private Combat _combat;
         private Movement _movement;
+        private PickIt _pickit;
 
         public Automaton()
         {
@@ -30,6 +31,7 @@ namespace MapAssist
             _chicken = new Chicken(_input);
             _movement = new Movement(_input);
             _combat = new Combat(_input);
+            _pickit = new PickIt(_movement, _input);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -41,6 +43,7 @@ namespace MapAssist
             _input.Update(gameData, windowRect);
             _combat.Update(gameData);
             _movement.Update(gameData, pathing);
+            _pickit.Update(gameData);
 
             if (_useChicken == true)
             {
@@ -86,6 +89,11 @@ namespace MapAssist
         public void Fight()
         {
             _combat.ClearArea(_currentGameData.PlayerPosition);
+            
+            if (!_combat.Busy)
+            {
+                _pickit.Run();
+            }
         }
 
         public void StartAutoTele()

@@ -24,7 +24,7 @@ namespace MapAssist.Automation
         private UnitAny _target;
         private Point? _areaToClear;
 
-        public bool IsFighting { get => _fighting; }
+        public bool Busy => _fighting;
 
         public Combat(Input input)
         {
@@ -51,10 +51,10 @@ namespace MapAssist.Automation
                 _monsters.Any(x => Automaton.GetDistance(location, x.Position) <= combatRange))
             {
                 _areaToClear = location;
+                _fighting = true;
                 _combatWorker.RunWorkerAsync();
             }
-
-            if (_fighting)
+            else if (_fighting)
             {
                 // emergency abort
                 _fighting = false;

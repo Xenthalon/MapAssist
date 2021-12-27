@@ -111,6 +111,7 @@
     <Compile Include="Automation\Input.cs" />
     <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\Movement.cs" />
+    <Compile Include="Automation\PickIt.cs" />
     <Compile Include="Automaton.cs" />
     <Compile Include="Automation\Chicken.cs" />
     <Compile Include="Automation\Inventory.cs" />
