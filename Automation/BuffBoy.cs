@@ -32,9 +32,9 @@ namespace MapAssist.Automation
             _worker.DoWork += new DoWorkEventHandler(BuffMe);
             _worker.WorkerSupportsCancellation = true;
 
-            _availableBuffs.Add(new CombatSkill { Name = "Frozen Armor", Cooldown = 150, Key = "q", LastUsage = 0, IsBuff = true, BuffState = State.STATE_FROZENARMOR });
-            _availableBuffs.Add(new CombatSkill { Name = "Battle Orders", Cooldown = 200, Key = "d", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLEORDERS });
-            _availableBuffs.Add(new CombatSkill { Name = "Battle Command", Cooldown = 200, Key = "r", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLECOMMAND });
+            _availableBuffs.Add(new CombatSkill { Name = "Frozen Armor", Cooldown = 500, Key = "q", LastUsage = 0, IsBuff = true, BuffState = State.STATE_FROZENARMOR });
+            _availableBuffs.Add(new CombatSkill { Name = "Battle Orders", Cooldown = 500, Key = "d", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLEORDERS });
+            _availableBuffs.Add(new CombatSkill { Name = "Battle Command", Cooldown = 500, Key = "r", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLECOMMAND });
         }
 
         public void Update(GameData gameData)
@@ -67,6 +67,7 @@ namespace MapAssist.Automation
                 if (_useCta)
                 {
                     _input.DoInput(_switchKey);
+                    System.Threading.Thread.Sleep(500);
 
                     var battleCommand = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLECOMMAND).First();
 
@@ -78,6 +79,7 @@ namespace MapAssist.Automation
                     CastBuff(battleOrders);
 
                     _input.DoInput(_switchKey);
+                    System.Threading.Thread.Sleep(500);
 
                     remainingBuffs = _availableBuffs.Where(x => x.BuffState != State.STATE_BATTLECOMMAND && x.BuffState != State.STATE_BATTLEORDERS);
                 }
