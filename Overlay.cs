@@ -156,8 +156,9 @@ namespace MapAssist
 
                 if (args.KeyChar == 'n')
                 {
+                    _automation.GoBotGo();
                     // _automation.MouseMoveTest();
-                    _automation.Fight();
+                    // _automation.Fight();
                     // _automation.DoTownStuff();
                 }
 

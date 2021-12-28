@@ -25,6 +25,7 @@ namespace MapAssist
         private Input _input;
         private MenuMan _menuMan;
         private Movement _movement;
+        private Orchestrator _orchestrator;
         private PickIt _pickit;
         private TownManager _townManager;
 
@@ -38,6 +39,8 @@ namespace MapAssist
             _movement = new Movement(_input);
             _pickit = new PickIt(_movement, _input);
             _townManager = new TownManager(_input, _menuMan, _movement);
+
+            _orchestrator = new Orchestrator(_buffBoy, _chicken, _combat, _input, _movement, _menuMan, _pickit, _townManager);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -54,6 +57,7 @@ namespace MapAssist
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);
             _townManager.Update(gameData);
+            _orchestrator.Update(gameData, pointsOfInterest);
         }
 
         public void dumpGameData()
@@ -89,6 +93,11 @@ namespace MapAssist
             {
                 _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
             }
+        }
+
+        public void GoBotGo()
+        {
+            _orchestrator.Run();
         }
 
         public void MouseMoveTest()
