@@ -32,6 +32,11 @@ namespace MapAssist.Automation
             _window = window;
         }
 
+        public bool IsWaypointArea(Area area)
+        {
+            return _waypoints.Any(x => x.Area == area);
+        }
+
         public void TakeWaypoint(Area area)
         {
             if (!_waypoints.Any(x => x.Area == area))
