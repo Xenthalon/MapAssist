@@ -130,15 +130,15 @@ namespace MapAssist.Automation
 
             _log.Info("Let's do " + activeProfile.Name);
 
-            if (_chicken.PlayerLifePercentage < 0.9)
-            {
-                _townManager.Heal();
+            GoHeal();
+            var stashed = GoStash();
 
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                while (_townManager.State != TownState.IDLE);
+            if (!stashed)
+            {
+                // !! PANIKK
+                _goBotGo = false;
+                _activeProfileIndex = _runProfiles.Count() - 1;
+                return;
             }
 
             foreach (Area area in activeProfile.AreaPath)
@@ -257,6 +257,55 @@ namespace MapAssist.Automation
             while (_pickit.Busy);
 
             TakePortalHome();
+        }
+
+        private void GoHeal()
+        {
+            // maybe also check for poison or curses
+            if (_chicken.PlayerLifePercentage < 0.9)
+            {
+                _townManager.Heal();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_townManager.State != TownState.IDLE);
+            }
+        }
+
+        private bool GoStash()
+        {
+            var success = true;
+
+            if (Inventory.AnyItemsToStash)
+            {
+                _townManager.OpenStashMenu();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_townManager.State != TownState.STASH_MENU);
+
+                foreach (var item in Inventory.ItemsToStash)
+                {
+                    _log.Info("Stashing " + Items.ItemName(item.TxtFileNo));
+                    _menuMan.StashItemAt(item.X, item.Y);
+                }
+
+                if (Inventory.AnyItemsToStash)
+                {
+                    _log.Error("Something is really wrong, stop everything!");
+                    success = false;
+                }
+                else
+                {
+                    _menuMan.CloseMenu();
+                }
+            }
+
+            return success;
         }
 
         private bool TakePortalHome()

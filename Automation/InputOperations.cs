@@ -75,6 +75,28 @@ namespace MapAssist.Automation
             SendInput(1, Inputs, INPUT.Size);
         }
 
+        public static void HoldLCtrl()
+        {
+            var Inputs = new INPUT[1];
+            var Input = new INPUT();
+            Input.type = 1;
+            Input.U.ki.wScan = ScanCodeShort.LCONTROL;
+            Input.U.ki.dwFlags = KEYEVENTF.SCANCODE;
+            Inputs[0] = Input;
+            SendInput(1, Inputs, INPUT.Size);
+        }
+
+        public static void ReleaseLCtrl()
+        {
+            var Inputs = new INPUT[1];
+            var Input = new INPUT();
+            Input.type = 1;
+            Input.U.ki.wScan = ScanCodeShort.LCONTROL;
+            Input.U.ki.dwFlags = KEYEVENTF.KEYUP | KEYEVENTF.SCANCODE;
+            Inputs[0] = Input;
+            SendInput(1, Inputs, INPUT.Size);
+        }
+
         public static void MouseEvent(MouseEventFlags value)
         {
             MousePoint position = GetCursorPosition();

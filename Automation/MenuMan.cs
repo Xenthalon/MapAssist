@@ -15,9 +15,10 @@ namespace MapAssist.Automation
 
         private static readonly HashSet<Waypoint> _waypoints = new HashSet<Waypoint>();
 
-        Input _input;
+        private Input _input;
         private int _act = 0;
         private MenuData _menus;
+        private Point _inventoryAnchor;
         private Rectangle _window;
 
         public MenuMan(Input input)
@@ -36,6 +37,8 @@ namespace MapAssist.Automation
 
             _menus = gameData.MenuOpen;
             _window = window;
+
+            _inventoryAnchor = new Point((int)(_window.Width - _window.Width * 0.28), (int)(_window.Height * 0.53));
         }
 
         public bool IsWaypointArea(Area area)
@@ -64,6 +67,20 @@ namespace MapAssist.Automation
 
 
             return isActChange;
+        }
+
+        public void StashItemAt(int x, int y)
+        {
+            if (!_menus.Stash)
+            {
+                _log.Error("Gotta be in stash menu to stash things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+
+            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(250);
         }
 
         public void TakeWaypoint(Area area)
@@ -138,6 +155,20 @@ namespace MapAssist.Automation
                 System.Threading.Thread.Sleep(500);
 
                 _input.MouseMove(new Point(300, (int)((_window.Height * 0.25) + (i * _window.Height * 0.056))));
+            }
+        }
+
+        private void inventory_debugging()
+        {
+            var start = new Point((int)(_window.Width - _window.Width * 0.28), (int)(_window.Height * 0.53));
+
+            for (var y = 0; y < 4; y++)
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    _input.MouseMove(new Point(start.X + (int)(i * _window.Width * 0.022), start.Y + (int)(y * _window.Height * 0.048)));
+                    System.Threading.Thread.Sleep(250);
+                }
             }
         }
 

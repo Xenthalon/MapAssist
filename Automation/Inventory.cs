@@ -11,7 +11,18 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        public static int[][] InventoryOpen = new int[][] {
+            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }
+        };
+
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
+
+        public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
+
+        public static bool AnyItemsToStash => ItemsToStash.Count() > 0;
 
         public static void Update(uint playerUnitId, HashSet<UnitAny> items)
         {
@@ -30,6 +41,15 @@ namespace MapAssist.Automation
             {
                 BeltSlotsOpen[line.Slot] = BeltSlotsOpen[line.Slot] - line.Count;
             }
+
+            var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.INVENTORY);
+
+            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
+
+            //foreach (var item in ItemsToStash)
+            //{
+            //    _log.Info($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y} !");
+            //}
         }
 
         public static int GetNextPotionSlotToUse()
