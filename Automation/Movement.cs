@@ -101,6 +101,15 @@ namespace MapAssist.Automation
             }
         }
 
+        public void Reset()
+        {
+            _movementWorker.CancelAsync();
+            _useTeleport = false;
+            _moving = false;
+            _path = new List<Point>();
+            _targetLocation = null;
+        }
+
         private void Move(object sender, DoWorkEventArgs e)
         {
             if (_gameData != null && _targetLocation != null && _pathing != null)

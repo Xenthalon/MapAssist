@@ -32,6 +32,7 @@ namespace MapAssist.Automation
         private GameData _gameData;
 
         private int _activeProfileIndex = -1;
+        private bool _goBotGo = false;
 
         public string PortalKey = "f";
 
@@ -59,6 +60,7 @@ namespace MapAssist.Automation
             _worker.WorkerSupportsCancellation = true;
 
             _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
+            _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234) });
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
@@ -66,10 +68,13 @@ namespace MapAssist.Automation
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _gameData = gameData;
-
                 _currentArea = gameData.Area;
-
                 _pointsOfInterest = pointsOfInterest;
+
+                if (_goBotGo && !_worker.IsBusy)
+                {
+                    _worker.RunWorkerAsync();
+                }
             }
         }
 
@@ -82,6 +87,7 @@ namespace MapAssist.Automation
             else
             {
                 _worker.RunWorkerAsync();
+                _goBotGo = true;
             }
         }
 
@@ -90,6 +96,7 @@ namespace MapAssist.Automation
             if (_activeProfileIndex == _runProfiles.Count() - 1)
             {
                 _log.Error("Exhausted all profiles, done!");
+                _goBotGo = false;
                 return;
             }
 
@@ -118,7 +125,10 @@ namespace MapAssist.Automation
 
             foreach (Area area in activeProfile.AreaPath)
             {
-                if (_townManager.IsInTown)
+                if (_currentArea == area)
+                    continue;
+
+                if (_townManager.IsInTown && _menuMan.IsWaypointArea(area))
                 {
                     _townManager.OpenWaypointMenu();
 
@@ -132,19 +142,40 @@ namespace MapAssist.Automation
                 }
                 else
                 {
-                    BuffMe();   
-
-                    var target = _pointsOfInterest.Where(x => x.Label == Utils.GetAreaLabel(area, _gameData.Difficulty)).FirstOrDefault();
-
-                    if (target == null)
+                    if (!_townManager.IsInTown)
                     {
-                        _log.Error("Couldn't find PointOfInterest for " + Utils.GetAreaLabel(area, _gameData.Difficulty) + "! Help!");
-                        return;
+                        BuffMe();   
                     }
 
-                    MoveTo(target.Position);
+                    Point? interactPoint = null;
 
-                    _input.DoInputAtWorldPosition("{LMB}", target.Position);
+                    if (area == Area.NihlathaksTemple)
+                    {
+                        MoveTo(new Point(5124, 5119));
+
+                        var nihlaPortal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.PermanentTownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                        if (nihlaPortal.IsValidPointer())
+                        {
+                            interactPoint = nihlaPortal.Position;
+                        }
+                    }
+                    else
+                    {
+                        var target = _pointsOfInterest.Where(x => x.Label == Utils.GetAreaLabel(area, _gameData.Difficulty)).FirstOrDefault();
+
+                        if (target == null)
+                        {
+                            _log.Error("Couldn't find PointOfInterest for " + Utils.GetAreaLabel(area, _gameData.Difficulty) + "! Help!");
+                            return;
+                        }
+
+                        interactPoint = target.Position;
+
+                        MoveTo((Point)interactPoint);
+                    }
+
+                    _input.DoInputAtWorldPosition("{LMB}", (Point)interactPoint);
                 }
 
                 do
@@ -153,11 +184,16 @@ namespace MapAssist.Automation
                 }
                 while (_currentArea != area);
 
+                _movement.Reset();
+
                 // wait for load
                 System.Threading.Thread.Sleep(3000);
             }
 
-            BuffMe();
+            if (!_townManager.IsInTown)
+            {
+                BuffMe();
+            }
 
             _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
             MoveTo(activeProfile.KillSpot);
@@ -203,9 +239,9 @@ namespace MapAssist.Automation
 
             _log.Info("Taking portal home!");
             _input.DoInput(PortalKey);
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(1000);
 
-            var portal = _gameData.Objects.Where(x => x.IsPortal() && x.ObjectData.Owner.Length > 0 && x.ObjectData.Owner == _gameData.PlayerName).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            var portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
             if (portal.IsValidPointer())
             {
@@ -239,6 +275,8 @@ namespace MapAssist.Automation
                     }
                 }
                 while (_currentArea != destinationArea);
+
+                System.Threading.Thread.Sleep(1000);
             }
             else
             {
@@ -262,7 +300,14 @@ namespace MapAssist.Automation
 
         private void MoveTo(Point point)
         {
-            _movement.TeleportTo(point);
+            if (_townManager.IsInTown)
+            {
+                _movement.WalkTo(point);
+            }
+            else
+            {
+                _movement.TeleportTo(point);
+            }
 
             do
             {
