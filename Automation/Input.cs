@@ -62,6 +62,12 @@ namespace MapAssist.Automation
                 MouseClick();
                 InputOperations.ReleaseLCtrl();
             }
+            else if (input == "+{RMB}")
+            {
+                InputOperations.HoldLShift();
+                MouseClick(false);
+                InputOperations.ReleaseLShift();
+            }
             else if (input == "{LMB}")
             {
                 MouseClick();

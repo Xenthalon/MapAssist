@@ -93,6 +93,12 @@ namespace MapAssist
             {
                 _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
             }
+
+            _log.Info("Other items:");
+            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID != _currentGameData.PlayerUnit.UnitId))
+            {
+                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y} Owner {item.ItemData.dwOwnerID}");
+            }
         }
 
         public void GoBotGo()

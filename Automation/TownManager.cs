@@ -48,6 +48,7 @@ namespace MapAssist.Automation
         private BackgroundWorker _worker;
 
         private int _act;
+        private Types.UnitAny _activeNpc;
         private Area _area;
         private MenuData _menus;
         private Point _playerPosition;
@@ -56,6 +57,7 @@ namespace MapAssist.Automation
 
         public bool IsInTown => _area == Area.RogueEncampment || _area == Area.LutGholein || _area == Area.KurastDocks || _area == Area.ThePandemoniumFortress || _area == Area.Harrogath;
         public TownState State => _state;
+        public Types.UnitAny ActiveNPC => _activeNpc;
 
         public TownManager(Input input, MenuMan menuMan, Movement movement)
         {
@@ -259,6 +261,9 @@ namespace MapAssist.Automation
                     System.Threading.Thread.Sleep(100);
                     _input.DoInput("{DOWN " + downTimes1 + "}{ENTER}");
 
+                    System.Threading.Thread.Sleep(500);
+
+                    _activeNpc = clickTarget;
                     _state = TownState.TRADE_MENU;
                     break;
                 case TownTask.OPEN_GAMBLE_MENU:
@@ -267,6 +272,10 @@ namespace MapAssist.Automation
                     _input.MouseMove(new Point(100, 100));
                     System.Threading.Thread.Sleep(100);
                     _input.DoInput("{DOWN " + downTimes2 + "}{ENTER}");
+
+                    System.Threading.Thread.Sleep(500);
+
+                    _activeNpc = clickTarget;
                     _state = TownState.GAMBLE_MENU;
                     break;
                 case TownTask.OPEN_STASH_MENU:
@@ -287,6 +296,8 @@ namespace MapAssist.Automation
                 _state = TownState.IDLE;
                 _worker.CancelAsync();
             }
+
+            _activeNpc = new Types.UnitAny(IntPtr.Zero);
         }
 
         private void InitializeNpcs()

@@ -131,6 +131,7 @@ namespace MapAssist.Automation
             _log.Info("Let's do " + activeProfile.Name);
 
             GoHeal();
+            GoBuyStuff();
             var stashed = GoStash();
 
             if (!stashed)
@@ -271,6 +272,37 @@ namespace MapAssist.Automation
                     System.Threading.Thread.Sleep(100);
                 }
                 while (_townManager.State != TownState.IDLE);
+            }
+        }
+
+        private void GoBuyStuff()
+        {
+            if (Inventory.TPScrolls < 5)
+            {
+                _townManager.OpenTradeMenu();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_townManager.State != TownState.TRADE_MENU);
+
+                System.Threading.Thread.Sleep(500);
+
+                var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
+
+                var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                if (tp.IsValidPointer())
+                {
+                    _menuMan.VendorBuyMax(tp.X, tp.Y);
+                }
+                else
+                {
+                    _log.Error("Couldn't find Scroll of Town Portals at " + _townManager.ActiveNPC.UnitId);
+                }
+
+                _menuMan.CloseMenu();
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using MapAssist.Types;
+﻿using MapAssist.Helpers;
+using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +20,13 @@ namespace MapAssist.Automation
         };
 
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
+        public static int TPScrolls = 20;
 
         public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
+        public static IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
 
         public static bool AnyItemsToStash => ItemsToStash.Count() > 0;
+        public static bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
 
         public static void Update(uint playerUnitId, HashSet<UnitAny> items)
         {
@@ -44,7 +48,17 @@ namespace MapAssist.Automation
 
             var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.INVENTORY);
 
-            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
+            var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
+
+            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x));
+            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x));
+
+            var tpTome = inventoryItems.Where(x => x.TxtFileNo == 518).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+            if (tpTome.IsValidUnit())
+            {
+                tpTome.Stats.TryGetValue(Stat.STAT_QUANTITY, out TPScrolls);
+            }
 
             //foreach (var item in ItemsToStash)
             //{

@@ -19,6 +19,7 @@ namespace MapAssist.Automation
         private int _act = 0;
         private MenuData _menus;
         private Point _inventoryAnchor;
+        private Point _vendorAnchor;
         private Rectangle _window;
 
         public MenuMan(Input input)
@@ -39,6 +40,7 @@ namespace MapAssist.Automation
             _window = window;
 
             _inventoryAnchor = new Point((int)(_window.Width - _window.Width * 0.28), (int)(_window.Height * 0.53));
+            _vendorAnchor = new Point((int)(_window.Width * 0.08), (int)(_window.Height * 0.22));
         }
 
         public bool IsWaypointArea(Area area)
@@ -69,11 +71,25 @@ namespace MapAssist.Automation
             return isActChange;
         }
 
+        public void VendorBuyMax(int x, int y)
+        {
+            if (!_menus.NpcShop)
+            {
+                _log.Error("Got to be in shop menu to buy things!");
+                return;
+            }
+
+            var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.022), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
+
+            _input.DoInputAtScreenPosition("+{RMB}", screenLocation);
+            System.Threading.Thread.Sleep(500);
+        }
+
         public void StashItemAt(int x, int y)
         {
             if (!_menus.Stash)
             {
-                _log.Error("Gotta be in stash menu to stash things!");
+                _log.Error("Got to be in stash menu to stash things!");
                 return;
             }
 
@@ -167,6 +183,18 @@ namespace MapAssist.Automation
                 for (var i = 0; i < 10; i++)
                 {
                     _input.MouseMove(new Point(start.X + (int)(i * _window.Width * 0.022), start.Y + (int)(y * _window.Height * 0.048)));
+                    System.Threading.Thread.Sleep(250);
+                }
+            }
+        }
+
+        private void trade_debugging()
+        {
+            for (var y = 0; y < 10; y++)
+            {
+                for (var x = 0; x < 10; x++)
+                {
+                    _input.MouseMove(new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.022), _vendorAnchor.Y + (int)(y * _window.Height * 0.047)));
                     System.Threading.Thread.Sleep(250);
                 }
             }

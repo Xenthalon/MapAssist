@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using GameOverlay.Drawing;
 using MapAssist.Helpers;
@@ -352,6 +353,32 @@ namespace MapAssist.Types
 
                 return false;
             }
+        }
+
+        public List<UnitAny> GetNpcInventory()
+        {
+            var result = new List<UnitAny>();
+
+            if (!IsValidPointer() || !IsTownNpc())
+                return result;
+
+            using (var processContext = GameManager.GetProcessContext())
+            {
+                _inventory = processContext.Read<Inventory>(_unitAny.pInventory);
+
+                var firstItem = new UnitAny(_inventory.pFirstItem);
+                result.Add(firstItem);
+                var nextItemPtr = firstItem.ItemData.pNextItem;
+
+                while (nextItemPtr != IntPtr.Zero)
+                {
+                    var nextItem = new UnitAny(nextItemPtr);
+                    result.Add(nextItem);
+                    nextItemPtr = nextItem.ItemData.pNextItem;
+                }
+            }
+
+            return result;
         }
 
         public bool IsDropped()
