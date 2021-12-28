@@ -38,12 +38,23 @@ namespace MapAssist.Automation
             _target = new UnitAny(IntPtr.Zero);
 
             _skills.Add(new CombatSkill { Name = "Glacial Spike", Cooldown = 500, Key = "+{LMB}", LastUsage = 0, IsRanged = true, IsAoe = false });
-            _skills.Add(new CombatSkill { Name = "Blizzard", Cooldown = 2000, Key = "{RMB}", LastUsage = 0, IsRanged = true, IsAoe = true });
+            _skills.Add(new CombatSkill { Name = "Blizzard", Cooldown = 1800, Key = "{RMB}", LastUsage = 0, IsRanged = true, IsAoe = true });
         }
 
-        public void Kill(UnitAny monster)
+        public void Kill(string name)
         {
 
+        }
+
+        public void Kill(uint unitTxtFileNo)
+        {
+            if (!_fighting && !_combatWorker.IsBusy &&
+                _monsters.Any(x => x.TxtFileNo == unitTxtFileNo))
+            {
+                _target = _monsters.Where(x => x.TxtFileNo == unitTxtFileNo).First();
+                _fighting = true;
+                _combatWorker.RunWorkerAsync();
+            }
         }
 
         public void ClearArea(Point location)
@@ -69,6 +80,17 @@ namespace MapAssist.Automation
                 _monsters = gameData.Monsters;
                 _playerPosition = gameData.PlayerPosition;
 
+                if (_target.IsValidPointer())
+                {
+                    _target = _monsters.Where(x => x.UnitId == _target.UnitId).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    
+                    if (!_target.IsValidPointer())
+                    {
+                        _log.Info("Killed that sucker!");
+                        _fighting = false;
+                    }
+                }
+
                 if (_fighting && !_combatWorker.IsBusy)
                 {
                     _combatWorker.RunWorkerAsync();
@@ -80,7 +102,28 @@ namespace MapAssist.Automation
         {
             if (_target.IsValidPointer())
             {
-                // fight specific target
+                var targetHealth = -1;
+
+                _target.Stats.TryGetValue(Stat.STAT_HITPOINTS, out targetHealth);
+
+                if (_target.Mode != 0 && _target.Mode != 12) // if not dying or dead
+                {
+                    if (_skills.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
+                    {
+                        CombatSkill skillToUse = _skills.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
+                        _input.DoInputAtWorldPosition(skillToUse.Key, _target.Position);
+                        skillToUse.LastUsage = Now;
+                        System.Threading.Thread.Sleep(200);
+                    }
+
+                    if (_skills.Any(x => x.IsRanged && Now - x.LastUsage > x.Cooldown))
+                    {
+                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && Now - x.LastUsage > x.Cooldown).First();
+                        _input.DoInputAtWorldPosition(skillToUse.Key, _target.Position);
+                        skillToUse.LastUsage = Now;
+                        System.Threading.Thread.Sleep(200);
+                    }
+                }
             }
             else if (_areaToClear != null)
             {
@@ -96,6 +139,7 @@ namespace MapAssist.Automation
                         Point castLocation = GetHighValuePosition(monstersInArea);
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
+                        System.Threading.Thread.Sleep(200);
                     }
 
                     if (_skills.Any(x => x.IsRanged && Now - x.LastUsage > x.Cooldown))
@@ -104,6 +148,7 @@ namespace MapAssist.Automation
                         Point castLocation = monstersInArea.OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).First().Position;
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
+                        System.Threading.Thread.Sleep(200);
                     }
                 }
                 else

@@ -16,6 +16,7 @@ namespace MapAssist.Automation
         public Area[] AreaPath { get; set; }
         public RunType Type { get; set; }
         public Point KillSpot { get; set; }
+        public Npc MonsterType { get; set; } = Npc.NpcNotApplicable;
 
         // add cows, diablo and baal here as specials
     }

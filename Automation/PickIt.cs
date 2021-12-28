@@ -55,6 +55,7 @@ namespace MapAssist.Automation
         {
             if (!_working)
             {
+                _log.Info("Looking for treasure!");
                 _working = true;
                 _worker.RunWorkerAsync();
             }

@@ -33,6 +33,8 @@ namespace MapAssist.Automation
 
         private int _activeProfileIndex = -1;
 
+        public string PortalKey = "f";
+
         public Orchestrator(
             BuffBoy buffboy,
             Chicken chicken,
@@ -56,7 +58,7 @@ namespace MapAssist.Automation
             _worker.DoWork += new DoWorkEventHandler(Orchestrate);
             _worker.WorkerSupportsCancellation = true;
 
-            _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.ClearArea, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070) });
+            _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
@@ -157,10 +159,33 @@ namespace MapAssist.Automation
 
             BuffMe();
 
+            _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
             MoveTo(activeProfile.KillSpot);
 
-            // switch here by profile type later
-            _combat.ClearArea(_gameData.PlayerPosition);
+            if (activeProfile.Type == RunType.KillTarget)
+            {
+                if (activeProfile.MonsterType != Npc.NpcNotApplicable)
+                {
+                    _log.Info("Gonna kill " + activeProfile.MonsterType);
+
+                    _combat.Kill((uint) activeProfile.MonsterType);
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    while (_combat.Busy);
+
+                    _log.Info("We got that sucker, making sure things are safe...");
+
+                    _combat.ClearArea(_gameData.PlayerPosition);
+                }
+            }
+            else if (activeProfile.Type == RunType.ClearArea)
+            {
+                // not quite right, need pathing here
+                _combat.ClearArea(_gameData.PlayerPosition);
+            }
 
             do
             {
@@ -174,9 +199,51 @@ namespace MapAssist.Automation
             {
                 System.Threading.Thread.Sleep(100);
             }
-            while (!_pickit.Busy);
+            while (_pickit.Busy);
 
-            // cast portal, go back to town
+            _log.Info("Taking portal home!");
+            _input.DoInput(PortalKey);
+            System.Threading.Thread.Sleep(300);
+
+            var portal = _gameData.Objects.Where(x => x.IsPortal() && x.ObjectData.Owner.Length > 0 && x.ObjectData.Owner == _gameData.PlayerName).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+            if (portal.IsValidPointer())
+            {
+                var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
+
+                _input.DoInputAtWorldPosition("{LMB}", portal.Position);
+
+                var retryLimit = 3;
+                var loopLimit = 30;
+                var loops = 0;
+                var retrys = 0;
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+
+                    loops += 1;
+
+                    if (loops >= loopLimit)
+                    {
+                        retrys += 1;
+                        loops = 0;
+
+                        _input.DoInputAtWorldPosition("{LMB}", portal.Position);
+
+                        if (retrys >= retryLimit)
+                        {
+                            _log.Error("Unable to take TP, help!");
+                            break;
+                        }
+                    }
+                }
+                while (_currentArea != destinationArea);
+            }
+            else
+            {
+                _log.Error("Couldn't find portal, help!");
+            }
         }
 
         private void BuffMe()
