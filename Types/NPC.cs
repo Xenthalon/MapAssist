@@ -123,9 +123,10 @@ namespace MapAssist.Types
         };
 
         public static Dictionary<uint, Npc> Mercs = new Dictionary<uint, Npc> {
-            { 152, Npc.Rogue },
+            { 271, Npc.Rogue2 },
             { 338, Npc.Guard },
-            { 359, Npc.IronWolf }
+            { 359, Npc.IronWolf },
+            { 561, Npc.Act5Hireling2Hand }
         };
 
         public static Dictionary<uint, Npc> NPCs = new Dictionary<uint, Npc>
