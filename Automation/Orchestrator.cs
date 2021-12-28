@@ -79,6 +79,9 @@ namespace MapAssist.Automation
                     _goBotGo = false;
                     _activeProfileIndex = -1;
                     _worker.CancelAsync();
+                    _worker = new BackgroundWorker();
+                    _worker.DoWork += new DoWorkEventHandler(Orchestrate);
+                    _worker.WorkerSupportsCancellation = true;
 
                     _buffboy.Reset();
                     _combat.Reset();
@@ -87,6 +90,13 @@ namespace MapAssist.Automation
                     _townManager.Reset();
 
                     _currentGameSeed = _gameData.MapSeed;
+
+                    Task.Factory.StartNew(() =>
+                    {
+                        System.Threading.Thread.Sleep(5000);
+                        _log.Info("Go run!");
+                        Run();
+                    });
                 }
 
                 if (_goBotGo && !_worker.IsBusy)
@@ -101,10 +111,12 @@ namespace MapAssist.Automation
             if (_worker.IsBusy)
             {
                 _worker.CancelAsync();
+                _goBotGo = false;
             }
             else
             {
                 _worker.RunWorkerAsync();
+                _log.Info("Go Bot Go!");
                 _goBotGo = true;
             }
         }
@@ -115,6 +127,8 @@ namespace MapAssist.Automation
             {
                 _log.Error("Exhausted all profiles, done!");
                 _goBotGo = false;
+                _menuMan.ExitGame();
+                System.Threading.Thread.Sleep(10000);
                 return;
             }
 

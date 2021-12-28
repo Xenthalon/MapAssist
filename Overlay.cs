@@ -120,6 +120,21 @@ namespace MapAssist
                         _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
                         _compositor.DrawESP(gfx, _gameData, WindowRect(), _pathing);
                     }
+                    else if (GameManager.MainWindowHandle != IntPtr.Zero)
+                    {
+                        // emergency oog engage!
+                        _log.Info("OOG triggered!");
+                        System.Threading.Thread.Sleep(3000);
+                        Rectangle window = WindowRect();
+
+                        var input = new Automation.Input();
+                        input.Update(null, window);
+
+                        var oog = new Automation.OOG(input);
+                        oog.Update(window);
+                        oog.CreateGame();
+                        System.Threading.Thread.Sleep(3000);
+                    }
                 }
             }
             catch (Exception ex)
@@ -142,6 +157,7 @@ namespace MapAssist
 
         public void KeyPressHandler(object sender, KeyPressEventArgs args)
         {
+
             if (InGame())
             {
                 if (args.KeyChar == 'l')
@@ -204,7 +220,7 @@ namespace MapAssist
         private Rectangle WindowRect()
         {
             WindowBounds rect;
-            WindowHelper.GetWindowClientBounds(_gameData.MainWindowHandle, out rect);
+            WindowHelper.GetWindowClientBounds(GameManager.MainWindowHandle, out rect);
 
             return new Rectangle(rect.Left, rect.Top, rect.Right, rect.Bottom);
         }

@@ -114,6 +114,7 @@
     <Compile Include="Automation\MenuMan.cs" />
     <Compile Include="Automation\Movement.cs" />
     <Compile Include="Automation\NPC.cs" />
+    <Compile Include="Automation\OOG.cs" />
     <Compile Include="Automation\Orchestrator.cs" />
     <Compile Include="Automation\Pathing.cs" />
     <Compile Include="Automation\PickIt.cs" />

@@ -125,6 +125,22 @@ namespace MapAssist.Automation
             TakeWaypoint(target);
         }
 
+        public void ExitGame()
+        {
+            _input.DoInput("{ESC}");
+
+            System.Threading.Thread.Sleep(1500);
+
+            if (!_menus.EscMenu)
+            {
+                _log.Error("We need the Escape Menu!");
+                return;
+            }
+
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.5), (int)(_window.Height * 0.45)));
+            System.Threading.Thread.Sleep(5000);
+        }
+
         private void TakeWaypoint(Waypoint target)
         {
             if (!_menus.Waypoint)

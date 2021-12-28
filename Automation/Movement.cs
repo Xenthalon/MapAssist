@@ -85,21 +85,23 @@ namespace MapAssist.Automation
                 _moving = false;
                 _movementWorker.CancelAsync();
             }
-
-            _log.Debug($"Teleporting to {worldPosition}");
-            _useTeleport = true;
-            _targetLocation = worldPosition;
-            _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
-
-            if (_path.Count() > 0)
-            {
-                _moving = true;
-
-                _movementWorker.RunWorkerAsync();
-            }
             else
             {
-                _log.Error("Unable to find path to " + worldPosition);
+                _log.Debug($"Teleporting to {worldPosition}");
+                _useTeleport = true;
+                _targetLocation = worldPosition;
+                _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
+
+                if (_path.Count() > 0)
+                {
+                    _moving = true;
+
+                    _movementWorker.RunWorkerAsync();
+                }
+                else
+                {
+                    _log.Error("Unable to find path to " + worldPosition);
+                }
             }
         }
 
@@ -111,21 +113,23 @@ namespace MapAssist.Automation
                 _moving = false;
                 _movementWorker.CancelAsync();
             }
-
-            _log.Debug($"Walking to {worldPosition}");
-            _useTeleport = false;
-            _targetLocation = worldPosition;
-            _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, false, _gameData.PlayerPosition, worldPosition);
-
-            if (_path.Count() > 0)
-            {
-                _moving = true;
-
-                _movementWorker.RunWorkerAsync();
-            }
             else
             {
-                _log.Error("Unable to find path to " + worldPosition);
+                _log.Debug($"Walking to {worldPosition}");
+                _useTeleport = false;
+                _targetLocation = worldPosition;
+                _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, false, _gameData.PlayerPosition, worldPosition);
+
+                if (_path.Count() > 0)
+                {
+                    _moving = true;
+
+                    _movementWorker.RunWorkerAsync();
+                }
+                else
+                {
+                    _log.Error("Unable to find path to " + worldPosition);
+                }
             }
         }
 

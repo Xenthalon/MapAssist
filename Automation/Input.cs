@@ -28,6 +28,11 @@ namespace MapAssist.Automation
                 _playerPositionScreen = new Point(window.Width / 2, (int)(window.Height * 0.49));
                 _window = window;
             }
+            else
+            {
+                _mainWindowHandle = GameManager.MainWindowHandle;
+                _window = window;
+            }
         }
 
         public void DoInputAtWorldPosition(string input, Point worldPosition)
