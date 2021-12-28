@@ -102,16 +102,14 @@ namespace MapAssist.Automation
         {
             if (_target.IsValidPointer())
             {
-                var targetHealth = -1;
-
-                _target.Stats.TryGetValue(Stat.STAT_HITPOINTS, out targetHealth);
+                Point castLocation = _target.Position;
 
                 if (_target.Mode != 0 && _target.Mode != 12) // if not dying or dead
                 {
                     if (_skills.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
                     {
                         CombatSkill skillToUse = _skills.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
-                        _input.DoInputAtWorldPosition(skillToUse.Key, _target.Position);
+                        _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
                         System.Threading.Thread.Sleep(200);
                     }
@@ -119,7 +117,7 @@ namespace MapAssist.Automation
                     if (_skills.Any(x => x.IsRanged && Now - x.LastUsage > x.Cooldown))
                     {
                         CombatSkill skillToUse = _skills.Where(x => x.IsRanged && Now - x.LastUsage > x.Cooldown).First();
-                        _input.DoInputAtWorldPosition(skillToUse.Key, _target.Position);
+                        _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
                         System.Threading.Thread.Sleep(200);
                     }
