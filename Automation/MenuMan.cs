@@ -16,6 +16,7 @@ namespace MapAssist.Automation
         private static readonly HashSet<Waypoint> _waypoints = new HashSet<Waypoint>();
 
         Input _input;
+        private int _act = 0;
         private MenuData _menus;
         private Rectangle _window;
 
@@ -28,6 +29,11 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData, Rectangle window)
         {
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            {
+                _act = (int)gameData.PlayerUnit.Act.ActId + 1;
+            }
+
             _menus = gameData.MenuOpen;
             _window = window;
         }
@@ -35,6 +41,29 @@ namespace MapAssist.Automation
         public bool IsWaypointArea(Area area)
         {
             return _waypoints.Any(x => x.Area == area);
+        }
+
+        public bool IsActChange(Area area)
+        {
+            var isActChange = false;
+
+            // special for mephisto portal
+            if (_act == 3 && area == Area.ThePandemoniumFortress)
+            {
+                isActChange = true;
+            }
+            else
+            {
+                var waypoint = _waypoints.Where(x => x.Area == area).FirstOrDefault();
+
+                if (waypoint != null)
+                {
+                    isActChange = waypoint.Act != _act;
+                }
+            }
+
+
+            return isActChange;
         }
 
         public void TakeWaypoint(Area area)

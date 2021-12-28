@@ -13,12 +13,16 @@ namespace MapAssist.Automation
     class Movement
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        private static int _areaChangeSafetyLimit = 3;
 
         private BackgroundWorker _movementWorker;
         private Input _input;
         private GameData _gameData;
         private Pathing _pathing;
 
+        private Area _currentArea = Area.None;
+        private Area _possiblyNewArea = Area.None;
+        private int _possiblyNewAreaCounter = 0;
         private bool _useTeleport = false;
         private bool _moving = false;
         private List<Point> _path;
@@ -41,6 +45,30 @@ namespace MapAssist.Automation
             {
                 _gameData = gameData;
                 _pathing = pathing;
+
+                if (_gameData.Area != _currentArea && _possiblyNewArea != _gameData.Area)
+                {
+                    _log.Debug("Currently in " + _currentArea + ", Possible new area " + _gameData.Area);
+                    _possiblyNewArea = _gameData.Area;
+                }
+
+                if (_possiblyNewArea == _gameData.Area)
+                {
+                    _log.Debug($"counting {_possiblyNewAreaCounter}/{_areaChangeSafetyLimit}");
+                    _possiblyNewAreaCounter += 1;
+                }
+
+                if (_possiblyNewAreaCounter >= _areaChangeSafetyLimit)
+                {
+                    _log.Debug("Area changed to " + _gameData.Area + ", resetting Movement.");
+                    _currentArea = _gameData.Area;
+                    _movementWorker.CancelAsync();
+                    _moving = false;
+                    _path = new List<Point>();
+                    _targetLocation = null;
+                    _possiblyNewArea = Area.None;
+                    _possiblyNewAreaCounter = 0;
+                }
 
                 if (_moving && !_movementWorker.IsBusy)
                 {
@@ -103,6 +131,7 @@ namespace MapAssist.Automation
 
         public void Reset()
         {
+            _currentArea = Area.None;
             _movementWorker.CancelAsync();
             _useTeleport = false;
             _moving = false;

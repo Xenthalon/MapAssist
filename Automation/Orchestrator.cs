@@ -28,6 +28,7 @@ namespace MapAssist.Automation
         private TownManager _townManager;
 
         private Area _currentArea;
+        private uint _currentGameSeed = 0;
         private List<PointOfInterest> _pointsOfInterest;
         private GameData _gameData;
 
@@ -70,6 +71,23 @@ namespace MapAssist.Automation
                 _gameData = gameData;
                 _currentArea = gameData.Area;
                 _pointsOfInterest = pointsOfInterest;
+
+                if (_gameData.MapSeed != _currentGameSeed)
+                {
+                    _log.Info("Entered new game " + _gameData.MapSeed + ", resetting everything.");
+
+                    _goBotGo = false;
+                    _activeProfileIndex = -1;
+                    _worker.CancelAsync();
+
+                    _buffboy.Reset();
+                    _combat.Reset();
+                    _movement.Reset();
+                    _pickit.Reset();
+                    _townManager.Reset();
+
+                    _currentGameSeed = _gameData.MapSeed;
+                }
 
                 if (_goBotGo && !_worker.IsBusy)
                 {
@@ -130,6 +148,8 @@ namespace MapAssist.Automation
 
                 if (_townManager.IsInTown && _menuMan.IsWaypointArea(area))
                 {
+                    var isActChange = _menuMan.IsActChange(area);
+
                     _townManager.OpenWaypointMenu();
 
                     do
@@ -139,12 +159,22 @@ namespace MapAssist.Automation
                     while (_townManager.State != TownState.WP_MENU);
 
                     _menuMan.TakeWaypoint(area);
+
+                    // wait for load
+                    if (isActChange)
+                    {
+                        System.Threading.Thread.Sleep(5000);
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(1500);
+                    }
                 }
                 else
                 {
                     if (!_townManager.IsInTown)
                     {
-                        BuffMe();   
+                        BuffMe();
                     }
 
                     Point? interactPoint = null;
@@ -175,19 +205,8 @@ namespace MapAssist.Automation
                         MoveTo((Point)interactPoint);
                     }
 
-                    _input.DoInputAtWorldPosition("{LMB}", (Point)interactPoint);
+                    ChangeArea(area, (Point)interactPoint);
                 }
-
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                while (_currentArea != area);
-
-                _movement.Reset();
-
-                // wait for load
-                System.Threading.Thread.Sleep(3000);
             }
 
             if (!_townManager.IsInTown)
@@ -237,51 +256,90 @@ namespace MapAssist.Automation
             }
             while (_pickit.Busy);
 
-            _log.Info("Taking portal home!");
-            _input.DoInput(PortalKey);
-            System.Threading.Thread.Sleep(1000);
+            TakePortalHome();
+        }
 
-            var portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+        private bool TakePortalHome()
+        {
+            var retryLimit = 3;
+            var retryCount = 0;
+
+            var success = false;
+
+            _log.Info("Taking portal home!");
+
+            var portal = new UnitAny(IntPtr.Zero);
+
+            do
+            {
+                _input.DoInput(PortalKey);
+                System.Threading.Thread.Sleep(2000);
+                portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                retryCount += 1;
+            }
+            while (!portal.IsValidPointer() && retryCount <= retryLimit);
 
             if (portal.IsValidPointer())
             {
                 var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
 
-                _input.DoInputAtWorldPosition("{LMB}", portal.Position);
-
-                var retryLimit = 3;
-                var loopLimit = 30;
-                var loops = 0;
-                var retrys = 0;
-
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-
-                    loops += 1;
-
-                    if (loops >= loopLimit)
-                    {
-                        retrys += 1;
-                        loops = 0;
-
-                        _input.DoInputAtWorldPosition("{LMB}", portal.Position);
-
-                        if (retrys >= retryLimit)
-                        {
-                            _log.Error("Unable to take TP, help!");
-                            break;
-                        }
-                    }
-                }
-                while (_currentArea != destinationArea);
-
-                System.Threading.Thread.Sleep(1000);
+                success = ChangeArea(destinationArea, portal.Position);
             }
             else
             {
                 _log.Error("Couldn't find portal, help!");
             }
+
+            return success;
+        }
+
+        private bool ChangeArea(Area destination, Point interactionPoint)
+        {
+            var success = true;
+
+            var isActChange = _menuMan.IsActChange(destination);
+
+            _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
+
+            var retryLimit = 3;
+            var loopLimit = 30;
+            var loops = 0;
+            var retrys = 0;
+
+            do
+            {
+                System.Threading.Thread.Sleep(100);
+
+                loops += 1;
+
+                if (loops >= loopLimit)
+                {
+                    retrys += 1;
+                    loops = 0;
+
+                    _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
+
+                    if (retrys >= retryLimit)
+                    {
+                        _log.Error("Unable to interact with " + interactionPoint + ", help!");
+                        success = false;
+                        break;
+                    }
+                }
+            }
+            while (_currentArea != destination);
+
+            // wait for load
+            if (isActChange)
+            {
+                System.Threading.Thread.Sleep(4000);
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(1200);
+            }
+
+            return success;
         }
 
         private void BuffMe()

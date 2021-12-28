@@ -66,6 +66,12 @@ namespace MapAssist.Automation
             }
         }
 
+        public void Reset()
+        {
+            _working = false;
+            _worker.CancelAsync();
+        }
+
         private void PickThings(object sender, DoWorkEventArgs e)
         {
             var pickPotions = !Inventory.IsBeltFull();

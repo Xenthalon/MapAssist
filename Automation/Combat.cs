@@ -98,6 +98,14 @@ namespace MapAssist.Automation
             }
         }
 
+        public void Reset()
+        {
+            _fighting = false;
+            _areaToClear = null;
+            _target = new UnitAny(IntPtr.Zero);
+            _combatWorker.CancelAsync();
+        }
+
         private void Fight(object sender, DoWorkEventArgs e)
         {
             if (_target.IsValidPointer())

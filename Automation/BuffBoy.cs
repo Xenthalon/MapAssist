@@ -17,8 +17,8 @@ namespace MapAssist.Automation
         List<State> _playerStates;
 
         private bool _useCta = true;
-        private bool _buffing = false;
         private string _switchKey = "x";
+        private bool _buffing = false;
         private List<CombatSkill> _availableBuffs = new List<CombatSkill>();
 
         public bool Busy => _buffing;
@@ -51,6 +51,12 @@ namespace MapAssist.Automation
             {
                 _worker.RunWorkerAsync();
             }
+        }
+
+        public void Reset()
+        {
+            _buffing = false;
+            _worker.CancelAsync();
         }
 
         private void BuffMe(object sender, DoWorkEventArgs e)

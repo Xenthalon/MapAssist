@@ -139,6 +139,13 @@ namespace MapAssist.Automation
             }
         }
 
+        public void Reset()
+        {
+            CancelWork();
+            _task = TownTask.NONE;
+            _state = TownState.IDLE;
+        }
+
         private void Run(object sender, DoWorkEventArgs e)
         {
             NPC target = null;
