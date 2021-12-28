@@ -25,6 +25,8 @@ namespace MapAssist.Automation
         public int playerHealthMax = -1;
         public int mercHealth = -1;
 
+        public double PlayerLifePercentage => playerHealth / (double)playerHealthMax;
+
         public Chicken(Input input)
         {
             _input = input;
