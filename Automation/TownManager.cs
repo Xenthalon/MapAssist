@@ -48,11 +48,13 @@ namespace MapAssist.Automation
         private BackgroundWorker _worker;
 
         private int _act;
+        private Area _area;
         private MenuData _menus;
         private Point _playerPosition;
         private HashSet<Types.UnitAny> _closeNpcs;
         private HashSet<Types.UnitAny> _closeObjects;
 
+        public bool IsInTown => _area == Area.RogueEncampment || _area == Area.LutGholein || _area == Area.KurastDocks || _area == Area.ThePandemoniumFortress || _area == Area.Harrogath;
         public TownState State => _state;
 
         public TownManager(Input input, MenuMan menuMan, Movement movement)
@@ -129,6 +131,7 @@ namespace MapAssist.Automation
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _act = (int)gameData.PlayerUnit.Act.ActId + 1;
+                _area = gameData.Area;
                 _menus = gameData.MenuOpen;
                 _playerPosition = gameData.PlayerPosition;
                 _closeNpcs = gameData.NPCs;
@@ -220,6 +223,9 @@ namespace MapAssist.Automation
 
             switch (_task)
             {
+                case TownTask.HEAL:
+                    _state = TownState.IDLE;
+                    break;
                 case TownTask.REPAIR:
                     _input.MouseMove(new Point(100, 100));
                     System.Threading.Thread.Sleep(100);
