@@ -20,9 +20,10 @@ namespace MapAssist
         private List<PointOfInterest> _pointsOfInterests;
 
         private BuffBoy _buffBoy;
-        private Input _input;
         private Chicken _chicken;
         private Combat _combat;
+        private Input _input;
+        private MenuMan _menuMan;
         private Movement _movement;
         private PickIt _pickit;
         private TownManager _townManager;
@@ -33,9 +34,10 @@ namespace MapAssist
             _buffBoy = new BuffBoy(_input);
             _chicken = new Chicken(_input);
             _combat = new Combat(_input);
+            _menuMan = new MenuMan(_input);
             _movement = new Movement(_input);
             _pickit = new PickIt(_movement, _input);
-            _townManager = new TownManager(_movement, _input);
+            _townManager = new TownManager(_input, _menuMan, _movement);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
@@ -48,6 +50,7 @@ namespace MapAssist
             _buffBoy.Update(gameData);
             _chicken.Update(gameData);
             _combat.Update(gameData);
+            _menuMan.Update(gameData, windowRect);
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);
             _townManager.Update(gameData);
@@ -86,6 +89,11 @@ namespace MapAssist
             {
                 _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
             }
+        }
+
+        public void MouseMoveTest()
+        {
+            _menuMan.ClickRepair();
         }
 
         public void Fight()

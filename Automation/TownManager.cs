@@ -41,6 +41,7 @@ namespace MapAssist.Automation
         private static int _retrys = 5;
 
         private Input _input;
+        private MenuMan _menuMan;
         private Movement _movement;
         private TownState _state = TownState.IDLE;
         private TownTask _task = TownTask.NONE;
@@ -54,9 +55,10 @@ namespace MapAssist.Automation
 
         public TownState State => _state;
 
-        public TownManager(Movement movement, Input input)
+        public TownManager(Input input, MenuMan menuMan, Movement movement)
         {
             _input = input;
+            _menuMan = menuMan;
             _movement = movement;
 
             InitializeNpcs();
@@ -222,8 +224,11 @@ namespace MapAssist.Automation
                     _input.MouseMove(new Point(100, 100));
                     System.Threading.Thread.Sleep(100);
                     _input.DoInput("{DOWN 2}{ENTER}");
-
-                    // click repair here
+                    System.Threading.Thread.Sleep(100);
+                    _menuMan.ClickRepair();
+                    System.Threading.Thread.Sleep(100);
+                    _menuMan.CloseMenu();
+                    System.Threading.Thread.Sleep(100);
                     _state = TownState.IDLE;
                     break;
                 case TownTask.REVIVE:
