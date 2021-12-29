@@ -28,6 +28,7 @@ namespace MapAssist.Automation
         public int mercHealth = -1;
 
         public double PlayerLifePercentage => playerHealth / (double)playerHealthMax;
+        public double MercLifePercentage => mercHealth / (double)32768.0;
         public bool MercIsDead => _mercIsDead;
 
         public Chicken(Input input)
@@ -86,11 +87,9 @@ namespace MapAssist.Automation
 
             var nextPotionSlot = -1;
 
-            var currentLifePercentage = playerHealth / (double)playerHealthMax;
-
-            if (currentLifePercentage < potionLifePercentage / 100)
+            if (PlayerLifePercentage < potionLifePercentage / 100)
             {
-                _log.Info($"Life at {currentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
+                _log.Info($"Life at {PlayerLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
 
                 nextPotionSlot = Inventory.GetNextPotionSlotToUse();
 
@@ -109,11 +108,9 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var mercCurrentLifePercentage = mercHealth / 32768.0;
-
-            if (mercCurrentLifePercentage < mercPotionLifePercentage / 100)
+            if (MercLifePercentage < mercPotionLifePercentage / 100)
             {
-                _log.Info($"Merc Life at {mercCurrentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
+                _log.Info($"Merc life at {MercLifePercentage * 100}%, giving a potion from slot {nextPotionSlot}.");
 
                 nextPotionSlot = Inventory.GetNextPotionSlotToUse();
 

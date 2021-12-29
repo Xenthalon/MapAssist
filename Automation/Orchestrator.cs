@@ -242,6 +242,7 @@ namespace MapAssist.Automation
                         catch (NoPathFoundException)
                         {
                             TakePortalHome();
+                            return;
                         }
                     }
 
@@ -302,7 +303,7 @@ namespace MapAssist.Automation
         private void GoHeal()
         {
             // maybe also check for poison or curses
-            if (_chicken.PlayerLifePercentage < 0.9)
+            if (_chicken.PlayerLifePercentage < 0.9 || _chicken.MercLifePercentage < 0.7)
             {
                 _townManager.Heal();
 

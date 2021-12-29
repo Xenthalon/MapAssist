@@ -32,9 +32,9 @@ namespace MapAssist.Automation
             _worker.DoWork += new DoWorkEventHandler(BuffMe);
             _worker.WorkerSupportsCancellation = true;
 
-            _availableBuffs.Add(new CombatSkill { Name = "Frozen Armor", Cooldown = 500, Key = "q", LastUsage = 0, IsBuff = true, BuffState = State.STATE_FROZENARMOR });
-            _availableBuffs.Add(new CombatSkill { Name = "Battle Orders", Cooldown = 500, Key = "d", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLEORDERS });
-            _availableBuffs.Add(new CombatSkill { Name = "Battle Command", Cooldown = 500, Key = "r", LastUsage = 0, IsBuff = true, BuffState = State.STATE_BATTLECOMMAND });
+            _availableBuffs.Add(new CombatSkill { Name = "Frozen Armor", Cooldown = 500, Key = "q", IsBuff = true, BuffState = State.STATE_FROZENARMOR });
+            _availableBuffs.Add(new CombatSkill { Name = "Battle Orders", Cooldown = 500, Key = "d", IsBuff = true, BuffState = State.STATE_BATTLEORDERS });
+            _availableBuffs.Add(new CombatSkill { Name = "Battle Command", Cooldown = 500, Key = "r", IsBuff = true, BuffState = State.STATE_BATTLECOMMAND });
         }
 
         public void Update(GameData gameData)

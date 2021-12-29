@@ -34,9 +34,9 @@ namespace MapAssist
             _input = new Input();
             _buffBoy = new BuffBoy(_input);
             _chicken = new Chicken(_input);
-            _combat = new Combat(_input);
             _menuMan = new MenuMan(_input);
             _movement = new Movement(_input, _menuMan);
+            _combat = new Combat(_input, _movement);
             _pickit = new PickIt(_movement, _input);
             _townManager = new TownManager(_input, _menuMan, _movement);
 

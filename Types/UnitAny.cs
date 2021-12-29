@@ -193,8 +193,8 @@ namespace MapAssist.Types
         public Path Path => _path;
         public IntPtr StatsListExPtr => _unitAny.pStatsListEx;
         public Inventory Inventory => _inventory;
-        public ushort X => IsMovable() ? _path.DynamicX : _path.StaticX;
-        public ushort Y => IsMovable() ? _path.DynamicY : _path.StaticY;
+        public ushort X => _path == null ? (ushort)0 : IsMovable() ? _path.DynamicX : _path.StaticX;
+        public ushort Y => _path == null ? (ushort)0 : IsMovable() ? _path.DynamicY : _path.StaticY;
         public Point Position => new Point(X, Y);
         public UnitAny ListNext(Roster rosterData) => new UnitAny(_unitAny.pListNext, rosterData);
         public UnitAny RoomNext => new UnitAny(_unitAny.pRoomNext);

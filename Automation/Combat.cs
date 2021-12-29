@@ -14,10 +14,13 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
         private static readonly short combatRange = 20;
+        private static readonly double staticRange = 8;
+        private static readonly double tooCloseRange = 10;
 
         private BackgroundWorker _combatWorker;
         private bool _fighting = false;
         private Input _input;
+        private Movement _movement;
         private List<CombatSkill> _skills = new List<CombatSkill>();
         private Point _playerPosition;
         private HashSet<UnitAny> _monsters;
@@ -27,9 +30,10 @@ namespace MapAssist.Automation
         public bool IsSafe => !_monsters.Any(x => Automaton.GetDistance(_playerPosition, x.Position) <= combatRange);
         public bool Busy => _fighting;
 
-        public Combat(Input input)
+        public Combat(Input input, Movement movement)
         {
             _input = input;
+            _movement = movement;
 
             _combatWorker = new BackgroundWorker();
             _combatWorker.DoWork += new DoWorkEventHandler(Fight);
@@ -37,8 +41,10 @@ namespace MapAssist.Automation
 
             _target = new UnitAny(IntPtr.Zero);
 
-            _skills.Add(new CombatSkill { Name = "Glacial Spike", Cooldown = 500, Key = "+{LMB}", LastUsage = 0, IsRanged = true, IsAoe = false });
-            _skills.Add(new CombatSkill { Name = "Blizzard", Cooldown = 1800, Key = "{RMB}", LastUsage = 0, IsRanged = true, IsAoe = true });
+            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, Cooldown = 500, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
+            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, Cooldown = 1800, Key = "{RMB}", IsRanged = true, IsAoe = true });
+            // _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, Cooldown = 350, Key = "a", IsRanged = true });
+            _skills.Add(new CombatSkill { Name = "Static", DamageType = Resist.LIGHTNING, Cooldown = 350, Key = "s", IsRanged = true, IsStatic = true });
         }
 
         public void Kill(string name)
@@ -114,6 +120,12 @@ namespace MapAssist.Automation
 
                 if (_target.Mode != 0 && _target.Mode != 12) // if not dying or dead
                 {
+                    var targetLife = 0;
+
+                    _target.Stats.TryGetValue(Stat.STAT_HITPOINTS, out targetLife);
+
+                    var targetLifePercentage = targetLife / 32768.0;
+
                     if (_skills.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
                     {
                         CombatSkill skillToUse = _skills.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
@@ -122,9 +134,37 @@ namespace MapAssist.Automation
                         System.Threading.Thread.Sleep(200);
                     }
 
-                    if (_skills.Any(x => x.IsRanged && Now - x.LastUsage > x.Cooldown))
+                    if (targetLifePercentage > 0.6 && _skills.Any(x => x.IsStatic))
                     {
-                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && Now - x.LastUsage > x.Cooldown).First();
+                        if (Automaton.GetDistance(_target.Position, _playerPosition) >= staticRange)
+                        {
+                            _log.Info("Want to use Static, lets get closer.");
+                            System.Threading.Thread.Sleep(300);
+                            _movement.GetInRangeOf(_target.Position, staticRange);
+                            System.Threading.Thread.Sleep(300);
+                        }
+
+                        CombatSkill staticSkill = _skills.Where(x => x.IsStatic && Now - x.LastUsage > x.Cooldown).FirstOrDefault();
+
+                        // means static is still on cooldown
+                        if (staticSkill != null)
+                        {
+                            _input.DoInput(staticSkill.Key);
+                            staticSkill.LastUsage = Now;
+                            System.Threading.Thread.Sleep(200);
+                        }
+                    }
+                    else if (_skills.Any(x => x.IsRanged && x.IsMainSkill && Now - x.LastUsage > x.Cooldown))
+                    {
+                        if (Automaton.GetDistance(_target.Position, _playerPosition) <= tooCloseRange)
+                        {
+                            _log.Info("This is a bit personal, lets get away.");
+                            System.Threading.Thread.Sleep(300);
+                            _movement.GetOutOfRangeOf(_target.Position, tooCloseRange);
+                            System.Threading.Thread.Sleep(300);
+                        }
+
+                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && x.IsMainSkill && Now - x.LastUsage > x.Cooldown).First();
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
                         System.Threading.Thread.Sleep(200);
@@ -148,7 +188,7 @@ namespace MapAssist.Automation
                         System.Threading.Thread.Sleep(200);
                     }
 
-                    if (_skills.Any(x => x.IsRanged && Now - x.LastUsage > x.Cooldown))
+                    if (_skills.Any(x => x.IsRanged && x.IsMainSkill && Now - x.LastUsage > x.Cooldown))
                     {
                         CombatSkill skillToUse = _skills.Where(x => x.IsRanged && Now - x.LastUsage > x.Cooldown).First();
                         Point castLocation = monstersInArea.OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).First().Position;

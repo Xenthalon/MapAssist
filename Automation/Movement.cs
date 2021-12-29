@@ -14,7 +14,7 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static readonly int _areaChangeSafetyLimit = 3;
-        private static readonly int _moveMaxTries = 5;
+        private static readonly int _moveMaxTries = 3;
         private static readonly int _abortLimit = 3;
 
         private BackgroundWorker _movementWorker;
@@ -83,6 +83,39 @@ namespace MapAssist.Automation
             }
         }
 
+        public void GetInRangeOf(Point target, double range)
+        {
+            if (Automaton.GetDistance(target, _gameData.PlayerPosition) <= range)
+                return;
+
+            var maxAway = GetPointsOnLineBetween(target, _gameData.PlayerPosition)
+                                    .Where(x => Automaton.GetDistance(target, x) <= range)
+                                    .OrderByDescending(x => Automaton.GetDistance(target, x))
+                                    .FirstOrDefault();
+
+            Teleport(maxAway);
+        }
+
+        public void GetOutOfRangeOf(Point target, double range)
+        {
+            if (Automaton.GetDistance(target, _gameData.PlayerPosition) >= range)
+                return;
+
+            var escapePoint = new Point(_gameData.PlayerPosition.X, _gameData.PlayerPosition.Y);
+
+            var diff_X = _gameData.PlayerPosition.X - target.X;
+            var diff_Y = _gameData.PlayerPosition.Y - target.Y;
+
+            while (Automaton.GetDistance(target, escapePoint) < range)
+            {
+                escapePoint.X += diff_X;
+                escapePoint.Y += diff_Y;
+            }
+
+            if (escapePoint.X != 0 && escapePoint.Y != 0)
+                Teleport(escapePoint);
+        }
+
         public void TeleportTo(Point worldPosition)
         {
             if (_moving || _movementWorker.IsBusy)
@@ -107,6 +140,7 @@ namespace MapAssist.Automation
                 else
                 {
                     _log.Error("Unable to find path to " + worldPosition);
+                    Reset();
                     throw new NoPathFoundException();
                 }
             }
@@ -172,6 +206,7 @@ namespace MapAssist.Automation
                     {
                         _log.Error("Reached abort limit, exiting game!");
                         _menuMan.ExitGame();
+                        Reset();
                         return;
                     }
 
@@ -259,6 +294,27 @@ namespace MapAssist.Automation
             }
 
             return recoveryLocation;
+        }
+
+        private List<Point> GetPointsOnLineBetween(Point start, Point through)
+        {
+            // from https://stackoverflow.com/questions/21249739/how-to-calculate-the-points-between-two-given-points-and-given-distance
+
+            var diff_X = through.X - start.X;
+            var diff_Y = through.Y - start.Y;
+            var pointNum = 5;
+
+            var interval_X = diff_X / (pointNum + 1);
+            var interval_Y = diff_Y / (pointNum + 1);
+
+            var pointList = new List<Point>();
+
+            for (var i = 1; i <= pointNum; i++)
+            {
+                pointList.Add(new Point(start.X + (interval_X * i), start.Y + (interval_Y * i)));
+            }
+
+            return pointList;
         }
 
         private bool IsNear(Point p1, Point p2)

@@ -78,7 +78,10 @@ namespace MapAssist.Automation
 
             var itemsToPick = _items.Where(x => x.IsDropped() &&
                                                 (LootFilter.Filter(x) ||
-                                                (pickPotions && Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion")))
+                                                (pickPotions && (
+                                                    Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
+                                                    Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"
+                                                ))))
                                     .OrderBy(x => Automaton.GetDistance(x.Position, _playerPosition));
 
             if (itemsToPick.Count() > 0)
@@ -113,7 +116,7 @@ namespace MapAssist.Automation
 
                     var refreshedItem = _items.Where(x => x.UnitId == itemId).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
-                    if (refreshedItem.IsValidPointer() && (ItemMode)refreshedItem.Mode == ItemMode.STORED)
+                    if (refreshedItem.IsValidPointer() && ((ItemMode)refreshedItem.Mode == ItemMode.STORED || (ItemMode)refreshedItem.Mode == ItemMode.INBELT))
                     {
                         _log.Info("Got it!");
                         break;
