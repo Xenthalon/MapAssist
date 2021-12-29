@@ -14,7 +14,7 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static double _pickRange = 3;
+        private static double _pickRange = 5;
         private static int _retryLimit = 3;
 
         private BackgroundWorker _worker;

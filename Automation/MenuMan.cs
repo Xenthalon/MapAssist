@@ -99,6 +99,20 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(250);
         }
 
+        public void SellItemAt(int x, int y)
+        {
+            if (!_menus.NpcShop)
+            {
+                _log.Error("Got to be in shop to sell things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+
+            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(250);
+        }
+
         public void TakeWaypoint(Area area)
         {
             if (!_waypoints.Any(x => x.Area == area))

@@ -15,6 +15,7 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         
         private static List<RunProfile> _runProfiles = new List<RunProfile>();
+        private static readonly int _gameChangeSafetyLimit = 3;
 
         private BackgroundWorker _worker;
 
@@ -29,6 +30,8 @@ namespace MapAssist.Automation
 
         private Area _currentArea;
         private uint _currentGameSeed = 0;
+        private uint _possiblyNewGameSeed = 0;
+        private int _possiblyNewGameCounter = 0;
         private List<PointOfInterest> _pointsOfInterest;
         private GameData _gameData;
 
@@ -72,7 +75,19 @@ namespace MapAssist.Automation
                 _currentArea = gameData.Area;
                 _pointsOfInterest = pointsOfInterest;
 
-                if (_gameData.MapSeed != _currentGameSeed)
+                if (_gameData.MapSeed != _currentGameSeed && _gameData.MapSeed != _possiblyNewGameSeed)
+                {
+                    _log.Debug("Current game " + _currentGameSeed + ", possible new game " + _gameData.MapSeed);
+                    _possiblyNewGameSeed = _gameData.MapSeed;
+                }
+
+                if (_possiblyNewGameSeed == _gameData.MapSeed)
+                {
+                    _log.Debug($"counting {_possiblyNewGameCounter + 1}/{_gameChangeSafetyLimit}");
+                    _possiblyNewGameCounter += 1;
+                }
+
+                if (_possiblyNewGameCounter >= _gameChangeSafetyLimit)
                 {
                     _log.Info("Entered new game " + _gameData.MapSeed + ", resetting everything.");
 
@@ -82,6 +97,8 @@ namespace MapAssist.Automation
                     _worker = new BackgroundWorker();
                     _worker.DoWork += new DoWorkEventHandler(Orchestrate);
                     _worker.WorkerSupportsCancellation = true;
+                    _possiblyNewGameSeed = 0;
+                    _possiblyNewGameCounter = 0;
 
                     _buffboy.Reset();
                     _combat.Reset();
@@ -145,7 +162,8 @@ namespace MapAssist.Automation
             _log.Info("Let's do " + activeProfile.Name);
 
             GoHeal();
-            GoBuyStuff();
+            GoTrade();
+            ReviveMerc();
             var stashed = GoStash();
 
             if (!stashed)
@@ -217,7 +235,14 @@ namespace MapAssist.Automation
 
                         interactPoint = target.Position;
 
-                        MoveTo((Point)interactPoint);
+                        try
+                        {
+                            MoveTo((Point)interactPoint);
+                        }
+                        catch (NoPathFoundException)
+                        {
+                            TakePortalHome();
+                        }
                     }
 
                     ChangeArea(area, (Point)interactPoint);
@@ -289,9 +314,9 @@ namespace MapAssist.Automation
             }
         }
 
-        private void GoBuyStuff()
+        private void GoTrade()
         {
-            if (Inventory.TPScrolls < 5)
+            if (Inventory.AnyItemsToTrash || Inventory.TPScrolls < 5)
             {
                 _townManager.OpenTradeMenu();
 
@@ -303,17 +328,26 @@ namespace MapAssist.Automation
 
                 System.Threading.Thread.Sleep(500);
 
-                var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
-
-                var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
-
-                if (tp.IsValidPointer())
+                foreach (var item in Inventory.ItemsToTrash)
                 {
-                    _menuMan.VendorBuyMax(tp.X, tp.Y);
+                    _log.Info("Selling " + Items.ItemName(item.TxtFileNo));
+                    _menuMan.SellItemAt(item.X, item.Y);
                 }
-                else
+
+                if (Inventory.TPScrolls < 15)
                 {
-                    _log.Error("Couldn't find Scroll of Town Portals at " + _townManager.ActiveNPC.UnitId);
+                    var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
+
+                    var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                    if (tp.IsValidPointer())
+                    {
+                        _menuMan.VendorBuyMax(tp.X, tp.Y);
+                    }
+                    else
+                    {
+                        _log.Error("Couldn't find Scroll of Town Portals at " + _townManager.ActiveNPC.UnitId);
+                    }
                 }
 
                 _menuMan.CloseMenu();
@@ -352,6 +386,28 @@ namespace MapAssist.Automation
             }
 
             return success;
+        }
+
+        private bool ReviveMerc()
+        {
+            var maxRetries = 3;
+            var retryCount = 0;
+
+            while (_chicken.MercIsDead && retryCount < maxRetries)
+            {
+                _log.Info("Reviving merc!");
+                _townManager.ReviveMerc();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_townManager.State != TownState.IDLE);
+
+                retryCount += 1;
+            }
+
+            return !_chicken.MercIsDead;
         }
 
         private bool TakePortalHome()

@@ -13,16 +13,21 @@ namespace MapAssist.Automation
     class Movement
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static int _areaChangeSafetyLimit = 3;
+        private static readonly int _areaChangeSafetyLimit = 3;
+        private static readonly int _moveMaxTries = 5;
+        private static readonly int _abortLimit = 3;
 
         private BackgroundWorker _movementWorker;
         private Input _input;
         private GameData _gameData;
+        private MenuMan _menuMan;
         private Pathing _pathing;
 
         private Area _currentArea = Area.None;
         private Area _possiblyNewArea = Area.None;
         private int _possiblyNewAreaCounter = 0;
+        private int _moveTries = 0;
+        private int _failuresUntilAbort = 0;
         private bool _useTeleport = false;
         private bool _moving = false;
         private List<Point> _path;
@@ -30,9 +35,10 @@ namespace MapAssist.Automation
 
         public bool Busy => _moving;
 
-        public Movement(Input input)
+        public Movement(Input input, MenuMan menuMan)
         {
             _input = input;
+            _menuMan = menuMan;
 
             _movementWorker = new BackgroundWorker();
             _movementWorker.DoWork += new DoWorkEventHandler(Move);
@@ -54,7 +60,7 @@ namespace MapAssist.Automation
 
                 if (_possiblyNewArea == _gameData.Area)
                 {
-                    _log.Debug($"counting {_possiblyNewAreaCounter}/{_areaChangeSafetyLimit}");
+                    _log.Debug($"counting {_possiblyNewAreaCounter + 1}/{_areaChangeSafetyLimit}");
                     _possiblyNewAreaCounter += 1;
                 }
 
@@ -101,6 +107,7 @@ namespace MapAssist.Automation
                 else
                 {
                     _log.Error("Unable to find path to " + worldPosition);
+                    throw new NoPathFoundException();
                 }
             }
         }
@@ -141,6 +148,8 @@ namespace MapAssist.Automation
             _moving = false;
             _path = new List<Point>();
             _targetLocation = null;
+            _moveTries = 0;
+            _failuresUntilAbort = 0;
         }
 
         private void Move(object sender, DoWorkEventArgs e)
@@ -152,10 +161,35 @@ namespace MapAssist.Automation
                 if (success)
                 {
                     _log.Debug($"Moved to {_path[0].X}/{_path[0].Y}");
+                    _moveTries = 0;
                 }
                 else
                 {
                     _log.Warn("Move went wrong, recalculating and retrying!");
+                    _moveTries += 1;
+
+                    if (_failuresUntilAbort > _abortLimit)
+                    {
+                        _log.Error("Reached abort limit, exiting game!");
+                        _menuMan.ExitGame();
+                        return;
+                    }
+
+                    if (_moveTries >= _moveMaxTries)
+                    {
+                        _failuresUntilAbort += 1;
+
+                        Point retryPoint = GetRecoveryPoint(_failuresUntilAbort);
+
+                        _log.Warn($"Seems we are stuck, trying to recover from {retryPoint.X}/{retryPoint.Y}.");
+
+                        if (_useTeleport)
+                            Teleport(retryPoint);
+                        else
+                            Walk(retryPoint);
+
+                        _moveTries = 0;
+                    }
 
                     _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, _useTeleport, _gameData.PlayerPosition, (Point)_targetLocation);
 
@@ -168,6 +202,8 @@ namespace MapAssist.Automation
                 {
                     _log.Debug($"Done moving!");
                     _moving = false;
+                    _moveTries = 0;
+                    _failuresUntilAbort = 0;
                     _targetLocation = null;
                     _useTeleport = false;
                 }
@@ -203,6 +239,26 @@ namespace MapAssist.Automation
             }
 
             return IsNear(_gameData.PlayerPosition, worldPoint);
+        }
+
+        private Point GetRecoveryPoint(int tryNumber)
+        {
+            var recoveryLocation = new Point(_gameData.PlayerPosition.X, _gameData.PlayerPosition.Y);
+
+            if (tryNumber == 1)
+            {
+                recoveryLocation.X = recoveryLocation.X - 10;
+            }
+            else if (tryNumber == 2)
+            {
+                recoveryLocation.Y = recoveryLocation.Y - 10;
+            }
+            else if (tryNumber == 3)
+            {
+                recoveryLocation.X = recoveryLocation.X + 10;
+            }
+
+            return recoveryLocation;
         }
 
         private bool IsNear(Point p1, Point p2)

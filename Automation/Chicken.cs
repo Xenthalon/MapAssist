@@ -16,8 +16,10 @@ namespace MapAssist.Automation
         private BackgroundWorker _chickenWorker;
         private Input _input;
 
+        private bool _mercIsDead = true;
+
         public int potionDrinkWaitInterval = 500;
-        public double potionLifePercentage = 25.0;
+        public double potionLifePercentage = 35.0;
         public double mercPotionLifePercentage = 15.0;
         public string[] potionKeys = { "1", "2", "3", "4" };
 
@@ -26,6 +28,7 @@ namespace MapAssist.Automation
         public int mercHealth = -1;
 
         public double PlayerLifePercentage => playerHealth / (double)playerHealthMax;
+        public bool MercIsDead => _mercIsDead;
 
         public Chicken(Input input)
         {
@@ -60,6 +63,11 @@ namespace MapAssist.Automation
                     merc.Stats.ContainsKey(Stat.STAT_HITPOINTS))
                 {
                     merc.Stats.TryGetValue(Stat.STAT_HITPOINTS, out mercHealth);
+                    _mercIsDead = false;
+                }
+                else
+                {
+                    _mercIsDead = true;
                 }
             }
 
@@ -76,32 +84,27 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var nextPotionSlot = Inventory.GetNextPotionSlotToUse();
-
-            if (nextPotionSlot == -1)
-            {
-                _log.Info("No more potions, panic!");
-                return;
-            }
+            var nextPotionSlot = -1;
 
             var currentLifePercentage = playerHealth / (double)playerHealthMax;
 
             if (currentLifePercentage < potionLifePercentage / 100)
             {
                 _log.Info($"Life at {currentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
+
+                nextPotionSlot = Inventory.GetNextPotionSlotToUse();
+
+                if (nextPotionSlot == -1)
+                {
+                    _log.Info("No more potions, panic!");
+                    return;
+                }
+
                 _input.DoInput(potionKeys[nextPotionSlot]);
                 System.Threading.Thread.Sleep(potionDrinkWaitInterval);
             }
 
-            nextPotionSlot = Inventory.GetNextPotionSlotToUse();
-
-            if (nextPotionSlot == -1)
-            {
-                _log.Info("No more potions, panic!");
-                return;
-            }
-
-            if (mercHealth == -1)
+            if (_mercIsDead || mercHealth == -1)
             {
                 return;
             }
@@ -111,6 +114,15 @@ namespace MapAssist.Automation
             if (mercCurrentLifePercentage < mercPotionLifePercentage / 100)
             {
                 _log.Info($"Merc Life at {mercCurrentLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
+
+                nextPotionSlot = Inventory.GetNextPotionSlotToUse();
+
+                if (nextPotionSlot == -1)
+                {
+                    _log.Info("No more potions, panic!");
+                    return;
+                }
+
                 _input.DoInput("+" + potionKeys[nextPotionSlot]);
                 System.Threading.Thread.Sleep(potionDrinkWaitInterval);
             }
