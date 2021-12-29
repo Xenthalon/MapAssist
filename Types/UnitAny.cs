@@ -327,7 +327,8 @@ namespace MapAssist.Types
             {
                 if (_unitAny.UnitType != UnitType.Monster) return false;
                 if (_unitAny.Mode == 0 || _unitAny.Mode == 12) return false;
-                if (NPC.Mercs.TryGetValue(_unitAny.TxtFileNo, out var _)) {
+                if (NPC.Mercs.TryGetValue(_unitAny.TxtFileNo, out var _) &&
+                    Stats.TryGetValue(Stat.STAT_STRENGTH, out var _)) { // workaround, only real mercs have this
                     _isMerc = true;
                     return true;
                 }
