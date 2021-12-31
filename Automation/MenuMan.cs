@@ -141,18 +141,39 @@ namespace MapAssist.Automation
 
         public void ExitGame()
         {
+            System.Threading.Thread.Sleep(300);
+
             _input.DoInput("{ESC}");
 
-            System.Threading.Thread.Sleep(1500);
+            var iterations = 10;
+            var maxRetries = 5;
+            var currentIteration = 0;
+            var currentRetry = 0;
 
-            if (!_menus.EscMenu)
+            do
             {
-                _log.Error("We need the Escape Menu!");
-                return;
+                System.Threading.Thread.Sleep(100);
+
+                currentIteration += 1;
+
+                if (currentRetry >= maxRetries)
+                {
+                    _log.Error("Couldn't exit game, something is really broken.");
+                    return;
+                }
+
+                if (currentIteration >= iterations)
+                {
+                    _input.DoInput("{ESC}");
+                    currentIteration = 0;
+                    currentRetry += 1;
+                }
             }
+            while (!_menus.EscMenu);
+
+            System.Threading.Thread.Sleep(300);
 
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.5), (int)(_window.Height * 0.45)));
-            System.Threading.Thread.Sleep(5000);
         }
 
         private void TakeWaypoint(Waypoint target)

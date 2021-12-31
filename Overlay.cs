@@ -124,7 +124,13 @@ namespace MapAssist
                     {
                         // emergency oog engage!
                         _log.Info("OOG triggered!");
+
+                        System.Threading.Thread.Sleep(500);
+
+                        _automation.Reset();
+
                         System.Threading.Thread.Sleep(3000);
+
                         Rectangle window = WindowRect();
 
                         var input = new Automation.Input();
@@ -173,6 +179,7 @@ namespace MapAssist
                 if (args.KeyChar == 'n')
                 {
                     _automation.GoBotGo();
+                    // _automation.DoExploreStuff();
                     // _automation.MouseMoveTest();
                     // _automation.Fight();
                     // _automation.DoTownStuff();

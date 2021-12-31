@@ -187,16 +187,7 @@ namespace MapAssist.Automation
             }
             while (_movement.Busy);
 
-            var clickTarget = new Types.UnitAny(IntPtr.Zero);
-
-            if (_task == TownTask.OPEN_WAYPOINT_MENU || _task == TownTask.OPEN_STASH_MENU)
-            {
-                clickTarget = _closeObjects.Where(x => x.TxtFileNo == target.TxtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
-            }
-            else
-            {
-                clickTarget = _closeNpcs.Where(x => x.TxtFileNo == target.TxtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
-            }
+            var clickTarget = FindClickTarget(target.TxtFileId);
 
             if (!clickTarget.IsValidPointer())
             {
@@ -215,6 +206,14 @@ namespace MapAssist.Automation
 
                 if (loopCount >= _retryLoopCount)
                 {
+                    clickTarget = FindClickTarget(target.TxtFileId);
+
+                    if (!clickTarget.IsValidPointer())
+                    {
+                        _log.Error("Couldn't find " + target.Name + ", stuck, please help!");
+                        return;
+                    }
+
                     _input.DoInputAtWorldPosition("{LMB}", clickTarget.Position);
                     retrys++;
                     loopCount = 0;
@@ -250,8 +249,7 @@ namespace MapAssist.Automation
                     _input.MouseMove(new Point(100, 100));
                     System.Threading.Thread.Sleep(100);
                     _input.DoInput("{DOWN 2}{ENTER}");
-
-                    // not tested!
+                    System.Threading.Thread.Sleep(500);
                     _state = TownState.IDLE;
                     break;
                 case TownTask.OPEN_TRADE_MENU:
@@ -287,6 +285,22 @@ namespace MapAssist.Automation
             }
 
             _task = TownTask.NONE;
+        }
+
+        private Types.UnitAny FindClickTarget(int txtFileId)
+        {
+            var clickTarget = new Types.UnitAny(IntPtr.Zero);
+
+            if (_task == TownTask.OPEN_WAYPOINT_MENU || _task == TownTask.OPEN_STASH_MENU)
+            {
+                clickTarget = _closeObjects.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
+            }
+            else
+            {
+                clickTarget = _closeNpcs.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
+            }
+
+            return clickTarget;
         }
 
         private void CancelWork()
