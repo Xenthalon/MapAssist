@@ -30,12 +30,21 @@ namespace MapAssist.Automation
 {
     public class Pathing
     {
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+
         // cache for calculated paths. each cache entry is only valid for a specified amount of time
         private Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)> PathCache = new Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)>();
 
         private readonly Grid Grid;
 
         private readonly AreaData _areaData;
+
+        // Stuff for stinkyness exploration
+        private static readonly Random Randomizer = new Random();
+        private static readonly short StinkSampleSize = 30;
+        private static readonly short StinkRange = 30;
+        private static readonly short StinkMaximum = 500;
+        private static readonly double MaxStinkSaturation = 0.90;
 
         // Stuff for teleport pathing
         private static readonly short RangeInvalid = 10000;
@@ -49,6 +58,44 @@ namespace MapAssist.Automation
         {
             _areaData = areaData;
             Grid = _areaData.MapToGrid();
+        }
+
+        public List<Point> GetExploratoryPath(bool teleport, Point fromLocation)
+        {
+            var gridLocation = new Point((int)(fromLocation.X) - _areaData.Origin.X, (int)(fromLocation.Y) - _areaData.Origin.Y);
+
+            var samples = new List<(List<Point> points, double coverage)>();
+
+            for (var i = 0; i < StinkSampleSize; i++)
+            {
+                samples.Add(GetStinkyPath(gridLocation, teleport));
+            }
+
+            var path = new List<Point>(); ;
+            var bestScore = 0.0;
+
+            foreach (var sample in samples)
+            {
+                var score = sample.coverage / sample.points.Count();
+                _log.Debug($"{Math.Round(sample.coverage, 5)} in {sample.points.Count()}: {score}");
+
+                if (score > bestScore)
+                {
+                    path = sample.points;
+                    bestScore = score;
+                }
+            }
+
+            _log.Debug($"{path.Count()} chosen with best score {bestScore}");
+
+            var result = new List<Point>();
+
+            foreach (var point in path)
+            {
+                result.Add(new Point(point.X + _areaData.Origin.X, point.Y + _areaData.Origin.Y));
+            }
+
+            return result;
         }
 
         public List<Point> GetPathToLocation(uint mapId, Difficulty difficulty, bool teleport, Point fromLocation, Point toLocation)
@@ -98,6 +145,118 @@ namespace MapAssist.Automation
             PathCache[pathCacheKey] = (result, DateTimeOffset.Now.ToUnixTimeMilliseconds());
 
             return result;
+        }
+
+        private (List<Point> points, double coverage) GetStinkyPath(Point fromLocation, bool teleport)
+        {
+            var path = new List<Point>();
+
+            var cleanArea = _areaData.MapOfStinkyness();
+            var farts = 0;
+            var coverage = 0.0;
+
+            var currentLocation = fromLocation;
+
+            do
+            {
+                StinkUpThePlace(ref cleanArea, (int)currentLocation.X, (int)currentLocation.Y);
+
+                currentLocation = FindClosestCleanSpot(cleanArea, (int)currentLocation.X, (int)currentLocation.Y, teleport);
+
+                path.Add(currentLocation);
+
+                farts += 1;
+                coverage = GetStinkCoverage(cleanArea);
+            }
+            while (farts < StinkMaximum && coverage < MaxStinkSaturation);
+
+            return (path, Math.Round(coverage * 100, 2));
+        }
+
+        private Point FindClosestCleanSpot(Navigation.StinkySpot[,] area, int placeX, int placeY, bool teleport = false)
+        {
+            var range = teleport ? TpRange : 5;
+
+            var currentSmell = double.MaxValue;
+            var bestLocations = new List<Point>();
+
+            for (var j = range * -1; j < range; j++)
+            {
+                for (var i = range * -1; i < range; i++)
+                {
+                    if (placeX + i < 0 || placeY + j < 0 ||
+                        placeX + i >= area.GetUpperBound(0) || placeY + j >= area.GetUpperBound(1) ||
+                        !area[placeX + i, placeY + j].IsWalkable ||
+                        CalculateDistance(placeX, placeY, placeX + i, placeY + j) > range)
+                    {
+                        continue;
+                    }
+
+                    if (Math.Round(area[placeX + i, placeY + j].Stinkyness, 1) < Math.Round(currentSmell, 1))
+                    {
+                        currentSmell = area[placeX + i, placeY + j].Stinkyness;
+                        bestLocations = new List<Point>();
+                        bestLocations.Add(new Point(placeX + i, placeY + j));
+                    }
+                    else if (Math.Round(area[placeX + i, placeY + j].Stinkyness, 1) == Math.Round(currentSmell, 1))
+                    {
+                        bestLocations.Add(new Point(placeX + i, placeY + j));
+                    }
+                }
+            }
+
+            var bestLocation = bestLocations[0];
+
+            if (bestLocations.Count() > 1)
+            {
+                bestLocation = bestLocations[Randomizer.Next(0, bestLocations.Count())];
+            }
+
+            return bestLocation;
+        }
+
+        private void StinkUpThePlace(ref Navigation.StinkySpot[,] cleanArea, int placeX, int placeY)
+        {
+            for (var j = StinkRange * -1; j < StinkRange; j++)
+            {
+                for (var i = StinkRange * -1; i < StinkRange; i++)
+                {
+                    if (placeX + i < 0 || placeY + j < 0 ||
+                        placeX + i >= cleanArea.GetUpperBound(0) || placeY + j >= cleanArea.GetUpperBound(1) ||
+                        !cleanArea[placeX + i, placeY + j].IsWalkable)
+                    {
+                        continue;
+                    }
+
+                    var distance = CalculateDistance(placeX, placeY, placeX + i, placeY + j);
+
+                    var stinkyness = distance == 0 ? StinkRange * 25 : StinkRange / distance;
+                    // _log.Info($"{i}/{j}: {stinkyness}");
+
+                    cleanArea[placeX + i, placeY + j].Stinkyness += stinkyness;
+                }
+            }
+        }
+
+        private double GetStinkCoverage(Navigation.StinkySpot[,] area)
+        {
+            var total = 0;
+            var stinky = 0;
+
+            foreach (var e in area)
+            {
+                if (e.IsWalkable)
+                {
+                    total += 1;
+
+                    if (e.Stinkyness > 0)
+                    {
+                        stinky += 1;
+                    }
+                }
+            }
+
+            return (double)stinky / (double)total;
         }
 
         private List<Point> GetTeleportPath(Point fromLocation, Point toLocation, out bool pathFound)

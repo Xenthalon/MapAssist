@@ -12,6 +12,7 @@ namespace MapAssist.Automation
         public string Name { get; set; }
         public string Key { get; set; }
         public Resist DamageType { get; set; } = Resist.PHYSICAL;
+        public short MaxRange { get; set; }
         public int Cooldown { get; set; } = 500;
         public long LastUsage { get; set; } = 0;
         public bool IsMainSkill { get; set; } = false;

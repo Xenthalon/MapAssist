@@ -113,6 +113,7 @@
     <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\MenuMan.cs" />
     <Compile Include="Automation\Movement.cs" />
+    <Compile Include="Automation\Navigation\StinkySpot.cs" />
     <Compile Include="Automation\NoPathFoundException.cs" />
     <Compile Include="Automation\NPC.cs" />
     <Compile Include="Automation\OOG.cs" />

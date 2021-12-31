@@ -18,6 +18,7 @@
  **/
 
 using GameOverlay.Drawing;
+using MapAssist.Automation.Navigation;
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using Roy_T.AStar.Graphs;
@@ -162,6 +163,28 @@ namespace MapAssist.Types
         {
             var point = areaData.Origin;
             return new Point((ushort)(point.X + position.X / DistanceBetweenCells), (ushort)(point.Y + position.Y / DistanceBetweenCells));
+        }
+
+        public static StinkySpot[,] MapOfStinkyness(this AreaData areaData)
+        {
+            var rows = areaData.CollisionGrid.GetLength(0);
+            var columns = areaData.CollisionGrid[0].GetLength(0);
+
+            var spots = new StinkySpot[columns, rows];
+
+            for (var i = 0; i < columns; i++)
+            {
+                for (var j = 0; j < rows; j++)
+                {
+                    spots[i, j] = new StinkySpot
+                    {
+                        IsWalkable = IsMovable(areaData.CollisionGrid[j][i]),
+                        Location = new Point(i, j)
+                    };
+                }
+            }
+
+            return spots;
         }
 
         public static Grid MapToGrid(this AreaData areaData)

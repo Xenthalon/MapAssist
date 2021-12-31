@@ -57,7 +57,12 @@ namespace MapAssist
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);
             _townManager.Update(gameData);
-            _orchestrator.Update(gameData, pointsOfInterest);
+            _orchestrator.Update(gameData, pointsOfInterest, pathing);
+        }
+
+        public void Reset()
+        {
+            _orchestrator.Reset();
         }
 
         public void dumpGameData()
@@ -140,6 +145,11 @@ namespace MapAssist
         public void DoTownStuff()
         {
             _townManager.OpenWaypointMenu();
+        }
+
+        public void DoExploreStuff()
+        {
+            _orchestrator.ExploreArea();
         }
 
         public void StartAutoTele()

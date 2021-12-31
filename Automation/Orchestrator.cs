@@ -15,7 +15,8 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         
         private static List<RunProfile> _runProfiles = new List<RunProfile>();
-        private static readonly int _gameChangeSafetyLimit = 3;
+        private static readonly int _gameChangeSafetyLimit = 150;
+        private static readonly bool _autostart = true;
 
         private BackgroundWorker _worker;
 
@@ -25,6 +26,7 @@ namespace MapAssist.Automation
         private Input _input;
         private MenuMan _menuMan;
         private Movement _movement;
+        private Pathing _pathing;
         private PickIt _pickit;
         private TownManager _townManager;
 
@@ -37,6 +39,9 @@ namespace MapAssist.Automation
 
         private int _activeProfileIndex = -1;
         private bool _goBotGo = false;
+
+        private List<Point> _exploreSpots = new List<Point>();
+        private bool _exploring = false;
 
         public string PortalKey = "f";
 
@@ -64,16 +69,17 @@ namespace MapAssist.Automation
             _worker.WorkerSupportsCancellation = true;
 
             _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
-            _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234) });
+            _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234), Reposition = false });
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
+        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _gameData = gameData;
                 _currentArea = gameData.Area;
                 _pointsOfInterest = pointsOfInterest;
+                _pathing = pathing;
 
                 if (_gameData.MapSeed != _currentGameSeed && _gameData.MapSeed != _possiblyNewGameSeed)
                 {
@@ -91,32 +97,22 @@ namespace MapAssist.Automation
                 {
                     _log.Info("Entered new game " + _gameData.MapSeed + ", resetting everything.");
 
-                    _goBotGo = false;
-                    _activeProfileIndex = -1;
-                    _worker.CancelAsync();
-                    _worker = new BackgroundWorker();
-                    _worker.DoWork += new DoWorkEventHandler(Orchestrate);
-                    _worker.WorkerSupportsCancellation = true;
-                    _possiblyNewGameSeed = 0;
-                    _possiblyNewGameCounter = 0;
-
-                    _buffboy.Reset();
-                    _combat.Reset();
-                    _movement.Reset();
-                    _pickit.Reset();
-                    _townManager.Reset();
+                    Reset();
 
                     _currentGameSeed = _gameData.MapSeed;
 
-                    Task.Factory.StartNew(() =>
+                    if (_autostart)
                     {
-                        System.Threading.Thread.Sleep(5000);
-                        _log.Info("Go run!");
-                        Run();
-                    });
+                        Task.Factory.StartNew(() =>
+                        {
+                            System.Threading.Thread.Sleep(5000);
+                            _log.Info("Go run!");
+                            Run();
+                        });
+                    }
                 }
 
-                if (_goBotGo && !_worker.IsBusy)
+                if ((_goBotGo || _exploring) && !_worker.IsBusy)
                 {
                     _worker.RunWorkerAsync();
                 }
@@ -138,8 +134,32 @@ namespace MapAssist.Automation
             }
         }
 
+        public void Reset()
+        {
+            _goBotGo = false;
+            _activeProfileIndex = -1;
+            _worker.CancelAsync();
+            _worker = new BackgroundWorker();
+            _worker.DoWork += new DoWorkEventHandler(Orchestrate);
+            _worker.WorkerSupportsCancellation = true;
+            _possiblyNewGameSeed = 0;
+            _possiblyNewGameCounter = 0;
+
+            _buffboy.Reset();
+            _combat.Reset();
+            _movement.Reset();
+            _pickit.Reset();
+            _townManager.Reset();
+        }
+
         private void Orchestrate(object sender, DoWorkEventArgs e)
         {
+            if (_exploring)
+            {
+                DoExplorationStep();
+                return;
+            }
+
             if (_activeProfileIndex == _runProfiles.Count() - 1)
             {
                 _log.Error("Exhausted all profiles, done!");
@@ -152,6 +172,8 @@ namespace MapAssist.Automation
             if (!_townManager.IsInTown)
             {
                 _log.Error("Every run needs to start in town, something is borked!");
+                _menuMan.ExitGame();
+                System.Threading.Thread.Sleep(10000);
                 return;
             }
 
@@ -176,6 +198,12 @@ namespace MapAssist.Automation
 
             foreach (Area area in activeProfile.AreaPath)
             {
+                if (_goBotGo == false)
+                {
+                    _log.Info("received kill signal, aborting");
+                    return;
+                }
+
                 if (_currentArea == area)
                     continue;
 
@@ -246,6 +274,13 @@ namespace MapAssist.Automation
                         }
                     }
 
+                    if (_goBotGo == false)
+                    {
+                        _log.Info("received kill signal, aborting");
+                        return;
+                    }
+
+                    // go back to town here if area not changed?
                     ChangeArea(area, (Point)interactPoint);
                 }
             }
@@ -253,6 +288,12 @@ namespace MapAssist.Automation
             if (!_townManager.IsInTown)
             {
                 BuffMe();
+            }
+
+            if (_goBotGo == false)
+            {
+                _log.Info("received kill signal, aborting");
+                return;
             }
 
             _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
@@ -280,14 +321,21 @@ namespace MapAssist.Automation
             else if (activeProfile.Type == RunType.ClearArea)
             {
                 // not quite right, need pathing here
-                _combat.ClearArea(_gameData.PlayerPosition);
+                _combat.ClearArea(_gameData.PlayerPosition, activeProfile.Reposition);
             }
 
             do
             {
                 System.Threading.Thread.Sleep(100);
+
+                if (!_combat.IsSafe && !_combat.Busy)
+                {
+                    _combat.ClearArea(_gameData.PlayerPosition);
+                }
             }
             while (!_combat.IsSafe);
+
+            System.Threading.Thread.Sleep(300);
 
             _pickit.Run();
 
@@ -297,7 +345,47 @@ namespace MapAssist.Automation
             }
             while (_pickit.Busy);
 
-            TakePortalHome();
+            if (_goBotGo == false)
+            {
+                _log.Info("received kill signal, aborting");
+                return;
+            }
+
+            if (_activeProfileIndex == _runProfiles.Count() - 1)
+            {
+                _log.Info("Finished run!");
+                _goBotGo = false;
+                _menuMan.ExitGame();
+                System.Threading.Thread.Sleep(10000);
+            }
+            else
+            {
+                TakePortalHome();
+            }
+        }
+
+        public void ExploreArea()
+        {
+            _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
+
+            _exploring = true;
+        }
+
+        private void DoExplorationStep()
+        {
+            if (_exploreSpots.Count() <= 0)
+            {
+                _log.Info("finished!");
+                _exploring = false;
+            }
+            else
+            {
+                var nextSpot = _exploreSpots[0];
+
+                MoveTo(nextSpot);
+
+                _exploreSpots.RemoveAt(0);
+            }
         }
 
         private void GoHeal()
@@ -436,6 +524,7 @@ namespace MapAssist.Automation
                 var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
 
                 success = ChangeArea(destinationArea, portal.Position);
+                System.Threading.Thread.Sleep(1500); // town loads take longer than other area changes
             }
             else
             {
@@ -488,7 +577,7 @@ namespace MapAssist.Automation
             }
             else
             {
-                System.Threading.Thread.Sleep(1200);
+                System.Threading.Thread.Sleep(1000);
             }
 
             return success;
