@@ -14,6 +14,7 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
         private static readonly HashSet<Waypoint> _waypoints = new HashSet<Waypoint>();
+        private static readonly string InventoryKey = "i";
 
         private Input _input;
         private int _act = 0;
@@ -113,6 +114,20 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(250);
         }
 
+        public void PutItemIntoBelt(int x, int y)
+        {
+            if (!_menus.Inventory)
+            {
+                _log.Error("Got to be in inventory to belt things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+
+            _input.DoInputAtScreenPosition("+{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(500);
+        }
+
         public void TakeWaypoint(Area area)
         {
             if (!_waypoints.Any(x => x.Area == area))
@@ -197,6 +212,25 @@ namespace MapAssist.Automation
             }
 
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.265), (int)(_window.Height * 0.71)));
+        }
+
+        public bool OpenInventory()
+        {
+            CloseMenu();
+
+            for (var i = 0; i < 3; i++)
+            {
+                _input.DoInput(InventoryKey);
+
+                System.Threading.Thread.Sleep(500);
+
+                if (_menus.Inventory)
+                {
+                    break;
+                }
+            }
+
+            return _menus.Inventory;
         }
 
         public void CloseMenu()

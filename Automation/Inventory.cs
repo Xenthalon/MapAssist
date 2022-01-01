@@ -24,9 +24,11 @@ namespace MapAssist.Automation
 
         public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
         public static IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
+        public static IEnumerable<UnitAny> ItemsToBelt = new HashSet<UnitAny>();
 
         public static bool AnyItemsToStash => ItemsToStash.Count() > 0;
         public static bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
+        public static bool AnyItemsToBelt => ItemsToBelt.Count() > 0;
 
         public static void Update(uint playerUnitId, HashSet<UnitAny> items)
         {
@@ -52,6 +54,8 @@ namespace MapAssist.Automation
 
             ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x));
             ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x));
+            ItemsToBelt = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && 
+                (Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" || Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"));
 
             var tpTome = inventoryItems.Where(x => x.TxtFileNo == 518).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
@@ -60,10 +64,10 @@ namespace MapAssist.Automation
                 tpTome.Stats.TryGetValue(Stat.STAT_QUANTITY, out TPScrolls);
             }
 
-            //foreach (var item in ItemsToStash)
-            //{
-            //    _log.Info($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y} !");
-            //}
+            foreach (var item in ItemsToStash)
+            {
+                _log.Debug($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y}!");
+            }
         }
 
         public static int GetNextPotionSlotToUse()

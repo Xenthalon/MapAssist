@@ -146,6 +146,7 @@ namespace MapAssist.Automation
             _possiblyNewGameCounter = 0;
 
             _buffboy.Reset();
+            _chicken.Reset();
             _combat.Reset();
             _movement.Reset();
             _pickit.Reset();
@@ -183,6 +184,8 @@ namespace MapAssist.Automation
 
             _log.Info("Let's do " + activeProfile.Name);
 
+            RecoverCorpse();
+            BeltAnyPotions();
             GoHeal();
             GoTrade();
             ReviveMerc();
@@ -191,6 +194,7 @@ namespace MapAssist.Automation
             if (!stashed)
             {
                 // !! PANIKK
+                _log.Info("Stash is full or something went wrong, shutting down.");
                 _goBotGo = false;
                 _activeProfileIndex = _runProfiles.Count() - 1;
                 return;
@@ -497,6 +501,56 @@ namespace MapAssist.Automation
             }
 
             return !_chicken.MercIsDead;
+        }
+
+        private void RecoverCorpse()
+        {
+            if (_gameData.Players.Any(x => x.Value.IsCorpse && x.Value.Name == _gameData.PlayerUnit.Name && x.Value.Mode == 17 && x.Value.UnitId != _gameData.PlayerUnit.UnitId))
+            {
+                _log.Info("Awww shucks, seems we died, grabbing corpse.");
+
+                var corpse = _gameData.Players.Where(x => x.Value.IsCorpse && x.Value.Name == _gameData.PlayerUnit.Name).First().Value;
+
+                if (Automaton.GetDistance(corpse.Position, _gameData.PlayerUnit.Position) > 5)
+                {
+                    MoveTo(corpse.Position);
+                }
+
+                var maxRetries = 3;
+                var retryCount = 0;
+
+                do
+                {
+                    _input.DoInputAtWorldPosition("{LMB}", corpse.Position);
+                    System.Threading.Thread.Sleep(1000);
+                    retryCount += 1;
+
+                    if (retryCount >= maxRetries)
+                    {
+                        _log.Error("Couldn't pick up corpse, exiting game.");
+                        _menuMan.ExitGame();
+                        break;
+                    }
+                }
+                while (_gameData.Players.Any(x => x.Value.IsCorpse && x.Value.Name == _gameData.PlayerUnit.Name));
+            }
+        }
+
+        private void BeltAnyPotions()
+        {
+            if (Inventory.AnyItemsToBelt && !Inventory.IsBeltFull())
+            {
+                _log.Info($"Putting {Inventory.ItemsToBelt.Count()} potions into belt.");
+
+                _menuMan.OpenInventory();
+
+                foreach (var potion in Inventory.ItemsToBelt)
+                {
+                    _menuMan.PutItemIntoBelt(potion.X, potion.Y);
+                }
+
+                _menuMan.CloseMenu();
+            }
         }
 
         private bool TakePortalHome()
