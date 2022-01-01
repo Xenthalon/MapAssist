@@ -120,7 +120,7 @@ namespace MapAssist
                         _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
                         _compositor.DrawESP(gfx, _gameData, WindowRect(), _pathing);
                     }
-                    else if (GameManager.MainWindowHandle != IntPtr.Zero)
+                    else if (GameManager.MainWindowHandle != IntPtr.Zero && !InGame())
                     {
                         // emergency oog engage!
                         _log.Info("OOG triggered!");
@@ -163,28 +163,8 @@ namespace MapAssist
 
         public void KeyPressHandler(object sender, KeyPressEventArgs args)
         {
-
             if (InGame())
             {
-                if (args.KeyChar == 'l')
-                {
-                    _automation.dumpGameData();
-                }
-
-                if (args.KeyChar == 'v')
-                {
-                    _automation.StartAutoTele();
-                }
-
-                if (args.KeyChar == 'n')
-                {
-                    _automation.GoBotGo();
-                    // _automation.DoExploreStuff();
-                    // _automation.MouseMoveTest();
-                    // _automation.Fight();
-                    // _automation.DoTownStuff();
-                }
-
                 if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)
                 {
                     _show = !_show;
@@ -208,6 +188,31 @@ namespace MapAssist
                         MapAssistConfiguration.Loaded.RenderingConfiguration.Size -=
                           (int)(MapAssistConfiguration.Loaded.RenderingConfiguration.InitialSize * 0.05f);
                     }
+                }
+            }
+        }
+
+        public void KeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (InGame())
+            {
+                if (e.KeyCode == Keys.L)
+                {
+                    _automation.dumpGameData();
+                }
+
+                if (e.KeyCode == Keys.V)
+                {
+                    _automation.StartAutoTele();
+                }
+
+                if (e.KeyCode == Keys.N)
+                {
+                    // _automation.GoBotGo();
+                    _automation.DoExploreStuff();
+                    // _automation.MouseMoveTest();
+                    // _automation.Fight();
+                    // _automation.DoTownStuff();
                 }
             }
         }

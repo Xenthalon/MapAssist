@@ -126,6 +126,21 @@ namespace MapAssist
                         Visible = true
                     };
 
+                    globalHook.KeyDown += (sender, args) =>
+                    {
+                        if (args.KeyCode == Keys.End)
+                        {
+                            Dispose();
+                            Application.Exit();
+                            Environment.Exit(0);
+                        }
+
+                        if (overlay != null)
+                        {
+                            overlay.KeyDownHandler(sender, args);
+                        }
+                    };
+
                     globalHook.KeyPress += (sender, args) =>
                     {
                         if (overlay != null)
