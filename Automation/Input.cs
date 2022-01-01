@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace MapAssist.Automation
 {
-    class Input
+    public class Input
     {
         IntPtr _mainWindowHandle;
         Point _playerPositionWorld;
@@ -47,6 +47,18 @@ namespace MapAssist.Automation
 
         public void DoInputAtScreenPosition(string input, Point screenPosition)
         {
+            if (screenPosition.X < 20)
+                screenPosition.X = 20;
+
+            if (screenPosition.X > _window.Width * 0.98)
+                screenPosition.X = (int)(_window.Width * 0.98);
+
+            if (screenPosition.Y < 20)
+                screenPosition.Y = 20;
+
+            if (screenPosition.Y > _window.Height * 0.9)
+                screenPosition.Y = (int)(_window.Height * 0.9);
+
             MouseMove(screenPosition);
             System.Threading.Thread.Sleep(10);
 
