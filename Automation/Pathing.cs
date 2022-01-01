@@ -41,10 +41,10 @@ namespace MapAssist.Automation
 
         // Stuff for stinkyness exploration
         private static readonly Random Randomizer = new Random();
-        private static readonly short StinkSampleSize = 30;
+        private static readonly short StinkSampleSize = 50;
         private static readonly short StinkRange = 30;
         private static readonly short StinkMaximum = 500;
-        private static readonly double MaxStinkSaturation = 0.90;
+        private static readonly double MaxStinkSaturation = 0.95;
 
         // Stuff for teleport pathing
         private static readonly short RangeInvalid = 10000;
@@ -96,6 +96,71 @@ namespace MapAssist.Automation
             }
 
             return result;
+        }
+
+        public bool HasLineOfSight(Point point1, Point point2)
+        {
+            var sight = true;
+
+            var gridLocation1 = new Point((int)(point1.X) - _areaData.Origin.X, (int)(point1.Y) - _areaData.Origin.Y);
+            var gridLocation2 = new Point((int)(point2.X) - _areaData.Origin.X, (int)(point2.Y) - _areaData.Origin.Y);
+
+            double vectorX = gridLocation2.X - gridLocation1.X;
+            double vectorY = gridLocation2.Y - gridLocation1.Y;
+
+            if (vectorX > vectorY)
+            {
+                var ySteps = vectorY / vectorX;
+
+                for (var i = 0; i < vectorX; i++)
+                {
+                    var x = (int)gridLocation1.X + i;
+                    var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0);
+
+                    var collisionValue = _areaData.CollisionGrid[y][x];
+
+                    if (collisionValue == -1) // current IsWalkable implementation, need to check what the the ponds are that you can shoot over
+                    {
+                        sight = false;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                var xSteps = vectorX / vectorY;
+
+                for (var i = 0; i < vectorY; i++)
+                {
+                    var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0);
+                    var y = (int)gridLocation1.Y + i;
+
+                    var collisionValue = _areaData.CollisionGrid[y][x];
+
+                    if (collisionValue == -1) // current IsWalkable implementation, need to check what the the ponds are that you can shoot over
+                    {
+                        sight = false;
+                        break;
+                    }
+                }
+            }
+
+            return sight;
+        }
+
+        public bool IsWalkable(Point worldPoint)
+        {
+            var gridLocation = new Point((int)(worldPoint.X) - _areaData.Origin.X, (int)(worldPoint.Y) - _areaData.Origin.Y);
+
+            var maxX = _areaData.CollisionGrid.GetLength(0);
+            var maxY = _areaData.CollisionGrid[0].GetLength(0);
+
+            if (worldPoint.X < 0 || worldPoint.Y < 0 || worldPoint.X >= maxX || worldPoint.Y >= maxY)
+                return false;
+
+            var value = _areaData.CollisionGrid[(int)gridLocation.Y][(int)gridLocation.X];
+
+            return value == 0 || value == 16; // IsMovable implementation
         }
 
         public List<Point> GetPathToLocation(uint mapId, Difficulty difficulty, bool teleport, Point fromLocation, Point toLocation)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
-    public enum RunType { KillTarget, ClearArea };
+    public enum RunType { KillTarget, ClearArea, Explore };
 
     class RunProfile
     {

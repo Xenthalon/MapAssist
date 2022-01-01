@@ -118,7 +118,7 @@ namespace MapAssist
                         }
 
                         _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
-                        _compositor.DrawESP(gfx, _gameData, WindowRect(), _pathing);
+                        _compositor.DrawESP(gfx, _gameData, WindowRect(), _pathing, _automation.Movement);
                     }
                     else if (GameManager.MainWindowHandle != IntPtr.Zero && !InGame())
                     {

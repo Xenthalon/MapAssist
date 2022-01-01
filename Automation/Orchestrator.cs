@@ -19,6 +19,7 @@ namespace MapAssist.Automation
         private static readonly bool _autostart = true;
 
         private BackgroundWorker _worker;
+        private BackgroundWorker _explorer;
 
         private BuffBoy _buffboy;
         private Chicken _chicken;
@@ -68,7 +69,12 @@ namespace MapAssist.Automation
             _worker.DoWork += new DoWorkEventHandler(Orchestrate);
             _worker.WorkerSupportsCancellation = true;
 
+            _explorer = new BackgroundWorker();
+            _explorer.DoWork += new DoWorkEventHandler(DoExplorationStep);
+            _explorer.WorkerSupportsCancellation = true;
+
             _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
+            _runProfiles.Add(new RunProfile { Name = "Ancient Tunnels", Type = RunType.Explore, AreaPath = new Area[] { Area.LostCity, Area.AncientTunnels } });
             _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234), Reposition = false });
         }
 
@@ -112,9 +118,14 @@ namespace MapAssist.Automation
                     }
                 }
 
-                if ((_goBotGo || _exploring) && !_worker.IsBusy)
+                if (_goBotGo && !_worker.IsBusy)
                 {
                     _worker.RunWorkerAsync();
+                }
+
+                if (_goBotGo && _exploring && !_explorer.IsBusy)
+                {
+                    _explorer.RunWorkerAsync();
                 }
             }
         }
@@ -155,12 +166,6 @@ namespace MapAssist.Automation
 
         private void Orchestrate(object sender, DoWorkEventArgs e)
         {
-            if (_exploring)
-            {
-                DoExplorationStep();
-                return;
-            }
-
             if (_activeProfileIndex == _runProfiles.Count() - 1)
             {
                 _log.Error("Exhausted all profiles, done!");
@@ -300,8 +305,11 @@ namespace MapAssist.Automation
                 return;
             }
 
-            _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
-            MoveTo(activeProfile.KillSpot);
+            if (activeProfile.KillSpot != null && activeProfile.KillSpot.X != 0 && activeProfile.KillSpot.Y != 0)
+            {
+                _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
+                MoveTo(activeProfile.KillSpot);
+            }
 
             if (activeProfile.Type == RunType.KillTarget)
             {
@@ -324,8 +332,19 @@ namespace MapAssist.Automation
             }
             else if (activeProfile.Type == RunType.ClearArea)
             {
-                // not quite right, need pathing here
                 _combat.ClearArea(_gameData.PlayerPosition, activeProfile.Reposition);
+            }
+            else if (activeProfile.Type == RunType.Explore)
+            {
+                _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
+
+                _exploring = true;
+
+                do
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
+                while (_exploring);
             }
 
             do
@@ -375,11 +394,11 @@ namespace MapAssist.Automation
             _exploring = true;
         }
 
-        private void DoExplorationStep()
+        private void DoExplorationStep(object sender, DoWorkEventArgs e)
         {
             if (_exploreSpots.Count() <= 0)
             {
-                _log.Info("finished!");
+                _log.Info("Exploration concluded!");
                 _exploring = false;
             }
             else
@@ -389,6 +408,27 @@ namespace MapAssist.Automation
                 MoveTo(nextSpot);
 
                 _exploreSpots.RemoveAt(0);
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+
+                    if (!_combat.IsSafe && !_combat.Busy)
+                    {
+                        _combat.ClearArea(_gameData.PlayerPosition);
+                    }
+                }
+                while (!_combat.IsSafe);
+
+                System.Threading.Thread.Sleep(100);
+
+                _pickit.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_pickit.Busy);
             }
         }
 
@@ -475,6 +515,12 @@ namespace MapAssist.Automation
                 else
                 {
                     _menuMan.CloseMenu();
+                }
+
+                // fix for weird path finding issues in Act 2
+                if (_gameData.Area == Area.LutGholein)
+                {
+                    _movement.Walk(new Point(5113, 5092));
                 }
             }
 

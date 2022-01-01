@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
-    class Movement
+    public class Movement
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static readonly int _areaChangeSafetyLimit = 3;
         private static readonly int _moveMaxTries = 3;
         private static readonly int _abortLimit = 3;
+        private static readonly string TELEPORT_KEY = "w";
 
         private BackgroundWorker _movementWorker;
         private Input _input;
@@ -81,6 +82,45 @@ namespace MapAssist.Automation
                     _movementWorker.RunWorkerAsync();
                 }
             }
+        }
+
+        public void GetInLOSRange(Point target, double range)
+        {
+            var circleSpots = GetCirclePoints(target, range - 1);
+
+            var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
+                                        .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
+                                        .FirstOrDefault();
+
+            if (nicestSpot == null || (nicestSpot.X == 0 && nicestSpot.Y == 0))
+            {
+                _log.Info("Couldn't find cool location, getting personal.");
+                Teleport(target);
+            }
+            else
+            {
+                Teleport(nicestSpot);
+            }
+        }
+
+        // adapted from https://stackoverflow.com/questions/5300938/calculating-the-position-of-points-in-a-circle
+        public List<Point> GetCirclePoints(Point target, double range)
+        {
+            var pointAmount = 36.0; // tripple of clock, should be okay?
+            var points = new List<Point>();
+
+            var slice = 2 * Math.PI / pointAmount;
+
+            for (var i = 0; i < pointAmount; i++)
+            {
+                var angle = slice * i;
+                var newX = (int)target.X + (range * Math.Cos(angle));
+                var newY = (int)target.Y + (range * Math.Sin(angle));
+
+                points.Add(new Point((float)newX, (float)newY));
+            }
+
+            return points;
         }
 
         public void GetInRangeOf(Point target, double range)
@@ -245,9 +285,14 @@ namespace MapAssist.Automation
             }
         }
 
-        private bool Teleport(Point worldPoint)
+        /// <summary>
+        /// Immediate teleport to spot, no path finding. Should be on screen.
+        /// </summary>
+        /// <param name="worldPoint"></param>
+        /// <returns></returns>
+        public bool Teleport(Point worldPoint)
         {
-            _input.DoInputAtWorldPosition("w", worldPoint);
+            _input.DoInputAtWorldPosition(TELEPORT_KEY, worldPoint);
 
             for (var i = 0; i < 20; i++)
             {
@@ -261,7 +306,12 @@ namespace MapAssist.Automation
             return IsNear(_gameData.PlayerPosition, worldPoint);
         }
 
-        private bool Walk(Point worldPoint)
+        /// <summary>
+        /// Immediate walking to spot, no path finding. Should be on screen.
+        /// </summary>
+        /// <param name="worldPoint"></param>
+        /// <returns></returns>
+        public bool Walk(Point worldPoint)
         {
             _input.DoInputAtWorldPosition("{LMB}", worldPoint);
 

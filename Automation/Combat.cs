@@ -15,17 +15,20 @@ namespace MapAssist.Automation
 
         private static readonly short combatRange = 20;
         private static readonly double tooCloseRange = 10;
+        private static readonly int escapeCooldown = 3000;
 
         private BackgroundWorker _combatWorker;
         private bool _fighting = false;
         private Input _input;
         private Movement _movement;
+        private Pathing _pathing;
         private List<CombatSkill> _skills = new List<CombatSkill>();
         private bool _reposition = true;
         private Point _playerPosition;
         private HashSet<UnitAny> _monsters;
         private UnitAny _target;
         private Point? _areaToClear;
+        private long _lastEscapeAttempt = 0;
 
         public bool IsSafe => !_monsters.Any(x => Automaton.GetDistance(_playerPosition, x.Position) <= combatRange);
         public bool Busy => _fighting;
@@ -41,9 +44,9 @@ namespace MapAssist.Automation
 
             _target = new UnitAny(IntPtr.Zero);
 
-            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, MaxRange = 25, Cooldown = 500, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
-            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 25, Cooldown = 1800, Key = "{RMB}", IsRanged = true, IsAoe = true });
-            _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 25, Cooldown = 350, Key = "a", IsRanged = true });
+            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 500, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
+            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 1800, Key = "{RMB}", IsRanged = true, IsAoe = true });
+            _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 20, Cooldown = 350, Key = "a", IsRanged = true });
             _skills.Add(new CombatSkill { Name = "Static", DamageType = Resist.LIGHTNING, MaxRange = 8, Cooldown = 350, Key = "s", IsRanged = true, IsStatic = true });
         }
 
@@ -80,12 +83,13 @@ namespace MapAssist.Automation
             }
         }
 
-        public void Update(GameData gameData)
+        public void Update(GameData gameData, Pathing pathing)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _monsters = gameData.Monsters;
                 _playerPosition = gameData.PlayerPosition;
+                _pathing = pathing;
 
                 if (_target.IsValidPointer())
                 {
@@ -114,6 +118,7 @@ namespace MapAssist.Automation
             _fighting = false;
             _areaToClear = null;
             _reposition = true;
+            _lastEscapeAttempt = 0;
             _target = new UnitAny(IntPtr.Zero);
             _combatWorker.CancelAsync();
         }
@@ -140,7 +145,7 @@ namespace MapAssist.Automation
 
             if (_target.IsValidPointer())
             {
-                Point castLocation = _target.Position;
+                var castLocation = new Point(_target.Position.X, _target.Position.Y);
 
                 if (_target.Mode != 0 && _target.Mode != 12) // if not dying or dead
                 {
@@ -168,7 +173,7 @@ namespace MapAssist.Automation
                         // means static is still on cooldown
                         if (staticSkill != null)
                         {
-                            if (Automaton.GetDistance(_target.Position, _playerPosition) > staticSkill.MaxRange)
+                            if (Automaton.GetDistance(_target.Position, _playerPosition) > staticSkill.MaxRange || !_pathing.HasLineOfSight(_playerPosition, _target.Position))
                             {
                                 _log.Info("Want to use " + staticSkill.Name + ", lets get closer.");
                                 GetInLOSRange(_target.Position, staticSkill.MaxRange);
@@ -179,18 +184,20 @@ namespace MapAssist.Automation
                             System.Threading.Thread.Sleep(200);
                         }
                     }
-                    else if (_skills.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !_target.Immunities.Contains(x.DamageType)))
+                    else if (_skills.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
                     {
                         if (_reposition &&
-                            Automaton.GetDistance(_target.Position, _playerPosition) < tooCloseRange)
+                            Automaton.GetDistance(_target.Position, _playerPosition) < tooCloseRange &&
+                            Now - _lastEscapeAttempt > escapeCooldown)
                         {
                             _log.Info("This is a bit personal, lets get away.");
                             System.Threading.Thread.Sleep(300);
                             _movement.GetOutOfRangeOf(_target.Position, tooCloseRange);
+                            _lastEscapeAttempt = Now;
                             System.Threading.Thread.Sleep(300);
                         }
 
-                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !_target.Immunities.Contains(x.DamageType)).First();
+                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
 
                         if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
                         {
@@ -204,10 +211,11 @@ namespace MapAssist.Automation
         private void AttackWith(CombatSkill skill, Point worldPosition)
         {
             if (_reposition &&
-                Automaton.GetDistance(_target.Position, _playerPosition) > skill.MaxRange)
+                (Automaton.GetDistance(worldPosition, _playerPosition) > skill.MaxRange ||
+                !_pathing.HasLineOfSight(_playerPosition, worldPosition)))
             {
                 _log.Info("Want to use " + skill.Name + ", lets get closer.");
-                GetInLOSRange(_target.Position, skill.MaxRange);
+                GetInLOSRange(worldPosition, skill.MaxRange);
             }
 
             _input.DoInputAtWorldPosition(skill.Key, worldPosition);
@@ -218,7 +226,7 @@ namespace MapAssist.Automation
         private void GetInLOSRange(Point target, short maxRange)
         {
             System.Threading.Thread.Sleep(300);
-            _movement.GetInRangeOf(target, maxRange);
+            _movement.GetInLOSRange(target, maxRange);
             System.Threading.Thread.Sleep(300);
         }
 
@@ -239,13 +247,30 @@ namespace MapAssist.Automation
                                 .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).First();
             }
 
-            // get closest enemy not immune to us
-            victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType))
-                            .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            // get closest enemy not immune to us with line of sight
+            if (!victim.IsValidPointer())
+            { 
+                victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            }
 
-            if (fallbackSkill != null)
+            // get closest enemy not immune to our fallback with line of sight
+            if (!victim.IsValidPointer() && fallbackSkill != null)
             {
-                // get closest enemy not immune to our fallback
+                victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            }
+
+            // get closest enemy not immune to us
+            if (!victim.IsValidPointer())
+            {
+                victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType))
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            }
+
+            // get closest enemy not immune to our fallback
+            if (!victim.IsValidPointer() && fallbackSkill != null)
+            {
                 victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType))
                                 .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
             }

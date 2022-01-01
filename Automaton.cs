@@ -19,6 +19,8 @@ namespace MapAssist
         private GameData _currentGameData;
         private List<PointOfInterest> _pointsOfInterests;
 
+        public Movement Movement => _movement;
+
         private BuffBoy _buffBoy;
         private Chicken _chicken;
         private Combat _combat;
@@ -52,7 +54,7 @@ namespace MapAssist
             _input.Update(gameData, windowRect);
             _buffBoy.Update(gameData);
             _chicken.Update(gameData);
-            _combat.Update(gameData);
+            _combat.Update(gameData, pathing);
             _menuMan.Update(gameData, windowRect);
             _movement.Update(gameData, pathing);
             _pickit.Update(gameData);

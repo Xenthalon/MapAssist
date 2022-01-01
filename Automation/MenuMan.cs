@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
-    class MenuMan
+    public class MenuMan
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 

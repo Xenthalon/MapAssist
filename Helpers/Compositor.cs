@@ -698,13 +698,34 @@ namespace MapAssist.Helpers
             }
         }
 
-        public void DrawESP(Graphics gfx, GameData gameData, Rectangle windowRect, Automation.Pathing pathing) {
+        public void DrawESP(Graphics gfx, GameData gameData, Rectangle windowRect, Automation.Pathing pathing, Automation.Movement movement) {
             if (!MapAssistConfiguration.Loaded.GameInfo.ShowOverlayFPS)
                 return;
 
-            var playerPositionScreen = new Point(windowRect.Width / 2, (int)(windowRect.Height * 0.49));
+            var playerPositionScreen = new Point(windowRect.Width / 2, (int)(windowRect.Height * 0.45));
 
             gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Green), windowRect.Width / 2, (float)(windowRect.Height * 0.49), 24, 12, 1.0f);
+
+            var rows = _areaData.CollisionGrid.GetLength(0);
+            var columns = _areaData.CollisionGrid[0].GetLength(0);
+
+            // collision grid display
+            //for (var i = 0; i < columns; i++)
+            //{
+            //    for (var k = 0; k < rows; k++)
+            //    {
+            //        var worldPoint = new Point(i + _areaData.Origin.X, k + _areaData.Origin.Y);
+            //        Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, worldPoint, playerPositionScreen);
+
+            //        if (screenPosition.X > 0 && screenPosition.X < 2841 && screenPosition.Y > 0 && screenPosition.Y < 1361)
+            //        {
+            //            DrawText(gfx, screenPosition, _areaData.CollisionGrid[k][i].ToString(),
+            //                MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+            //                MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+            //                _areaData.CollisionGrid[k][i] == 0 && pathing.HasLineOfSight(_gameData.PlayerPosition, worldPoint) ? Color.Green : Color.Red);
+            //        }
+            //    }
+            //}
 
             foreach (Types.UnitAny monster in gameData.Monsters)
             {
@@ -713,7 +734,22 @@ namespace MapAssist.Helpers
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
-                gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+                gfx.DrawEllipse(CreateSolidBrush(gfx, pathing.HasLineOfSight(gameData.PlayerPosition, monster.Position) ? Color.Green : Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+
+                //for (var i = 3; i < 21; i += 3)
+                //{
+                //    var pointsAround = movement.GetCirclePoints(monster.Position, i);
+
+                //    foreach(var point in pointsAround)
+                //    {
+                //        Point onScreen = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen);
+
+                //        DrawText(gfx, onScreen, "x",
+                //            MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                //            MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                //            pathing.HasLineOfSight(point, monster.Position) ? Color.Green : Color.Red);
+                //    }
+                //}
             }
 
             foreach (Types.UnitAny npc in gameData.NPCs)
@@ -728,7 +764,7 @@ namespace MapAssist.Helpers
             foreach (Types.UnitAny item in gameData.Items)
             {
                 Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, item.Position, playerPositionScreen);
-                gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
+                gfx.DrawEllipse(CreateSolidBrush(gfx, Color.Yellow), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
             }
 
             foreach (Types.UnitAny gameObject in gameData.Objects)

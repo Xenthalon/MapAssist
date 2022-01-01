@@ -64,10 +64,10 @@ namespace MapAssist.Automation
                 tpTome.Stats.TryGetValue(Stat.STAT_QUANTITY, out TPScrolls);
             }
 
-            foreach (var item in ItemsToStash)
-            {
-                _log.Debug($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y}!");
-            }
+            //foreach (var item in ItemsToStash)
+            //{
+            //    _log.Debug($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y}!");
+            //}
         }
 
         public static int GetNextPotionSlotToUse()
