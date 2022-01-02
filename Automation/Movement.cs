@@ -84,11 +84,23 @@ namespace MapAssist.Automation
             }
         }
 
-        public void GetInLOSRange(Point target, double range)
+        public void GetInLOSRange(Point target, double minRange, double maxRange)
         {
-            var circleSpots = GetCirclePoints(target, range - 1);
+            if (target == null || (target.X == 0 && target.Y == 0))
+            {
+                return;
+            }
+
+            var circleSpots = new List<Point>();
+
+            for (var range = minRange; range <= maxRange; range++)
+            {
+                circleSpots.AddRange(GetCirclePoints(target, range));
+            }
 
             var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
+                                        .OrderByDescending(x => Automaton.GetDistance(x, target))
+                                        .Take(5)
                                         .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
                                         .FirstOrDefault();
 
@@ -245,8 +257,8 @@ namespace MapAssist.Automation
                     if (_failuresUntilAbort > _abortLimit)
                     {
                         _log.Error("Reached abort limit, exiting game!");
-                        _menuMan.ExitGame();
                         Reset();
+                        _menuMan.ExitGame();
                         return;
                     }
 

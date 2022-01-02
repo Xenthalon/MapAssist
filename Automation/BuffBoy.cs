@@ -19,6 +19,7 @@ namespace MapAssist.Automation
         private bool _useCta = true;
         private string _switchKey = "x";
         private bool _buffing = false;
+        private bool _force = false;
         private List<CombatSkill> _availableBuffs = new List<CombatSkill>();
 
         public bool Busy => _buffing;
@@ -45,10 +46,13 @@ namespace MapAssist.Automation
             }
         }
 
-        public void Run()
+        public void Run(bool force = false)
         {
+            _log.Info($"BuffBoy called with force {force}, currently {(_worker.IsBusy ? "busy" : "not busy")}");
+
             if (!_worker.IsBusy)
             {
+                _force = force;
                 _worker.RunWorkerAsync();
             }
         }
@@ -56,6 +60,7 @@ namespace MapAssist.Automation
         public void Reset()
         {
             _buffing = false;
+            _force = false;
             _worker.CancelAsync();
         }
 
@@ -63,10 +68,13 @@ namespace MapAssist.Automation
         {
             var missingBuffs = _availableBuffs.Where(x => !_playerStates.Contains(x.BuffState));
 
-            if (missingBuffs.Count() > 0)
+            if (_force || missingBuffs.Count() > 0)
             {
                 _buffing = true;
-                _log.Info("Missing " + string.Join(",", missingBuffs.Select(x => x.Name)) + ", recasting all buffs.");
+                if (_force)
+                    _log.Info("Forced re-buff.");
+                else
+                    _log.Info("Missing " + string.Join(",", missingBuffs.Select(x => x.Name)) + ", recasting all buffs.");
 
                 IEnumerable<CombatSkill> remainingBuffs = _availableBuffs;
 

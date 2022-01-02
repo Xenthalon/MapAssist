@@ -337,7 +337,7 @@ namespace MapAssist.Automation
             else if (activeProfile.Type == RunType.Explore)
             {
                 _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
-
+                BuffMe(true);
                 _exploring = true;
 
                 do
@@ -390,7 +390,7 @@ namespace MapAssist.Automation
         public void ExploreArea()
         {
             _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
-
+            BuffMe(true);
             _exploring = true;
         }
 
@@ -419,8 +419,6 @@ namespace MapAssist.Automation
                     }
                 }
                 while (!_combat.IsSafe);
-
-                System.Threading.Thread.Sleep(100);
 
                 _pickit.Run();
 
@@ -667,6 +665,13 @@ namespace MapAssist.Automation
                         break;
                     }
                 }
+
+                if (_goBotGo == false)
+                {
+                    _log.Info("Received kill signal, aborting AreaChange.");
+                    success = false;
+                    break;
+                }
             }
             while (_currentArea != destination);
 
@@ -683,15 +688,15 @@ namespace MapAssist.Automation
             return success;
         }
 
-        private void BuffMe()
+        private void BuffMe(bool force = false)
         {
-            if (_buffboy.HasWork)
+            if (force || _buffboy.HasWork)
             {
-                _buffboy.Run();
+                _buffboy.Run(force);
 
                 do
                 {
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(200);
                 }
                 while (_buffboy.Busy);
             }
