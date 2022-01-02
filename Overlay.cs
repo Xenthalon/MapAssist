@@ -140,6 +140,12 @@ namespace MapAssist
                         oog.Update(window);
                         oog.CreateGame();
                         System.Threading.Thread.Sleep(3000);
+
+                        if (oog.NeedsResize(window))
+                        {
+                            // resize crashes sometimes while in chat :/
+                            oog.ResizeWindow(GameManager.MainWindowHandle);
+                        }
                     }
                 }
             }

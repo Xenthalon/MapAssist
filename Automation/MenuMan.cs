@@ -40,8 +40,8 @@ namespace MapAssist.Automation
             _menus = gameData.MenuOpen;
             _window = window;
 
-            _inventoryAnchor = new Point((int)(_window.Width - _window.Width * 0.28), (int)(_window.Height * 0.53));
-            _vendorAnchor = new Point((int)(_window.Width * 0.08), (int)(_window.Height * 0.22));
+            _inventoryAnchor = new Point((int)(_window.Width - _window.Width * 0.32), (int)(_window.Height * 0.53));
+            _vendorAnchor = new Point((int)(_window.Width * 0.09), (int)(_window.Height * 0.22));
         }
 
         public bool IsWaypointArea(Area area)
@@ -80,7 +80,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.022), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
+            var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
 
             _input.DoInputAtScreenPosition("+{RMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
@@ -94,7 +94,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
             _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
             System.Threading.Thread.Sleep(250);
@@ -108,7 +108,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
             _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
             System.Threading.Thread.Sleep(250);
@@ -122,7 +122,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.022), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
             _input.DoInputAtScreenPosition("+{LMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
@@ -199,8 +199,8 @@ namespace MapAssist.Automation
                 return;
             }
 
-            _input.DoInputAtScreenPosition("{LMB}", new Point((int)((_window.Width * 0.1) + ((target.Act - 1) * _window.Width * 0.04)), (int)(_window.Height * 0.20)));
-            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.1), (int)((_window.Height * 0.25) + (target.Index * _window.Height * 0.056))));
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)((_window.Width * 0.12) + ((target.Act - 1) * _window.Width * 0.042)), (int)(_window.Height * 0.20)));
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.12), (int)((_window.Height * 0.25) + (target.Index * _window.Height * 0.056))));
         }
 
         public void ClickRepair()
@@ -211,7 +211,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.265), (int)(_window.Height * 0.71)));
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.3), (int)(_window.Height * 0.71)));
         }
 
         public bool OpenInventory()
@@ -246,7 +246,7 @@ namespace MapAssist.Automation
         {
             for (var i = 0; i < 5; i++)
             {
-                _input.MouseMove(new Point((int)((_window.Width * 0.1) + (i * _window.Width * 0.04)), (int)(_window.Height * 0.20)));
+                _input.MouseMove(new Point((int)((_window.Width * 0.12) + (i * _window.Width * 0.042)), (int)(_window.Height * 0.20)));
 
                 System.Threading.Thread.Sleep(500);
             }
@@ -255,19 +255,19 @@ namespace MapAssist.Automation
             {
                 System.Threading.Thread.Sleep(500);
 
-                _input.MouseMove(new Point(300, (int)((_window.Height * 0.25) + (i * _window.Height * 0.056))));
+                _input.MouseMove(new Point((int)(_window.Width * 0.12), (int)((_window.Height * 0.25) + (i * _window.Height * 0.056))));
             }
         }
 
         private void inventory_debugging()
         {
-            var start = new Point((int)(_window.Width - _window.Width * 0.28), (int)(_window.Height * 0.53));
+            var start = new Point((int)(_window.Width - _window.Width * 0.32), (int)(_window.Height * 0.53));
 
             for (var y = 0; y < 4; y++)
             {
                 for (var i = 0; i < 10; i++)
                 {
-                    _input.MouseMove(new Point(start.X + (int)(i * _window.Width * 0.022), start.Y + (int)(y * _window.Height * 0.048)));
+                    _input.MouseMove(new Point(start.X + (int)(i * _window.Width * 0.0247), start.Y + (int)(y * _window.Height * 0.048)));
                     System.Threading.Thread.Sleep(250);
                 }
             }
@@ -279,7 +279,7 @@ namespace MapAssist.Automation
             {
                 for (var x = 0; x < 10; x++)
                 {
-                    _input.MouseMove(new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.022), _vendorAnchor.Y + (int)(y * _window.Height * 0.047)));
+                    _input.MouseMove(new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047)));
                     System.Threading.Thread.Sleep(250);
                 }
             }

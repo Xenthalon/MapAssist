@@ -162,7 +162,8 @@ namespace MapAssist
 
         public static Point TranslateToScreenOffset(Point playerPositionWorld, Point targetPositionWorld, Point playerPositionScreen)
         {
-            var magic = 51.192;
+            // var magic = 51.192; // old value from my widescreen gaming
+            var magic = 39; // value for 1920x1080, maybe also works for other 16:9 ratios?
             var beta = 45f * Math.PI / 180d;
 
             var relativePosition = new Point(targetPositionWorld.X - playerPositionWorld.X, targetPositionWorld.Y - playerPositionWorld.Y);

@@ -1,4 +1,5 @@
 ﻿using GameOverlay.Drawing;
+using MapAssist.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,13 @@ namespace MapAssist.Automation
 {
     class OOG
     {
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+
+        private static readonly int WINDOW_X = 0;
+        private static readonly int WINDOW_Y = 0;
+        private static readonly int WINDOW_WIDTH = 1920;
+        private static readonly int WINDOW_HEIGHT = 1080;
+
         private static Random random = new Random();
 
         private Input _input;
@@ -26,7 +34,7 @@ namespace MapAssist.Automation
 
         public void CreateGame()
         {
-            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.63), (int)(_window.Height * 0.065)));
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.66), (int)(_window.Height * 0.065)));
 
             System.Threading.Thread.Sleep(1500);
 
@@ -42,6 +50,20 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(500);
 
             _input.DoInput("{ENTER}");
+        }
+
+        public bool NeedsResize(Rectangle window)
+        {
+            return !(window.Left == WINDOW_X && window.Top == WINDOW_Y && window.Width == WINDOW_WIDTH && window.Height == WINDOW_HEIGHT);
+        }
+
+        public void ResizeWindow(IntPtr windowHandle)
+        {
+            _log.Info("Resizing window!");
+            const int SWP_SHOWWINDOW = 0x0040;
+
+            WindowsExternal.SetWindowPos(windowHandle, IntPtr.Zero, WINDOW_X, WINDOW_Y, WINDOW_WIDTH, WINDOW_HEIGHT, SWP_SHOWWINDOW);
+            System.Threading.Thread.Sleep(500);
         }
 
         private static string RandomString(int length)
