@@ -31,6 +31,21 @@ namespace MapAssist.Automation
     public class Pathing
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        // add any tight indoors areas here to make line of sight stricter
+        private static List<Area> _indoorAreas = new List<Area> {
+            Area.AncientTunnels,
+            Area.TowerCellarLevel1,
+            Area.TowerCellarLevel2,
+            Area.TowerCellarLevel3,
+            Area.TowerCellarLevel4,
+            Area.TowerCellarLevel5,
+            Area.PitLevel1,
+            Area.PitLevel2,
+            Area.CatacombsLevel1,
+            Area.CatacombsLevel2,
+            Area.CatacombsLevel3,
+            Area.CatacombsLevel4
+        };
 
         // cache for calculated paths. each cache entry is only valid for a specified amount of time
         private Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)> PathCache = new Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)>();
@@ -119,7 +134,7 @@ namespace MapAssist.Automation
 
                     var collisionValue = _areaData.CollisionGrid[y][x];
 
-                    if (collisionValue == -1) // current IsWalkable implementation, need to check what the the ponds are that you can shoot over
+                    if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
                     {
                         sight = false;
                         break;
@@ -137,7 +152,7 @@ namespace MapAssist.Automation
 
                     var collisionValue = _areaData.CollisionGrid[y][x];
 
-                    if (collisionValue == -1) // current IsWalkable implementation, need to check what the the ponds are that you can shoot over
+                    if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
                     {
                         sight = false;
                         break;
@@ -146,6 +161,11 @@ namespace MapAssist.Automation
             }
 
             return sight;
+        }
+
+        public bool IsIndoors()
+        {
+            return _indoorAreas.Contains(_areaData.Area);
         }
 
         public bool IsWalkable(Point worldPoint)
