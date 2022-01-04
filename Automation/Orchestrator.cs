@@ -194,6 +194,7 @@ namespace MapAssist.Automation
             RecoverCorpse();
             BeltAnyPotions();
             GoHeal();
+            GoRepair();
             GoTrade();
             ReviveMerc();
             var stashed = GoStash();
@@ -537,6 +538,20 @@ namespace MapAssist.Automation
             }
 
             return success;
+        }
+
+        private void GoRepair()
+        {
+            if (Inventory.NeedsRepair)
+            {
+                _townManager.Repair();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_townManager.State != TownState.IDLE);
+            }
         }
 
         private bool ReviveMerc()

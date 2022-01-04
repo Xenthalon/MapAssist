@@ -11,6 +11,9 @@ namespace MapAssist.Automation
     class Inventory
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly double REPAIR_THRESHOLD = 0.3;
+
+        private static bool _needsRepair = false;
 
         public static int[][] InventoryOpen = new int[][] {
             new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
@@ -21,6 +24,7 @@ namespace MapAssist.Automation
 
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
         public static int TPScrolls = 20;
+        public static bool NeedsRepair => _needsRepair;
 
         public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
         public static IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
@@ -32,6 +36,25 @@ namespace MapAssist.Automation
 
         public static void Update(uint playerUnitId, HashSet<UnitAny> items)
         {
+            var equippedItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc != BodyLoc.NONE);
+
+            _needsRepair = false;
+            foreach (var item in equippedItems)
+            {
+                var durability = -1;
+                var maxDurability = -1;
+
+                item.Stats.TryGetValue(Stat.STAT_DURABILITY, out durability);
+                item.Stats.TryGetValue(Stat.STAT_MAXDURABILITY, out maxDurability);
+
+                if (durability > -1 && maxDurability > -1 &&
+                    durability/(double)maxDurability < REPAIR_THRESHOLD)
+                {
+                    _needsRepair = true;
+                    break;
+                }
+            }
+
             for (var i = 0; i < 4; i++)
             {
                 BeltSlotsOpen[i] = 4;
