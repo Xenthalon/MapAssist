@@ -155,6 +155,8 @@ namespace MapAssist.Automation
             _worker.WorkerSupportsCancellation = true;
             _possiblyNewGameSeed = 0;
             _possiblyNewGameCounter = 0;
+            _exploring = false;
+            _exploreSpots = new List<Point>();
 
             _buffboy.Reset();
             _chicken.Reset();
@@ -417,6 +419,12 @@ namespace MapAssist.Automation
                     {
                         _combat.ClearArea(_gameData.PlayerPosition);
                     }
+
+                    if (_goBotGo == false)
+                    {
+                        _log.Info("received kill signal, aborting");
+                        return;
+                    }
                 }
                 while (!_combat.IsSafe);
 
@@ -425,6 +433,12 @@ namespace MapAssist.Automation
                 do
                 {
                     System.Threading.Thread.Sleep(100);
+
+                    if (_goBotGo == false)
+                    {
+                        _log.Info("received kill signal, aborting");
+                        return;
+                    }
                 }
                 while (_pickit.Busy);
             }
