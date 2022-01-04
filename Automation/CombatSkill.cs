@@ -20,6 +20,7 @@ namespace MapAssist.Automation
         public bool IsRanged { get; set; } = false;
         public bool IsAoe { get; set; } = false;
         public bool IsBuff { get; set; } = false;
+        public bool IsTelekinesis { get; set; } = false;
         public State BuffState { get; set; }
     }
 }

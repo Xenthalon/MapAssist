@@ -17,6 +17,8 @@ namespace MapAssist.Automation
         private static readonly short TOO_CLOSE_RANGE = 8;
         private static readonly short MAX_ATTACK_ATTEMPTS = 10;
         private static readonly int ESCAPE_COOLDOWN = 3000;
+        private static readonly bool OPEN_CHESTS = true;
+        private static readonly short CHEST_RANGE = 20;
 
         private BackgroundWorker _combatWorker;
         private bool _fighting = false;
@@ -27,6 +29,7 @@ namespace MapAssist.Automation
         private bool _reposition = true;
         private Point _playerPosition;
         private HashSet<UnitAny> _monsters;
+        private IEnumerable<UnitAny> _chests;
         private UnitAny _target;
         private Point? _areaToClear;
         private List<uint> _blacklist = new List<uint>();
@@ -54,6 +57,7 @@ namespace MapAssist.Automation
             _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 1800, Key = "{RMB}", IsRanged = true, IsAoe = true });
             _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 20, Cooldown = 350, Key = "a", IsRanged = true });
             _skills.Add(new CombatSkill { Name = "Static", DamageType = Resist.LIGHTNING, MaxRange = 8, Cooldown = 350, Key = "s", IsRanged = true, IsStatic = true });
+            _skills.Add(new CombatSkill { Name = "Telekinesis", MaxRange = 22, Cooldown = 300, Key = "e", IsRanged = true, IsTelekinesis = true });
         }
 
         public void Kill(string name)
@@ -92,10 +96,53 @@ namespace MapAssist.Automation
             }
         }
 
+        public void CheckChests()
+        {
+            if (!OPEN_CHESTS)
+                return;
+
+            if (IsSafe)
+            {
+                var interactRange = 5.0;
+
+                var telekinesis = _skills.Where(x => x.IsTelekinesis).FirstOrDefault();
+
+                if (telekinesis != null)
+                {
+                    interactRange = telekinesis.MaxRange;
+                }
+
+                foreach (var chest in _chests.Where(x => Automaton.GetDistance(x.Position, _playerPosition) <= CHEST_RANGE))
+                {
+                    GetInLOSRange(_target.Position, 1, (short)(interactRange - 1));
+
+                    if (telekinesis != null)
+                    {
+                        _input.DoInputAtWorldPosition(telekinesis.Key, chest.Position);
+                        telekinesis.LastUsage = Now;
+                        System.Threading.Thread.Sleep(telekinesis.Cooldown);
+                    }
+                    else
+                    {
+                        _input.DoInputAtWorldPosition("{LMB}", chest.Position);
+                        System.Threading.Thread.Sleep(1000);
+                    }
+
+                    _log.Info("Opened chest " + chest.UnitId + ".");
+                }
+            }
+            else
+            {
+                _log.Info("Too dangerous to look for chests!");
+            }
+        }
+
         public void Update(GameData gameData, Pathing pathing)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
+                _chests = gameData.Objects.Where(x => x.IsChest() &&
+                                                (x.ObjectData.InteractType & ((byte)Chest.InteractFlags.Locked)) == ((byte)Chest.InteractFlags.None)); // only non-locked chests
                 _monsters = gameData.Monsters;
                 _playerPosition = gameData.PlayerPosition;
                 _pathing = pathing;
@@ -204,9 +251,9 @@ namespace MapAssist.Automation
                             System.Threading.Thread.Sleep(200);
                         }
                     }
-                    else if (_skills.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    else if (_skills.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
                     {
-                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
                         
                         if (_reposition &&
                             Automaton.GetDistance(_target.Position, _playerPosition) < TOO_CLOSE_RANGE &&

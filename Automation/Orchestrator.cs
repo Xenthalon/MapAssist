@@ -15,7 +15,7 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         
         private static List<RunProfile> _runProfiles = new List<RunProfile>();
-        private static readonly int _gameChangeSafetyLimit = 150;
+        private static readonly int _gameChangeSafetyLimit = 100;
         private static readonly bool _autostart = true;
 
         private BackgroundWorker _worker;
@@ -363,6 +363,8 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(300);
 
+            _combat.CheckChests();            
+
             _pickit.Run();
 
             do
@@ -428,6 +430,8 @@ namespace MapAssist.Automation
                     }
                 }
                 while (!_combat.IsSafe);
+
+                _combat.CheckChests();
 
                 _pickit.Run();
 
