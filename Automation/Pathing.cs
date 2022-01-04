@@ -175,7 +175,7 @@ namespace MapAssist.Automation
             var maxX = _areaData.CollisionGrid.GetLength(0);
             var maxY = _areaData.CollisionGrid[0].GetLength(0);
 
-            if (worldPoint.X < 0 || worldPoint.Y < 0 || worldPoint.X >= maxX || worldPoint.Y >= maxY)
+            if (gridLocation.X < 0 || gridLocation.Y < 0 || gridLocation.X >= maxX || gridLocation.Y >= maxY)
                 return false;
 
             var value = _areaData.CollisionGrid[(int)gridLocation.Y][(int)gridLocation.X];

@@ -100,7 +100,7 @@ namespace MapAssist.Automation
 
             var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
                                         .OrderByDescending(x => Automaton.GetDistance(x, target))
-                                        .Take(5)
+                                        .Take(10)
                                         .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
                                         .FirstOrDefault();
 
