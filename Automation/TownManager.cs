@@ -191,7 +191,8 @@ namespace MapAssist.Automation
 
             if (!clickTarget.IsValidPointer())
             {
-                _log.Error("Couldn't find " + target.Name + ", stuck, please help!");
+                _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
+                _menuMan.ExitGame();
                 return;
             }
 
@@ -210,7 +211,8 @@ namespace MapAssist.Automation
 
                     if (!clickTarget.IsValidPointer())
                     {
-                        _log.Error("Couldn't find " + target.Name + ", stuck, please help!");
+                        _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
+                        _menuMan.ExitGame();
                         return;
                     }
 
