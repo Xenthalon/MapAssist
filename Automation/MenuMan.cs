@@ -72,6 +72,20 @@ namespace MapAssist.Automation
             return isActChange;
         }
 
+        public void VendorBuyOne(int x, int y)
+        {
+            if (!_menus.NpcShop)
+            {
+                _log.Error("Got to be in shop menu to buy things!");
+                return;
+            }
+
+            var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
+
+            _input.DoInputAtScreenPosition("{RMB}", screenLocation);
+            System.Threading.Thread.Sleep(500);
+        }
+
         public void VendorBuyMax(int x, int y)
         {
             if (!_menus.NpcShop)
@@ -84,6 +98,34 @@ namespace MapAssist.Automation
 
             _input.DoInputAtScreenPosition("+{RMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
+        }
+
+        public void LeftClickInventoryItem(int x, int y)
+        {
+            if (!_menus.Inventory)
+            {
+                _log.Error("Got to be in inventory to left click things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+
+            _input.DoInputAtScreenPosition("{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(350);
+        }
+
+        public void RightClickInventoryItem(int x, int y)
+        {
+            if (!_menus.Inventory)
+            {
+                _log.Error("Got to be in inventory to right click things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
+
+            _input.DoInputAtScreenPosition("{RMB}", screenLocation);
+            System.Threading.Thread.Sleep(350);
         }
 
         public void StashItemAt(int x, int y)

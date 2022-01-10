@@ -109,6 +109,8 @@
     <Compile Include="Automation\BuffBoy.cs" />
     <Compile Include="Automation\Combat.cs" />
     <Compile Include="Automation\CombatSkill.cs" />
+    <Compile Include="Automation\Identification\IdentificationFilter.cs" />
+    <Compile Include="Automation\Identification\IdentifyParser.cs" />
     <Compile Include="Automation\Input.cs" />
     <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\MenuMan.cs" />
@@ -121,6 +123,7 @@
     <Compile Include="Automation\Pathing.cs" />
     <Compile Include="Automation\PickIt.cs" />
     <Compile Include="Automation\RunProfile.cs" />
+    <Compile Include="Automation\Identification\StatFilter.cs" />
     <Compile Include="Automation\TownManager.cs" />
     <Compile Include="Automation\Waypoint.cs" />
     <Compile Include="Automaton.cs" />
@@ -151,6 +154,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Settings\IdentifyConfiguration.cs" />
     <Compile Include="Settings\LootLogConfiguration.cs" />
     <Compile Include="Settings\MapAssistConfiguration.cs" />
     <Compile Include="Structs\Act.cs" />
@@ -200,6 +204,7 @@
     <Compile Include="Types\UnitAny.cs" />
     <Compile Include="Types\UnitType.cs" />
     <EmbeddedResource Include="Fonts\exocetblizzardot-medium.otf" />
+    <None Include="IdentifyFilter.yaml" />
     <None Include="Resources\Icon1.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -559,6 +564,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)Config.yaml" "$(TargetDir)" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Config.yaml" "$(TargetDir)" /Y
+xcopy "$(ProjectDir)IdentifyFilter.yaml" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -158,7 +158,7 @@ namespace MapAssist.Automation
             }
         }
 
-        private static int ConvertHexHealthToInt(int hexHealth)
+        public static int ConvertHexHealthToInt(int hexHealth)
         {
             var hexValue = hexHealth.ToString("X");
             hexValue = hexValue.Substring(0, hexValue.Length - 2);

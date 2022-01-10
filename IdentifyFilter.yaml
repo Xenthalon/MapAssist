@@ -1,0 +1,173 @@
+﻿Small Charm:
+ - Qualities: magic
+   Stats: [
+   "7 = 20",  # 20 life
+   "7 >= 17 & 8 >= 14", # life >= 17, mana >= 14
+   "80 = 7",  # 7 mf
+   "39 = 11", # 11 fire res
+   "41 = 11", # 11 light res
+   "43 = 11", # 11 cold res
+   "45 = 11", # 11 poison res
+   "39 >= 4 & 41 >= 4 & 43 >= 4 & 45 >= 4", # all res >= 4
+   "57 >= 205 & 58 >= 205" # 100 poison
+   ]
+
+Grand Charm:
+ - Qualities: magic
+   Stats: [
+   "188 >= 0", # skillers
+   "39 >= 14 & 41 >= 14 & 43 >= 14 & 45 >= 14" # all res >= 14
+   ]
+
+Jewel:
+ - Qualities: unique
+   Stats: [
+   "329 = 5 & 333 = 5", # 5/5 fire facet
+   "331 = 5 & 335 = 5", # 5/5 cold facet
+   "330 = 5 & 334 = 5", # 5/5 lightning facet
+   "332 = 5 & 336 = 5"  # 5/5 poison facet
+   ]
+ - Qualities: rare
+   Stats: [
+   "0 >= 9 & 2 >= 9 & 25 >= 29", # str >= 9, dex >= 9, ed% >= 29
+   "0 >= 9 & 2 >= 9 & 39 >= 28", # str >= 9, dex >= 9, fire res >= 28
+   "0 >= 9 & 2 >= 9 & 41 >= 28", # str >= 9, dex >= 9, light res >= 28
+   "0 >= 9 & 2 >= 9 & 43 >= 28", # str >= 9, dex >= 9, cold res >= 28
+   "0 >= 9 & 2 >= 9 & 45 >= 28", # str >= 9, dex >= 9, poison res >= 28
+   "0 >= 9 & 25 >= 29 & 39 >= 28", # str >= 9, ed% >= 29, fire res >= 28
+   "0 >= 9 & 25 >= 29 & 41 >= 28", # str >= 9, ed% >= 29, light res >= 28
+   "0 >= 9 & 25 >= 29 & 43 >= 28", # str >= 9, ed% >= 29, cold res >= 28
+   "0 >= 9 & 25 >= 29 & 45 >= 28", # str >= 9, ed% >= 29, poison res >= 28
+   "2 >= 9 & 25 >= 29 & 39 >= 28", # dex >= 9, ed% >= 29, fire res >= 28
+   "2 >= 9 & 25 >= 29 & 41 >= 28", # dex >= 9, ed% >= 29, light res >= 28
+   "2 >= 9 & 25 >= 29 & 43 >= 28", # dex >= 9, ed% >= 29, cold res >= 28
+   "2 >= 9 & 25 >= 29 & 45 >= 28", # dex >= 9, ed% >= 29, poison res >= 28
+   "0 >= 9 & 2 >= 9 & 39 >= 9 & 41 >= 9 & 43 >= 9 & 45 >= 9", # str >= 9, dex >= 9, allres >= 9
+   "0 >= 9 & 25 >= 28 & 39 >= 9 & 41 >= 9 & 43 >= 9 & 45 >= 9", # str >= 9, ed% >= 28, allres >= 9
+   "25 >= 28 & 2 >= 9 & 39 >= 9 & 41 >= 9 & 43 >= 9 & 45 >= 9", # dex >= 9, ed% >= 28, allres >= 9
+   ]
+ - Qualities: magic
+   Stats: [
+   "25 = 40",   # 40 ed
+   "25 >= 35 & 93 = 15", # 35 ed, 15 ias
+   "39 >= 15 & 41 >= 15 & 43 >= 15 & 45 >= 15" # all res >= 15
+   ]
+ 
+Ring:
+ - Qualities: unique
+   Stats: [
+   "80 >= 29",          # nagelring >= 29 mf
+   # "62 = 7",          # manald heal 7ml
+   "127 = 1 & 8 >= 15", # stone of jordan (+1 all skills, +20 mana)
+   "7 = 40",            # dwarf star (40 life)
+   "8 = 40",            # raven frost (40 mana)
+   "127 = 1 & 60 >= 3", # bul-kathos (+1 all skills, >= 3 ll)
+   # "45 = 55 & 60 >= 6", # carrion wind (55 poison res, >= 6 ll)
+   # "117 >= 0",          # natures peace (prevent heal >= 0)
+   "45 >= 20",            # natures peace (poison res >= 20, use until we find one)
+   "80 >= 10 & 144 >= 10" # wisp projector (mf >= 10, lightning absorb >= 10)
+   ]
+ - Qualities: magic
+   Stats: [
+   "80 >= 39" # 39 mf rings
+   ]
+ - Qualities: rare
+   Stats: [
+   "105 = 10 & 8 >= 70", # 10 fcr 70 mana
+   "105 = 10 & 80 >= 10", # 10 fcr 10 mf
+   "105 = 10 & 0 >= 10", # 10 fcr 10 str
+   "105 = 10 & 2 >= 10", # 10 fcr 10 dex
+   "105 = 10 & 39 >= 8 & 41 >= 8 & 43 >= 8 & 45 >= 8", # 10 fcr 8 all res
+   "105 = 10 & 39 >= 15 & 41 >= 15", # 10 fcr 15 fire res 15 light res
+   "105 = 10 & 41 >= 15 & 43 >= 15", # 10 fcr 15 light res 15 cold res
+   "80 >= 10 & 39 >= 8 & 41 >= 8 & 43 >= 8 & 45 >= 8", # 10 mf 8 all res
+   "60 >= 6 & 62 >= 6", # 6 ll 6 ml
+   "60 >= 6 & 39 >= 8 & 41 >= 8 & 43 >= 8 & 45 >= 8", # 6 ll 8 all res
+   "60 >= 6 & 39 >= 15 & 41 >= 15", # 6 ll 15 fire res 15 light res
+   "60 >= 6 & 41 >= 15 & 43 >= 15", # 6 ll 15 light res 15 cold res
+   "62 >= 6 & 39 >= 8 & 41 >= 8 & 43 >= 8 & 45 >= 8", # 6 ml 8 all res
+   "62 >= 6 & 39 >= 15 & 41 >= 15", # 6 ml 15 fire res 15 light res
+   "62 >= 6 & 41 >= 15 & 43 >= 15", # 6 ml 15 light res 15 cold res
+   ]
+
+Amulet:
+ - Qualities: unique
+   Stats: [
+   "127 = 2",           # 2 all skills (mara's)
+   "19 >= 400",         # AR +400 (metalgrid)
+   "127 = 1 & 93 = 20", # 1 all skills 20 ias (highlord's)
+   "96 = 30"            # 30% faster run (cat's eye)
+   ]
+ - Qualities: set
+   Stats: [
+   "83 >= 2" # add 2 class skills (tal amu)
+   ]
+ - Qualities: rare
+   Stats: [
+   "83 >= 2" # add 2 class skills
+   ]
+
+Mesh Belt:
+ - Qualities: set
+   Stats: [
+   "80 = 15" # tal belt 15 mf
+   ]
+
+Monarch:
+ - Qualities: magic
+   Stats: [
+   "20 >= 20 & 194 = 4" # JMOD block chance 20% & 4 sockets
+   ]
+
+Archon Plate:
+ - Qualities: magic
+   Stats: [
+   "7 >= 85 & 194 = 4" # Jewelers Plate of the Whale, 4 OS +85 life
+   ]
+    
+# 40 mf chance guards
+Chain Gloves:
+ - Qualities: unique
+   Stats: [
+   "80 >= 39"
+   ]
+ 
+Demonhide Sash:
+ - Qualities: unique
+   Stats: [
+   "60 = 8 & 36 >= 14" # lifeleech = 8, DR% >= 14
+   ]
+    
+Vampirebone Gloves:
+ - Qualities: unique
+   Stats: [
+   "0 >= 15" # 15 str
+   ]
+
+# Vampire Gaze
+Grim Helm:
+ - Qualities: unique
+   Ethereal: false
+   Stats: [
+   "60 = 8 & 36 >= 18", # 8ll, dr% >= 18
+   "62 = 8 & 36 >= 18", # 8ml, dr% >= 18
+   "60 = 8 & 62 = 8",   # 8ll, 8ml
+   "36 = 20"            # dr% 20
+   ]
+ - Qualities: unique
+   Ethereal: true
+
+# vipermage >= 34 all res
+Serpentskin Armor:
+ - Qualities: unique
+   Stats: [
+   "39 >= 34 & 41 >= 34 & 43 >= 34 & 45 >= 34" # >= 34 all res
+   ]
+   
+# Nosferatu's Coil 7ll
+Vampirefang Belt:
+ - Qualities: unique
+   Stats: [
+   "60 = 7"
+   ]
+  

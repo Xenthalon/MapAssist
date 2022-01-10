@@ -211,6 +211,9 @@ public class ItemLogConfiguration
 
     [YamlMember(Alias = "FilterFileName", ApplyNamingConventions = false)]
     public string FilterFileName { get; set; }
+    
+    [YamlMember(Alias = "IdentifyFileName", ApplyNamingConventions = false)]
+    public string IdentifyFileName { get; set; }
 
     [YamlMember(Alias = "PlaySoundOnDrop", ApplyNamingConventions = false)]
     public bool PlaySoundOnDrop { get; set; }

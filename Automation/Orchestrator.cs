@@ -466,7 +466,7 @@ namespace MapAssist.Automation
 
         private void GoTrade()
         {
-            if (Inventory.AnyItemsToTrash || Inventory.TPScrolls < 5)
+            if (Inventory.AnyItemsToIdentify || Inventory.AnyItemsToTrash || Inventory.TPScrolls < 5)
             {
                 _townManager.OpenTradeMenu();
 
@@ -484,10 +484,52 @@ namespace MapAssist.Automation
                     _menuMan.SellItemAt(item.X, item.Y);
                 }
 
+                var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
+
+                foreach (var item in Inventory.ItemsToIdentify)
+                {
+                    var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                    if (idsc.IsValidPointer())
+                    {
+                        _menuMan.VendorBuyOne(idsc.X, idsc.Y);
+
+                        if (Inventory.IDScroll.IsValidPointer())
+                        {
+                            _menuMan.RightClickInventoryItem(Inventory.IDScroll.X, Inventory.IDScroll.Y);
+                            _menuMan.LeftClickInventoryItem(item.X, item.Y);
+
+                            var identifiedItem = Inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
+                                (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                            while (!identifiedItem.IsValidPointer())
+                            {
+                                System.Threading.Thread.Sleep(100);
+
+                                identifiedItem = Inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
+                                    (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                            }
+
+                            if (!Identification.IdentificationFilter.IsKeeper(identifiedItem))
+                            {
+                                _log.Info(item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + " didn't make the cut, selling!");
+                                _menuMan.SellItemAt(item.X, item.Y);
+                            }
+                        }
+                        else
+                        {
+                            _log.Error("Couldn't find Scroll of Identification in Inventory! Something is wrong!");
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        _log.Error("Couldn't find Scroll of Identification at " + _townManager.ActiveNPC.UnitId);
+                    }
+                }
+
                 if (Inventory.TPScrolls < 15)
                 {
-                    var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
-
                     var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
                     if (tp.IsValidPointer())

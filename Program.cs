@@ -69,7 +69,7 @@ namespace MapAssist
                     return;
                 }
 
-                var configurationOk = LoadLoggingConfiguration() && LoadMainConfiguration() && LoadLootLogConfiguration();
+                var configurationOk = LoadLoggingConfiguration() && LoadMainConfiguration() && LoadLootLogConfiguration() && LoadItemIdentificationConfiguration();
                 if (configurationOk)
                 {
                     if (githubSha.Length == 40)
@@ -242,6 +242,31 @@ namespace MapAssist
                 _log.Fatal("Invalid loot log yaml file");
 
                 MessageBox.Show(e.Message, $"{messageBoxTitle}: Loop filter yaml parsing error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception e)
+            {
+                _log.Fatal(e, $"Unable to initialize Loot Log configuration");
+                MessageBox.Show(e.Message, $"{messageBoxTitle}: General error occurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return configurationOk;
+        }
+
+        private static bool LoadItemIdentificationConfiguration()
+        {
+            var configurationOk = false;
+            try
+            {
+                IdentifyConfiguration.Load();
+                configurationOk = true;
+            }
+            catch (YamlDotNet.Core.YamlException e)
+            {
+                _log.Fatal(e);
+                _log.Fatal("Invalid loot log yaml file");
+
+                MessageBox.Show(e.Message, $"{messageBoxTitle}: Item identification filter yaml parsing error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception e)

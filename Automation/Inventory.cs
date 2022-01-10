@@ -1,4 +1,5 @@
-﻿using MapAssist.Helpers;
+﻿using MapAssist.Automation.Identification;
+using MapAssist.Helpers;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
@@ -24,13 +25,16 @@ namespace MapAssist.Automation
 
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
         public static int TPScrolls = 20;
+        public static UnitAny IDScroll = new UnitAny(IntPtr.Zero);
         public static bool NeedsRepair => _needsRepair;
 
         public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
+        public static IEnumerable<UnitAny> ItemsToIdentify = new HashSet<UnitAny>();
         public static IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
         public static IEnumerable<UnitAny> ItemsToBelt = new HashSet<UnitAny>();
 
         public static bool AnyItemsToStash => ItemsToStash.Count() > 0;
+        public static bool AnyItemsToIdentify => ItemsToIdentify.Count() > 0;
         public static bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
         public static bool AnyItemsToBelt => ItemsToBelt.Count() > 0;
 
@@ -76,6 +80,7 @@ namespace MapAssist.Automation
             var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
 
             ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x));
+            ItemsToIdentify = ItemsToStash.Where(x => (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) != ItemFlags.IFLAG_IDENTIFIED && IdentificationFilter.HasEntry(x));
             ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x));
             ItemsToBelt = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && 
                 (Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" || Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"));
@@ -86,6 +91,8 @@ namespace MapAssist.Automation
             {
                 tpTome.Stats.TryGetValue(Stat.STAT_QUANTITY, out TPScrolls);
             }
+
+            IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
             //foreach (var item in ItemsToStash)
             //{
