@@ -115,6 +115,9 @@ namespace MapAssist.Automation
 
         public bool HasLineOfSight(Point point1, Point point2)
         {
+            var maxY = _areaData.CollisionGrid.GetLength(0);
+            var maxX = _areaData.CollisionGrid[0].GetLength(0);
+
             var sight = true;
 
             var gridLocation1 = new Point((int)(point1.X) - _areaData.Origin.X, (int)(point1.Y) - _areaData.Origin.Y);
@@ -123,21 +126,52 @@ namespace MapAssist.Automation
             double vectorX = gridLocation2.X - gridLocation1.X;
             double vectorY = gridLocation2.Y - gridLocation1.Y;
 
-            if (vectorX > vectorY)
+            if (Math.Abs(vectorX) > Math.Abs(vectorY))
             {
                 var ySteps = vectorY / vectorX;
 
-                for (var i = 0; i < vectorX; i++)
+                if (vectorX >= 0)
                 {
-                    var x = (int)gridLocation1.X + i;
-                    var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0);
-
-                    var collisionValue = _areaData.CollisionGrid[y][x];
-
-                    if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                    for (var i = 0; i < vectorX; i++)
                     {
-                        sight = false;
-                        break;
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)gridLocation1.X + i;
+                            var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0) + j;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                                {
+                                    sight = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i > vectorX; i--)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)gridLocation1.X + i;
+                            var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0) + j;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                                {
+                                    sight = false;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -145,22 +179,153 @@ namespace MapAssist.Automation
             {
                 var xSteps = vectorX / vectorY;
 
-                for (var i = 0; i < vectorY; i++)
+                if (vectorY >= 0)
                 {
-                    var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0);
-                    var y = (int)gridLocation1.Y + i;
-
-                    var collisionValue = _areaData.CollisionGrid[y][x];
-
-                    if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                    for (var i = 0; i < vectorY; i++)
                     {
-                        sight = false;
-                        break;
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0) + j;
+                            var y = (int)gridLocation1.Y + i;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                                {
+                                    sight = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i > vectorY; i--)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0) + j;
+                            var y = (int)gridLocation1.Y + i;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                if (collisionValue == -1 || (IsIndoors() && collisionValue == 1)) // -1 are non-mapped areas, 1 are not walkable or walls, but can often be attacked through, 0 normal
+                                {
+                                    sight = false;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             return sight;
+        }
+
+        // debug functions
+        public (Point, int)[] GetGridPointsBetween(Point point1, Point point2)
+        {
+            var maxY = _areaData.CollisionGrid.GetLength(0);
+            var maxX = _areaData.CollisionGrid[0].GetLength(0);
+
+            var gridPoints = new List<(Point, int)>();
+
+            var gridLocation1 = new Point((int)(point1.X) - _areaData.Origin.X, (int)(point1.Y) - _areaData.Origin.Y);
+            var gridLocation2 = new Point((int)(point2.X) - _areaData.Origin.X, (int)(point2.Y) - _areaData.Origin.Y);
+
+            double vectorX = gridLocation2.X - gridLocation1.X;
+            double vectorY = gridLocation2.Y - gridLocation1.Y;
+
+            if (Math.Abs(vectorX) > Math.Abs(vectorY))
+            {
+                var ySteps = vectorY / vectorX;
+
+                if (vectorX >= 0)
+                {
+                    for (var i = 0; i < vectorX; i++)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)gridLocation1.X + i;
+                            var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0) + j;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                gridPoints.Add((new Point(x + _areaData.Origin.X, y + _areaData.Origin.Y), collisionValue));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i > vectorX; i--)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)gridLocation1.X + i;
+                            var y = (int)Math.Round(gridLocation1.Y + (i * ySteps), 0) + j;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                gridPoints.Add((new Point(x + _areaData.Origin.X, y + _areaData.Origin.Y), collisionValue));
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var xSteps = vectorX / vectorY;
+
+                if (vectorY >= 0)
+                {
+                    for (var i = 0; i < vectorY; i++)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0) + j;
+                            var y = (int)gridLocation1.Y + i;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                gridPoints.Add((new Point(x + _areaData.Origin.X, y + _areaData.Origin.Y), collisionValue));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i > vectorY; i--)
+                    {
+                        for (var j = -1; j <= 1; j++)
+                        {
+                            var x = (int)Math.Round(gridLocation1.X + (i * xSteps), 0) + j;
+                            var y = (int)gridLocation1.Y + i;
+
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
+                            {
+                                var collisionValue = _areaData.CollisionGrid[y][x];
+
+                                gridPoints.Add((new Point(x + _areaData.Origin.X, y + _areaData.Origin.Y), collisionValue));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return gridPoints.ToArray();
         }
 
         public bool IsIndoors()
@@ -172,8 +337,8 @@ namespace MapAssist.Automation
         {
             var gridLocation = new Point((int)(worldPoint.X) - _areaData.Origin.X, (int)(worldPoint.Y) - _areaData.Origin.Y);
 
-            var maxX = _areaData.CollisionGrid.GetLength(0);
-            var maxY = _areaData.CollisionGrid[0].GetLength(0);
+            var maxY = _areaData.CollisionGrid.GetLength(0);
+            var maxX = _areaData.CollisionGrid[0].GetLength(0);
 
             if (gridLocation.X < 0 || gridLocation.Y < 0 || gridLocation.X >= maxX || gridLocation.Y >= maxY)
                 return false;
@@ -210,6 +375,12 @@ namespace MapAssist.Automation
                     /* the TeleportPather returns the Points on the path withoug the Origin offset. 
                      * The Compositor expects this offset so we have to add it before we can return the result */
                     result = teleportPath.Select(p => new Point(p.X += _areaData.Origin.X, p.Y += _areaData.Origin.Y)).Skip(1).ToList();
+
+                    // remove the last teleport location if its too close
+                    if (result.Count() > 1 && Automaton.GetDistance(result.ElementAt(result.Count() - 2), result.ElementAt(result.Count() - 1)) < 5)
+                    {
+                        result.RemoveAt(result.Count() - 1);
+                    }
                 }
             }
             else

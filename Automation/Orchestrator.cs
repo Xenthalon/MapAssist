@@ -340,12 +340,11 @@ namespace MapAssist.Automation
             else if (activeProfile.Type == RunType.Explore)
             {
                 _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
-                BuffMe(true);
                 _exploring = true;
 
                 do
                 {
-                    System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(500);
                 }
                 while (_exploring);
             }
@@ -395,7 +394,6 @@ namespace MapAssist.Automation
         public void ExploreArea()
         {
             _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
-            BuffMe(true);
             _exploring = true;
         }
 
@@ -408,6 +406,12 @@ namespace MapAssist.Automation
             }
             else
             {
+                if (_combat.IsSafe && _buffboy.HasWork)
+                {
+                    System.Threading.Thread.Sleep(500);
+                    BuffMe();
+                }
+
                 var nextSpot = _exploreSpots[0];
 
                 MoveTo(nextSpot);
@@ -437,7 +441,7 @@ namespace MapAssist.Automation
 
                 do
                 {
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(50);
 
                     if (_goBotGo == false)
                     {

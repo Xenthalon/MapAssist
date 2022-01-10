@@ -13,11 +13,13 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly short DETECTION_RANGE = 35;
         private static readonly short COMBAT_RANGE = 20;
         private static readonly short TOO_CLOSE_RANGE = 8;
         private static readonly short MAX_ATTACK_ATTEMPTS = 10;
         private static readonly int ESCAPE_COOLDOWN = 3000;
         private static readonly bool OPEN_CHESTS = true;
+        private static readonly bool HAS_TELEPORT = true;
         private static readonly short CHEST_RANGE = 20;
 
         private BackgroundWorker _combatWorker;
@@ -38,8 +40,7 @@ namespace MapAssist.Automation
         private long _lastEscapeAttempt = 0;
 
         public bool IsSafe => !Busy && !_combatWorker.IsBusy && !_monsters.Any(x => !_blacklist.Contains(x.UnitId) &&
-                Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE &&
-                _pathing.HasLineOfSight(_playerPosition, x.Position));
+                Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
         public bool Busy => _fighting;
 
         public Combat(Input input, Movement movement)
@@ -53,9 +54,9 @@ namespace MapAssist.Automation
 
             _target = new UnitAny(IntPtr.Zero);
 
-            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 500, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
-            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 1800, Key = "{RMB}", IsRanged = true, IsAoe = true });
-            _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 20, Cooldown = 350, Key = "a", IsRanged = true });
+            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 250, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
+            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 1900, Key = "{RMB}", IsRanged = true, IsAoe = true });
+            _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 20, Cooldown = 250, Key = "a", IsRanged = true });
             _skills.Add(new CombatSkill { Name = "Static", DamageType = Resist.LIGHTNING, MaxRange = 8, Cooldown = 350, Key = "s", IsRanged = true, IsStatic = true });
             _skills.Add(new CombatSkill { Name = "Telekinesis", MaxRange = 22, Cooldown = 300, Key = "e", IsRanged = true, IsTelekinesis = true });
         }
@@ -80,8 +81,8 @@ namespace MapAssist.Automation
         {
             if (!_fighting && !_combatWorker.IsBusy &&
                 _monsters.Any(x => !_blacklist.Contains(x.UnitId) &&
-                        Automaton.GetDistance(location, x.Position) <= COMBAT_RANGE &&
-                        _pathing.HasLineOfSight(location, x.Position)))
+                        ((reposition && Automaton.GetDistance(location, x.Position) <= DETECTION_RANGE) ||
+                        (!reposition && Automaton.GetDistance(location, x.Position) <= COMBAT_RANGE))))
             {
                 _log.Info($"Clearing baddies around {location.X}/{location.Y}.");
                 _areaToClear = location;
@@ -187,8 +188,8 @@ namespace MapAssist.Automation
             if (_areaToClear != null && !_target.IsValidPointer())
             {
                 var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
-                        Automaton.GetDistance((Point)_areaToClear, x.Position) <= COMBAT_RANGE &&
-                        _pathing.HasLineOfSight((Point)_areaToClear, x.Position));
+                        ((_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= DETECTION_RANGE) ||
+                        (!_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= COMBAT_RANGE)));
 
                 if (monstersInArea.Count() > 0)
                 {
@@ -228,7 +229,7 @@ namespace MapAssist.Automation
                         System.Threading.Thread.Sleep(200);
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
-                        System.Threading.Thread.Sleep(500);
+                        System.Threading.Thread.Sleep(200);
                     }
 
                     if ((_target.TxtFileNo == (uint)Npc.Mephisto || _target.TxtFileNo == (uint)Npc.Diablo || _target.TxtFileNo == (uint)Npc.BaalThrone) &&
@@ -301,7 +302,7 @@ namespace MapAssist.Automation
         private void GetInLOSRange(Point target, short minRange, short maxRange)
         {
             System.Threading.Thread.Sleep(300);
-            _movement.GetInLOSRange(target, minRange, maxRange);
+            _movement.GetInLOSRange(target, minRange, maxRange, HAS_TELEPORT);
             System.Threading.Thread.Sleep(300);
         }
 

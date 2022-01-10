@@ -84,7 +84,7 @@ namespace MapAssist.Automation
             }
         }
 
-        public void GetInLOSRange(Point target, double minRange, double maxRange)
+        public void GetInLOSRange(Point target, double minRange, double maxRange, bool hasTeleport = false)
         {
             if (target == null || (target.X == 0 && target.Y == 0))
             {
@@ -100,19 +100,36 @@ namespace MapAssist.Automation
 
             var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
                                         .OrderByDescending(x => Automaton.GetDistance(x, target))
-                                        .Take(10)
-                                        .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
+                                        .Take(36)
+                                        // this should get us the point with enemies the furthest away from it
+                                        .OrderByDescending(x => _gameData.Monsters.Count() > 0 ? Automaton.GetDistance(x, _gameData.Monsters.OrderBy(m => Automaton.GetDistance(m.Position, x)).First().Position) : 0)
+                                        // .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
                                         .FirstOrDefault();
 
             if (nicestSpot == null || (nicestSpot.X == 0 && nicestSpot.Y == 0))
             {
                 _log.Info("Couldn't find cool location, getting personal.");
-                Teleport(target);
+                nicestSpot = target;
             }
-            else
+
+            try
             {
-                Teleport(nicestSpot);
+                if (hasTeleport)
+                {
+                    TeleportTo(nicestSpot);
+                }
+                else
+                {
+                    WalkTo(nicestSpot);
+                }
             }
+            catch (NoPathFoundException) { }
+
+            do
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            while (Busy);
         }
 
         // adapted from https://stackoverflow.com/questions/5300938/calculating-the-position-of-points-in-a-circle
@@ -133,39 +150,6 @@ namespace MapAssist.Automation
             }
 
             return points;
-        }
-
-        public void GetInRangeOf(Point target, double range)
-        {
-            if (Automaton.GetDistance(target, _gameData.PlayerPosition) <= range)
-                return;
-
-            var maxAway = GetPointsOnLineBetween(target, _gameData.PlayerPosition)
-                                    .Where(x => Automaton.GetDistance(target, x) <= range)
-                                    .OrderByDescending(x => Automaton.GetDistance(target, x))
-                                    .FirstOrDefault();
-
-            Teleport(maxAway);
-        }
-
-        public void GetOutOfRangeOf(Point target, double range)
-        {
-            if (Automaton.GetDistance(target, _gameData.PlayerPosition) >= range)
-                return;
-
-            var escapePoint = new Point(_gameData.PlayerPosition.X, _gameData.PlayerPosition.Y);
-
-            var diff_X = _gameData.PlayerPosition.X - target.X;
-            var diff_Y = _gameData.PlayerPosition.Y - target.Y;
-
-            while (Automaton.GetDistance(target, escapePoint) < range)
-            {
-                escapePoint.X += diff_X;
-                escapePoint.Y += diff_Y;
-            }
-
-            if (escapePoint.X != 0 && escapePoint.Y != 0)
-                Teleport(escapePoint);
         }
 
         public void TeleportTo(Point worldPosition)
