@@ -38,7 +38,7 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(1500);
 
-            var gamename = RandomString(random.Next(10, 16));
+            var gamename = RandomString(random.Next(12, 16));
             var password = RandomString(random.Next(5, 8));
 
             _input.DoInput(gamename + "{TAB}");
