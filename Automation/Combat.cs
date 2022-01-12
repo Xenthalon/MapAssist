@@ -13,9 +13,9 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly short DETECTION_RANGE = 35;
+        private static readonly short DETECTION_RANGE = 30;
         private static readonly short COMBAT_RANGE = 20;
-        private static readonly short TOO_CLOSE_RANGE = 8;
+        private static readonly short TOO_CLOSE_RANGE = 7;
         private static readonly short MAX_ATTACK_ATTEMPTS = 10;
         private static readonly int ESCAPE_COOLDOWN = 3000;
         private static readonly bool OPEN_CHESTS = true;
@@ -302,7 +302,7 @@ namespace MapAssist.Automation
         private void GetInLOSRange(Point target, short minRange, short maxRange)
         {
             System.Threading.Thread.Sleep(300);
-            _movement.GetInLOSRange(target, minRange, maxRange, HAS_TELEPORT);
+            _movement.GetInLOSRange(target, minRange, maxRange - 1, HAS_TELEPORT);
             System.Threading.Thread.Sleep(300);
         }
 
@@ -316,10 +316,10 @@ namespace MapAssist.Automation
             var supers = monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||
                                             (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique);
 
-            // get closest super not immune to us
-            if (supers.Any(x => !x.Immunities.Contains(mainSkill.DamageType)))
+            // get closest super not immune to us with line of sight
+            if (supers.Any(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position)))
             {
-                victim = supers.Where(x => !x.Immunities.Contains(mainSkill.DamageType))
+                victim = supers.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
                                 .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).First();
             }
 

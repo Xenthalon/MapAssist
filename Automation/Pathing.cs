@@ -59,7 +59,7 @@ namespace MapAssist.Automation
         private static readonly short StinkSampleSize = 50;
         private static readonly short StinkRange = 30;
         private static readonly short StinkMaximum = 500;
-        private static readonly double MaxStinkSaturation = 0.95;
+        private static readonly double MaxStinkSaturation = 0.98;
 
         // Stuff for teleport pathing
         private static readonly short RangeInvalid = 10000;

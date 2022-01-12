@@ -99,11 +99,10 @@ namespace MapAssist.Automation
             }
 
             var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
-                                        .OrderByDescending(x => Automaton.GetDistance(x, target))
-                                        .Take(36)
+                                        .OrderByDescending(x => Automaton.GetDistance(x, target)).Take(36)          // get 36 points furthest away from the enemy
+                                        .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x)).Take(10)  // get 10 points closest to us
                                         // this should get us the point with enemies the furthest away from it
                                         .OrderByDescending(x => _gameData.Monsters.Count() > 0 ? Automaton.GetDistance(x, _gameData.Monsters.OrderBy(m => Automaton.GetDistance(m.Position, x)).First().Position) : 0)
-                                        // .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x))
                                         .FirstOrDefault();
 
             if (nicestSpot == null || (nicestSpot.X == 0 && nicestSpot.Y == 0))
