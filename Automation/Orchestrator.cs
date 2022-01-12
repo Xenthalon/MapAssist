@@ -13,9 +13,10 @@ namespace MapAssist.Automation
     class Orchestrator
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly short MAX_RETRIES = 3;
         
         private static List<RunProfile> _runProfiles = new List<RunProfile>();
-        private static readonly int _gameChangeSafetyLimit = 100;
+        private static readonly int _gameChangeSafetyLimit = 75;
         private static readonly bool _autostart = true;
 
         private BackgroundWorker _worker;
@@ -173,15 +174,14 @@ namespace MapAssist.Automation
                 _log.Error("Exhausted all profiles, done!");
                 _goBotGo = false;
                 _menuMan.ExitGame();
-                System.Threading.Thread.Sleep(10000);
                 return;
             }
 
             if (!_townManager.IsInTown)
             {
                 _log.Error("Every run needs to start in town, something is borked!");
+                _goBotGo = false;
                 _menuMan.ExitGame();
-                System.Threading.Thread.Sleep(10000);
                 return;
             }
 
@@ -212,7 +212,7 @@ namespace MapAssist.Automation
             {
                 if (_goBotGo == false)
                 {
-                    _log.Info("received kill signal, aborting");
+                    _log.Info("Aborting run after Area change to " + area);
                     return;
                 }
 
@@ -288,12 +288,28 @@ namespace MapAssist.Automation
 
                     if (_goBotGo == false)
                     {
-                        _log.Info("received kill signal, aborting");
+                        _log.Info("Aborting run before changing to next area from " + area);
                         return;
                     }
 
-                    // go back to town here if area not changed?
-                    ChangeArea(area, (Point)interactPoint);
+                    var changedArea = ChangeArea(area, (Point)interactPoint);
+
+                    if (!changedArea)
+                    {
+                        if (_townManager.IsInTown)
+                        {
+                            _log.Info("Failed to change area from " + area + ", quitting game.");
+                            _goBotGo = false;
+                            _menuMan.ExitGame();
+                            return;
+                        }
+                        else
+                        {
+                            _log.Info("failed to change area from " + area + ", returning to town.");
+                            TakePortalHome();
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -304,7 +320,7 @@ namespace MapAssist.Automation
 
             if (_goBotGo == false)
             {
-                _log.Info("received kill signal, aborting");
+                _log.Info("Aborting run after entering final area.");
                 return;
             }
 
@@ -325,6 +341,13 @@ namespace MapAssist.Automation
                     do
                     {
                         System.Threading.Thread.Sleep(100);
+
+                        if (_goBotGo == false)
+                        {
+                            _log.Info("Aborting run while killing " + activeProfile.MonsterType);
+                            _combat.Reset();
+                            return;
+                        }
                     }
                     while (_combat.Busy);
 
@@ -345,6 +368,13 @@ namespace MapAssist.Automation
                 do
                 {
                     System.Threading.Thread.Sleep(500);
+
+                    if (_goBotGo == false)
+                    {
+                        _log.Info("Aborting run while exploring " + activeProfile.Name);
+                        _exploring = false;
+                        return;
+                    }
                 }
                 while (_exploring);
             }
@@ -356,6 +386,13 @@ namespace MapAssist.Automation
                 if (!_combat.IsSafe && !_combat.Busy)
                 {
                     _combat.ClearArea(_gameData.PlayerPosition);
+                }
+
+                if (_goBotGo == false)
+                {
+                    _log.Info("Aborting run while doing a final sweep.");
+                    _combat.Reset();
+                    return;
                 }
             }
             while (!_combat.IsSafe);
@@ -374,7 +411,7 @@ namespace MapAssist.Automation
 
             if (_goBotGo == false)
             {
-                _log.Info("received kill signal, aborting");
+                _log.Info("Aborting run after final pickit.");
                 return;
             }
 
@@ -383,7 +420,6 @@ namespace MapAssist.Automation
                 _log.Info("Finished run!");
                 _goBotGo = false;
                 _menuMan.ExitGame();
-                System.Threading.Thread.Sleep(10000);
             }
             else
             {
@@ -429,7 +465,7 @@ namespace MapAssist.Automation
 
                     if (_goBotGo == false)
                     {
-                        _log.Info("received kill signal, aborting");
+                        _log.Info("Aborting run while exploring.");
                         return;
                     }
                 }
@@ -445,7 +481,7 @@ namespace MapAssist.Automation
 
                     if (_goBotGo == false)
                     {
-                        _log.Info("received kill signal, aborting");
+                        _log.Info("Aborting run while picking things while exploring.");
                         return;
                     }
                 }
@@ -484,7 +520,7 @@ namespace MapAssist.Automation
 
                 foreach (var item in Inventory.ItemsToTrash)
                 {
-                    _log.Info("Selling " + Items.ItemName(item.TxtFileNo));
+                    _log.Info($"Selling {item.ItemData.ItemQuality} {Items.ItemName(item.TxtFileNo)}.");
                     _menuMan.SellItemAt(item.X, item.Y);
                 }
 
@@ -496,7 +532,14 @@ namespace MapAssist.Automation
 
                     if (idsc.IsValidPointer())
                     {
-                        _menuMan.VendorBuyOne(idsc.X, idsc.Y);
+                        var retries = 0;
+
+                        do
+                        {
+                            _menuMan.VendorBuyOne(idsc.X, idsc.Y);
+                            retries += 1;
+                        }
+                        while (!Inventory.IDScroll.IsValidPointer() && retries <= MAX_RETRIES);
 
                         if (Inventory.IDScroll.IsValidPointer())
                         {
@@ -652,6 +695,7 @@ namespace MapAssist.Automation
                     {
                         _log.Error("Couldn't pick up corpse, exiting game.");
                         _menuMan.ExitGame();
+                        _goBotGo = false;
                         break;
                     }
                 }
@@ -678,7 +722,6 @@ namespace MapAssist.Automation
 
         private bool TakePortalHome()
         {
-            var retryLimit = 3;
             var retryCount = 0;
 
             var success = false;
@@ -690,11 +733,11 @@ namespace MapAssist.Automation
             do
             {
                 _input.DoInput(PortalKey);
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(1500);
                 portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
                 retryCount += 1;
             }
-            while (!portal.IsValidPointer() && retryCount <= retryLimit);
+            while (!portal.IsValidPointer() && retryCount <= MAX_RETRIES);
 
             if (portal.IsValidPointer())
             {
@@ -705,7 +748,9 @@ namespace MapAssist.Automation
             }
             else
             {
-                _log.Error("Couldn't find portal, help!");
+                _log.Error("Couldn't find portal, quitting game!");
+                _goBotGo = false;
+                _menuMan.ExitGame();
             }
 
             return success;
@@ -719,8 +764,7 @@ namespace MapAssist.Automation
 
             _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
 
-            var retryLimit = 3;
-            var loopLimit = 30;
+            var loopLimit = 10;
             var loops = 0;
             var retrys = 0;
 
@@ -737,7 +781,7 @@ namespace MapAssist.Automation
 
                     _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
 
-                    if (retrys >= retryLimit)
+                    if (retrys >= MAX_RETRIES)
                     {
                         _log.Error("Unable to interact with " + interactionPoint + ", help!");
                         success = false;

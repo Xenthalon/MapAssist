@@ -82,6 +82,7 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("{RMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
         }
@@ -96,6 +97,7 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("+{RMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
         }
@@ -110,8 +112,9 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("{LMB}", screenLocation);
-            System.Threading.Thread.Sleep(350);
+            System.Threading.Thread.Sleep(500);
         }
 
         public void RightClickInventoryItem(int x, int y)
@@ -124,8 +127,9 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("{RMB}", screenLocation);
-            System.Threading.Thread.Sleep(350);
+            System.Threading.Thread.Sleep(500);
         }
 
         public void StashItemAt(int x, int y)
@@ -138,8 +142,9 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
-            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
             System.Threading.Thread.Sleep(250);
+            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(500);
         }
 
         public void SellItemAt(int x, int y)
@@ -152,8 +157,9 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
-            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
             System.Threading.Thread.Sleep(250);
+            _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(500);
         }
 
         public void PutItemIntoBelt(int x, int y)
@@ -166,6 +172,7 @@ namespace MapAssist.Automation
 
             var screenLocation = new Point(_inventoryAnchor.X + (int)(x * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(y * _window.Height * 0.048));
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("+{LMB}", screenLocation);
             System.Threading.Thread.Sleep(500);
         }
@@ -231,6 +238,8 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(300);
 
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.5), (int)(_window.Height * 0.45)));
+
+            System.Threading.Thread.Sleep(10000);
         }
 
         private void TakeWaypoint(Waypoint target)
@@ -253,7 +262,9 @@ namespace MapAssist.Automation
                 return;
             }
 
+            System.Threading.Thread.Sleep(250);
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.3), (int)(_window.Height * 0.71)));
+            System.Threading.Thread.Sleep(500);
         }
 
         public bool OpenInventory()

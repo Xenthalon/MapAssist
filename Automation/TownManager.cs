@@ -37,7 +37,7 @@ namespace MapAssist.Automation
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
         private static HashSet<NPC> _npcs = new HashSet<NPC>();
-        private static int _retryLoopCount = 50;
+        private static int _retryLoopCount = 30;
         private static int _retrys = 5;
 
         private Input _input;
@@ -192,8 +192,13 @@ namespace MapAssist.Automation
             if (!clickTarget.IsValidPointer())
             {
                 _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
+                Reset();
                 _menuMan.ExitGame();
                 return;
+            }
+            else
+            {
+                _log.Info("Interacting with " + target.Name + ".");
             }
 
             _input.DoInputAtWorldPosition("{LMB}", clickTarget.Position);
@@ -212,6 +217,7 @@ namespace MapAssist.Automation
                     if (!clickTarget.IsValidPointer())
                     {
                         _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
+                        Reset();
                         _menuMan.ExitGame();
                         return;
                     }
@@ -223,10 +229,10 @@ namespace MapAssist.Automation
 
                 if (retrys >= _retrys)
                 {
-                    _log.Error("Something went wrong interacting with " + target.Name);
-                    _task = TownTask.NONE;
-                    _state = TownState.IDLE;
-                    break;
+                    _log.Error("Something went wrong interacting with " + target.Name + "! Quitting game!");
+                    Reset();
+                    _menuMan.ExitGame();
+                    return;
                 }
             }
             while (!_menus.NpcInteract && !_menus.Waypoint && !_menus.Stash);
