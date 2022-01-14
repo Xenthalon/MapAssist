@@ -85,6 +85,12 @@ namespace MapAssist.Automation
                 MouseClick(false);
                 InputOperations.ReleaseLShift();
             }
+            else if (input == "{CTRL}")
+            {
+                InputOperations.HoldLCtrl();
+                System.Threading.Thread.Sleep(50);
+                InputOperations.ReleaseLCtrl();
+            }
             else if (input == "{LMB}")
             {
                 MouseClick();
