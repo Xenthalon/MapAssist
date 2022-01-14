@@ -48,6 +48,7 @@ namespace MapAssist.Automation
         private BackgroundWorker _worker;
 
         private int _act;
+        private bool _act1Initialized = false;
         private Types.UnitAny _activeNpc;
         private Area _area;
         private MenuData _menus;
@@ -128,7 +129,7 @@ namespace MapAssist.Automation
             _worker.RunWorkerAsync();
         }
 
-        public void Update(GameData gameData)
+        public void Update(GameData gameData, AreaData areaData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
@@ -138,6 +139,12 @@ namespace MapAssist.Automation
                 _playerPosition = gameData.PlayerPosition;
                 _closeNpcs = gameData.NPCs;
                 _closeObjects = gameData.Objects;
+
+                if (areaData.Area == Area.RogueEncampment && !_act1Initialized)
+                {
+                    InitializeAct1(areaData);
+                    _act1Initialized = true;
+                }
             }
         }
 
@@ -146,6 +153,7 @@ namespace MapAssist.Automation
             CancelWork();
             _task = TownTask.NONE;
             _state = TownState.IDLE;
+            _act1Initialized = false;
         }
 
         private void Run(object sender, DoWorkEventArgs e)
@@ -178,6 +186,19 @@ namespace MapAssist.Automation
             }
 
             _state = TownState.MOVING;
+
+            if (_area == Area.RogueEncampment &&
+                Automaton.GetDistance(_playerPosition, _npcs.Where(x => x.TxtFileId == ((int)Npc.Akara)).First().Position) < 10)
+            {
+                // sometimes get stuck finding path from akara, go to kashya first
+                _movement.WalkTo(_npcs.Where(x => x.TxtFileId == ((int)Npc.Kashya)).First().Position);
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_movement.Busy);
+            }
 
             _movement.WalkTo(target.Position);
 
@@ -322,15 +343,21 @@ namespace MapAssist.Automation
             _activeNpc = new Types.UnitAny(IntPtr.Zero);
         }
 
+        private void InitializeAct1(AreaData areaData)
+        {
+            _npcs = _npcs.Where(x => x.Act != 1).ToHashSet();
+
+            _npcs.Add(new NPC { Name = "Akara", Act = 1, TxtFileId = 148, Position = areaData.NPCs[Npc.Akara].First(), CanHeal = true, HasScrolls = true, HasPotions = true });
+            _npcs.Add(new NPC { Name = "Kashya", Act = 1, TxtFileId = 150, Position = areaData.NPCs[Npc.Kashya].First(), CanRevive = true });
+            _npcs.Add(new NPC { Name = "Charsi", Act = 1, TxtFileId = 154, Position = areaData.NPCs[Npc.Charsi].First(), CanRepair = true });
+            _npcs.Add(new NPC { Name = "Gheed", Act = 1, TxtFileId = 147, Position = areaData.NPCs[Npc.Gheed].First(), CanGamble = true });
+            _npcs.Add(new NPC { Name = "Stash", Act = 1, TxtFileId = 267, Position = areaData.Objects[GameObject.Bank].First(), IsStash = true });
+            _npcs.Add(new NPC { Name = "Waypoint", Act = 1, TxtFileId = 119, Position = areaData.Objects[GameObject.WaypointPortal].First(), IsWaypoint = true });
+            _npcs.Add(new NPC { Name = "Portals", Act = 1, Position = areaData.NPCs[Npc.Kashya].First(), IsPortalSpot = true });
+        }
+
         private void InitializeNpcs()
         {
-            _npcs.Add(new NPC { Name = "Akara", Act = 1, TxtFileId = 148, Position = new Point(4370, 5413), CanHeal = true, HasScrolls = true, HasPotions = true });
-            _npcs.Add(new NPC { Name = "Kashya", Act = 1, TxtFileId = 150, Position = new Point(4335, 5434), CanRevive = true });
-            _npcs.Add(new NPC { Name = "Charsi", Act = 1, TxtFileId = 154, Position = new Point(4278, 5421), CanRepair = true });
-            _npcs.Add(new NPC { Name = "Gheed", Act = 1, TxtFileId = 147, Position = new Point(4284, 5473), CanGamble = true });
-            _npcs.Add(new NPC { Name = "Stash", Act = 1, TxtFileId = 267, Position = new Point(4311, 5429), IsStash = true });
-            _npcs.Add(new NPC { Name = "Waypoint", Act = 1, TxtFileId = 119, Position = new Point(4326, 5423), IsWaypoint = true });
-            _npcs.Add(new NPC { Name = "Portals", Act = 1, Position = new Point(4335, 5460), IsPortalSpot = true });
             _npcs.Add(new NPC { Name = "Drognan", Act = 2, TxtFileId = 177, Position = new Point(5094, 5036), HasScrolls = true, HasPotions = true });
             _npcs.Add(new NPC { Name = "Elzix", Act = 2, TxtFileId = 199, Position = new Point(5036, 5096), CanGamble = true });
             _npcs.Add(new NPC { Name = "Fara", Act = 2, TxtFileId = 178, Position = new Point(5123, 5078), CanHeal = true, CanRepair = true });

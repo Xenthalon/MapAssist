@@ -16,6 +16,7 @@ namespace MapAssist.Automation
         private static readonly int _areaChangeSafetyLimit = 3;
         private static readonly int _moveMaxTries = 3;
         private static readonly int _abortLimit = 3;
+        private static readonly string FORCE_MOVE_KEY = ".";
         private static readonly string TELEPORT_KEY = "w";
 
         private BackgroundWorker _movementWorker;
@@ -36,22 +37,22 @@ namespace MapAssist.Automation
 
         public bool Busy => _moving;
 
-        public Movement(Input input, MenuMan menuMan)
+        public Movement(Input input, MenuMan menuMan, Pathing pathing)
         {
             _input = input;
             _menuMan = menuMan;
+            _pathing = pathing;
 
             _movementWorker = new BackgroundWorker();
             _movementWorker.DoWork += new DoWorkEventHandler(Move);
             _movementWorker.WorkerSupportsCancellation = true;
         }
 
-        public void Update(GameData gameData, Pathing pathing)
+        public void Update(GameData gameData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _gameData = gameData;
-                _pathing = pathing;
 
                 if (_gameData.Area != _currentArea && _possiblyNewArea != _gameData.Area)
                 {
@@ -308,7 +309,7 @@ namespace MapAssist.Automation
         /// <returns></returns>
         public bool Walk(Point worldPoint)
         {
-            _input.DoInputAtWorldPosition("{LMB}", worldPoint);
+            _input.DoInputAtWorldPosition(FORCE_MOVE_KEY, worldPoint);
 
             for (var i = 0; i < 50; i++)
             {

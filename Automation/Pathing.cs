@@ -47,12 +47,8 @@ namespace MapAssist.Automation
             Area.CatacombsLevel4
         };
 
-        // cache for calculated paths. each cache entry is only valid for a specified amount of time
-        private Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)> PathCache = new Dictionary<(uint, Difficulty, Area, Point, Point), (List<Point>, long)>();
-
-        private readonly Grid Grid;
-
-        private readonly AreaData _areaData;
+        private Grid Grid;
+        private AreaData _areaData;
 
         // Stuff for stinkyness exploration
         private static readonly Random Randomizer = new Random();
@@ -69,10 +65,23 @@ namespace MapAssist.Automation
         private int m_rows;
         private int m_columns;
 
-        public Pathing(AreaData areaData)
+        public Pathing()
         {
-            _areaData = areaData;
-            Grid = _areaData.MapToGrid();
+        }
+
+        public void Update(AreaData areaData)
+        {
+            if (_areaData == null || areaData.Area != _areaData.Area)
+            {
+                _areaData = areaData;
+                Grid = _areaData.MapToGrid();
+            }
+        }
+
+        public void Reset()
+        {
+            _areaData = null;
+            Grid = null;
         }
 
         public List<Point> GetExploratoryPath(bool teleport, Point fromLocation)
@@ -350,14 +359,6 @@ namespace MapAssist.Automation
 
         public List<Point> GetPathToLocation(uint mapId, Difficulty difficulty, bool teleport, Point fromLocation, Point toLocation)
         {
-            // check if we have a valid cache entry for this path. if thats the case we are done and can return the cache entry
-            (uint mapId, Difficulty difficulty, Area area, Point fromLocation, Point toLocation) pathCacheKey = (mapId, difficulty, _areaData.Area, fromLocation, toLocation);
-
-            if (PathCache.ContainsKey(pathCacheKey) && ((DateTimeOffset.Now.ToUnixTimeMilliseconds() - PathCache[pathCacheKey].Item2) < 5000))
-            {
-                return PathCache[pathCacheKey].Item1;
-            }
-
             var result = new List<Point>();
 
             // cancel if the provided points dont map into the collisionMap of the AreaData
@@ -396,9 +397,6 @@ namespace MapAssist.Automation
                     result = path.Edges.Where((p, i) => i % 3 == 0 || i == path.Edges.Count - 1).Select(e => _areaData.MapToPoint(e.End.Position)).ToList();
                 }
             }
-
-            // add the calculated path to the cache
-            PathCache[pathCacheKey] = (result, DateTimeOffset.Now.ToUnixTimeMilliseconds());
 
             return result;
         }

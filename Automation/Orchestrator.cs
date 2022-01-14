@@ -54,6 +54,7 @@ namespace MapAssist.Automation
             Input input,
             Movement movement,
             MenuMan menuMan,
+            Pathing pathing,
             PickIt pickIt,
             TownManager townManager)
         {
@@ -63,6 +64,7 @@ namespace MapAssist.Automation
             _input = input;
             _menuMan = menuMan;
             _movement = movement;
+            _pathing = pathing;
             _pickit = pickIt;
             _townManager = townManager;
 
@@ -76,17 +78,17 @@ namespace MapAssist.Automation
 
             _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
             _runProfiles.Add(new RunProfile { Name = "Ancient Tunnels", Type = RunType.Explore, AreaPath = new Area[] { Area.LostCity, Area.AncientTunnels } });
+            _runProfiles.Add(new RunProfile { Name = "Andariel", Type = RunType.KillTarget, AreaPath = new Area[] { Area.CatacombsLevel2, Area.CatacombsLevel3, Area.CatacombsLevel4 }, KillSpot = new Point(22547, 9550), MonsterType = Npc.Andariel });
             _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234), Reposition = false });
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing)
+        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _gameData = gameData;
                 _currentArea = gameData.Area;
                 _pointsOfInterest = pointsOfInterest;
-                _pathing = pathing;
 
                 if (_gameData.MapSeed != _currentGameSeed && _gameData.MapSeed != _possiblyNewGameSeed)
                 {
@@ -163,6 +165,7 @@ namespace MapAssist.Automation
             _chicken.Reset();
             _combat.Reset();
             _movement.Reset();
+            _pathing.Reset();
             _pickit.Reset();
             _townManager.Reset();
         }
@@ -228,6 +231,12 @@ namespace MapAssist.Automation
                     do
                     {
                         System.Threading.Thread.Sleep(100);
+
+                        if (_goBotGo == false)
+                        {
+                            _log.Info("Aborting run while waiting for Waypoint Menu.");
+                            return;
+                        }
                     }
                     while (_townManager.State != TownState.WP_MENU);
 
@@ -294,6 +303,12 @@ namespace MapAssist.Automation
 
                     var changedArea = ChangeArea(area, (Point)interactPoint);
 
+                    if (_goBotGo == false)
+                    {
+                        _log.Info("Aborting run after trying to change area.");
+                        return;
+                    }
+
                     if (!changedArea)
                     {
                         if (_townManager.IsInTown)
@@ -353,7 +368,8 @@ namespace MapAssist.Automation
 
                     _log.Info("We got that sucker, making sure things are safe...");
 
-                    _combat.ClearArea(_gameData.PlayerPosition);
+                    MoveTo(activeProfile.KillSpot);
+                    _combat.ClearArea(activeProfile.KillSpot);
                 }
             }
             else if (activeProfile.Type == RunType.ClearArea)
@@ -517,6 +533,8 @@ namespace MapAssist.Automation
                 while (_townManager.State != TownState.TRADE_MENU);
 
                 System.Threading.Thread.Sleep(500);
+
+                _menuMan.SelectVendorTab(3); // sometimes tab is not set to misc
 
                 foreach (var item in Inventory.ItemsToTrash)
                 {

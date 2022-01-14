@@ -43,10 +43,11 @@ namespace MapAssist.Automation
                 Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
         public bool Busy => _fighting;
 
-        public Combat(Input input, Movement movement)
+        public Combat(Input input, Movement movement, Pathing pathing)
         {
             _input = input;
             _movement = movement;
+            _pathing = pathing;
 
             _combatWorker = new BackgroundWorker();
             _combatWorker.DoWork += new DoWorkEventHandler(Fight);
@@ -138,7 +139,7 @@ namespace MapAssist.Automation
             }
         }
 
-        public void Update(GameData gameData, Pathing pathing)
+        public void Update(GameData gameData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
@@ -146,7 +147,6 @@ namespace MapAssist.Automation
                                                 (x.ObjectData.InteractType & ((byte)Chest.InteractFlags.Locked)) == ((byte)Chest.InteractFlags.None)); // only non-locked chests
                 _monsters = gameData.Monsters;
                 _playerPosition = gameData.PlayerPosition;
-                _pathing = pathing;
 
                 if (_target.IsValidPointer())
                 {

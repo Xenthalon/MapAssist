@@ -20,6 +20,7 @@ namespace MapAssist
         private List<PointOfInterest> _pointsOfInterests;
 
         public Movement Movement => _movement;
+        public Pathing Pathing => _pathing;
 
         private BuffBoy _buffBoy;
         private Chicken _chicken;
@@ -28,38 +29,41 @@ namespace MapAssist
         private MenuMan _menuMan;
         private Movement _movement;
         private Orchestrator _orchestrator;
+        private Pathing _pathing;
         private PickIt _pickit;
         private TownManager _townManager;
 
         public Automaton()
         {
             _input = new Input();
+            _pathing = new Pathing();
             _buffBoy = new BuffBoy(_input);
             _menuMan = new MenuMan(_input);
-            _movement = new Movement(_input, _menuMan);
-            _combat = new Combat(_input, _movement);
+            _movement = new Movement(_input, _menuMan, _pathing);
+            _combat = new Combat(_input, _movement, _pathing);
             _chicken = new Chicken(_combat, _input, _menuMan, _movement);
             _pickit = new PickIt(_movement, _input);
             _townManager = new TownManager(_input, _menuMan, _movement);
 
-            _orchestrator = new Orchestrator(_buffBoy, _chicken, _combat, _input, _movement, _menuMan, _pickit, _townManager);
+            _orchestrator = new Orchestrator(_buffBoy, _chicken, _combat, _input, _movement, _menuMan, _pathing, _pickit, _townManager);
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, Pathing pathing, Rectangle windowRect)
+        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, AreaData areaData, Rectangle windowRect)
         {
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
 
             Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
             _input.Update(gameData, windowRect);
+            _pathing.Update(areaData);
             _buffBoy.Update(gameData);
             _chicken.Update(gameData);
-            _combat.Update(gameData, pathing);
+            _combat.Update(gameData);
             _menuMan.Update(gameData, windowRect);
-            _movement.Update(gameData, pathing);
+            _movement.Update(gameData);
             _pickit.Update(gameData);
-            _townManager.Update(gameData);
-            _orchestrator.Update(gameData, pointsOfInterest, pathing);
+            _townManager.Update(gameData, areaData);
+            _orchestrator.Update(gameData, pointsOfInterest);
         }
 
         public void Reset()

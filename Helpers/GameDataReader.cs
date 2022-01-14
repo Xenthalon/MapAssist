@@ -9,10 +9,10 @@ namespace MapAssist.Helpers
         private Compositor _compositor;
         private volatile GameData _gameData;
         private List<PointOfInterest> _pointsOfInterest;
-        private Automation.Pathing _pathing;
+        private AreaData _areaData;
         private MapApi _mapApi;
 
-        public (Compositor, GameData, Automation.Pathing, List<PointOfInterest>) Get()
+        public (Compositor, GameData, AreaData, List<PointOfInterest>) Get()
         {
             var gameData = GameMemory.GetGameData();
 
@@ -31,15 +31,14 @@ namespace MapAssist.Helpers
                     if (gameData.Area != Area.None)
                     {
                         _log.Info($"Area changed to {gameData.Area}");
-                        var areaData = _mapApi.GetMapData(gameData.Area);
+                        _areaData = _mapApi.GetMapData(gameData.Area);
 
-                        if (areaData != null)
+                        if (_areaData != null)
                         {
-                            _pointsOfInterest = PointOfInterestHandler.Get(_mapApi, areaData, gameData);
+                            _pointsOfInterest = PointOfInterestHandler.Get(_mapApi, _areaData, gameData);
                             _log.Info($"Found {_pointsOfInterest.Count} points of interest");
 
-                            compositor = new Compositor(areaData, _pointsOfInterest);
-                            _pathing = new Automation.Pathing(areaData);
+                            compositor = new Compositor(_areaData, _pointsOfInterest);
                         }
                         else
                         {
@@ -53,7 +52,7 @@ namespace MapAssist.Helpers
 
             _gameData = gameData;
 
-            return (_compositor, _gameData, _pathing, _pointsOfInterest);
+            return (_compositor, _gameData, _areaData, _pointsOfInterest);
         }
     }
 }
