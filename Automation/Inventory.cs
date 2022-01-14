@@ -79,9 +79,9 @@ namespace MapAssist.Automation
 
             var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
 
-            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x));
+            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x).Item1);
             ItemsToIdentify = ItemsToStash.Where(x => (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) != ItemFlags.IFLAG_IDENTIFIED && IdentificationFilter.HasEntry(x));
-            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x));
+            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x).Item1);
             ItemsToBelt = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && 
                 (Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" || Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"));
 

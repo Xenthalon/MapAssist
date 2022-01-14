@@ -77,7 +77,7 @@ namespace MapAssist.Automation
             var pickPotions = !Inventory.IsBeltFull();
 
             var itemsToPick = _items.Where(x => x.IsDropped() &&
-                                                (LootFilter.Filter(x) ||
+                                                (LootFilter.Filter(x).Item1 ||
                                                 (pickPotions && (
                                                     Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
                                                     Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"

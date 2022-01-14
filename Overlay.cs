@@ -19,13 +19,13 @@
 
 using GameOverlay.Drawing;
 using GameOverlay.Windows;
-using MapAssist.Files.Font;
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+//using WK.Libraries.HotkeyListenerNS;
 using Graphics = GameOverlay.Drawing.Graphics;
 
 namespace MapAssist
@@ -37,8 +37,8 @@ namespace MapAssist
         private readonly GraphicsWindow _window;
         private GameDataReader _gameDataReader;
         private GameData _gameData;
-        private Compositor _compositor;
         private AreaData _areaData;
+        private Compositor _compositor = new Compositor();
         private bool _show = true;
 
         private Automaton _automation;
@@ -59,7 +59,6 @@ namespace MapAssist
 
             _window.DrawGraphics += _window_DrawGraphics;
             _window.DestroyGraphics += _window_DestroyGraphics;
-
         }
 
         private void _window_DrawGraphics(object sender, DrawGraphicsEventArgs e)
@@ -72,7 +71,15 @@ namespace MapAssist
             {
                 lock (_lock)
                 {
-                    (_compositor, _gameData, _areaData, _pointsOfInterests) = _gameDataReader.Get();
+                    var (gameData, areaData, pointsOfInterest, changed) = _gameDataReader.Get();
+                    _gameData = gameData;
+                    _areaData = areaData;
+                    _pointsOfInterests = pointsOfInterest;
+
+                    if (changed)
+                    {
+                        _compositor.setArea(areaData, pointsOfInterest);
+                    }
 
                     gfx.ClearScene();
 
@@ -166,16 +173,23 @@ namespace MapAssist
             return _gameData != null && _gameData.MainWindowHandle != IntPtr.Zero;
         }
 
-        public void KeyPressHandler(object sender, KeyPressEventArgs args)
+        public void KeyDownHandler(object sender, KeyEventArgs args)
         {
-            if (InGame())
+            if (InGame() && GameManager.IsGameInForeground)
             {
-                if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey)
+                var keys = new Hotkey(args.Modifiers, args.KeyCode);
+
+                if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey))
                 {
                     _show = !_show;
                 }
 
-                if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomInKey)
+                if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.AreaLevelKey))
+                {
+                    MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel = !MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel;
+                }
+
+                if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomInKey))
                 {
                     if (MapAssistConfiguration.Loaded.RenderingConfiguration.ZoomLevel > 0.25f)
                     {
@@ -185,7 +199,7 @@ namespace MapAssist
                     }
                 }
 
-                if (args.KeyChar == MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomOutKey)
+                if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomOutKey))
                 {
                     if (MapAssistConfiguration.Loaded.RenderingConfiguration.ZoomLevel < 4f)
                     {
@@ -194,24 +208,18 @@ namespace MapAssist
                           (int)(MapAssistConfiguration.Loaded.RenderingConfiguration.InitialSize * 0.05f);
                     }
                 }
-            }
-        }
 
-        public void KeyDownHandler(object sender, KeyEventArgs e)
-        {
-            if (InGame())
-            {
-                if (e.KeyCode == Keys.L)
+                if (args.KeyCode == Keys.L)
                 {
                     _automation.dumpGameData();
                 }
 
-                if (e.KeyCode == Keys.V)
+                if (args.KeyCode == Keys.V)
                 {
                     _automation.StartAutoTele();
                 }
 
-                if (e.KeyCode == Keys.N)
+                if (args.KeyCode == Keys.N)
                 {
                     // _automation.GoBotGo();
                     _automation.DoExploreStuff();

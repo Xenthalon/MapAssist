@@ -29,6 +29,10 @@ namespace MapAssist.Helpers
 {
     public static class PointOfInterestHandler
     {
+        private static Dictionary<GameObject, string> QuestObjects;
+
+        private static Dictionary<Area, Dictionary<GameObject, string>> AreaSpecificQuestObjects;
+
         private static readonly Dictionary<Area, Area> AreaPreferredNextArea = new Dictionary<Area, Area>()
         {
             [Area.BloodMoor] = Area.ColdPlains,
@@ -60,22 +64,6 @@ namespace MapAssist.Helpers
             [Area.CrystallinePassage] = Area.FrozenRiver,
         };
 
-        private static readonly Dictionary<Area, Dictionary<GameObject, string>> AreaSpecificQuestObjects = new Dictionary<Area, Dictionary<GameObject, string>>()
-        {
-            [Area.MatronsDen] = new Dictionary<GameObject, string>()
-            {
-                [GameObject.SparklyChest] = "Lilith",
-            },
-            [Area.FurnaceOfPain] = new Dictionary<GameObject, string>()
-            {
-                [GameObject.SparklyChest] = "Uber Izual",
-            },
-            [Area.PalaceCellarLevel3] = new Dictionary<GameObject, string>()
-            {
-                [GameObject.ArcaneSanctuaryPortal] = "Arcane Sanctuary",
-            },
-        };
-
         private static readonly Dictionary<Area, Dictionary<GameObject, Area>> AreaPortals = new Dictionary<Area, Dictionary<GameObject, Area>>()
         {
             [Area.FrigidHighlands] = new Dictionary<GameObject, Area>()
@@ -90,27 +78,6 @@ namespace MapAssist.Helpers
             {
                 [GameObject.PermanentTownPortal] = Area.InfernalPit,
             },
-        };
-
-        private static readonly Dictionary<GameObject, string> QuestObjects = new Dictionary<GameObject, string>
-        {
-            [GameObject.CairnStoneAlpha] = "Tristram",
-            [GameObject.WirtCorpse] = "Wirt's Leg",
-            [GameObject.InifussTree] = "Inifuss Tree",
-            [GameObject.Malus] = "Malus",
-            [GameObject.HoradricScrollChest] = "Horadric Scroll",
-            [GameObject.HoradricCubeChest] = "Horadric Cube",
-            [GameObject.StaffOfKingsChest] = "Staff of Kings",
-            [GameObject.YetAnotherTome] = "Summoner",
-            [GameObject.HoradricOrifice] = "Orifice",
-            [GameObject.KhalimChest1] = "Khalim's Heart",
-            [GameObject.KhalimChest2] = "Khalim's Brain",
-            [GameObject.KhalimChest3] = "Khalim's Eye",
-            [GameObject.GidbinnAltarDecoy] = "Gidbinn",
-            [GameObject.HellForge] = "Hell Forge",
-            [GameObject.DrehyaWildernessStartPosition] = "Anya",
-            [GameObject.NihlathakWildernessStartPosition] = "Nihlathak",
-            [GameObject.CagedWussie] = "Prisoners",
         };
 
         private static readonly HashSet<GameObject> SuperChests = new HashSet<GameObject>
@@ -153,6 +120,44 @@ namespace MapAssist.Helpers
             GameObject.JungleShrine5,
         };
 
+        public static void UpdateLocalizationNames()
+        {
+            QuestObjects = new Dictionary<GameObject, string>
+            {
+                [GameObject.CairnStoneAlpha] = Area.Tristram.Name(),
+                [GameObject.WirtCorpse] = Items.ItemNameFromKey("leg"),
+                [GameObject.InifussTree] = Items.ItemNameFromKey("Inifuss"),
+                [GameObject.Malus] = Items.ItemNameFromKey("Malus"),
+                [GameObject.HoradricScrollChest] = Items.ItemNameFromKey("tr1"),
+                [GameObject.HoradricCubeChest] = Items.ItemNameFromKey("box"),
+                [GameObject.StaffOfKingsChest] = Items.ItemNameFromKey("Staff of Kings"),
+                [GameObject.YetAnotherTome] = AreaExtensions.NameFromKey("The Summoner"),
+                [GameObject.HoradricOrifice] = Items.ItemNameFromKey("orifice"),
+                [GameObject.KhalimChest1] = Items.ItemNameFromKey("qhr"),
+                [GameObject.KhalimChest2] = Items.ItemNameFromKey("qbr"),
+                [GameObject.KhalimChest3] = Items.ItemNameFromKey("qey"),
+                [GameObject.GidbinnAltarDecoy] = Items.ItemNameFromKey("gidbinn"),
+                [GameObject.HellForge] = Items.ItemNameFromKey("Hellforge"),
+                [GameObject.DrehyaWildernessStartPosition] = AreaExtensions.NameFromKey("Drehya"), //anya
+                [GameObject.NihlathakWildernessStartPosition] = AreaExtensions.NameFromKey("Nihlathak"),
+                [GameObject.CagedWussie] = AreaExtensions.NameFromKey("cagedwussie1"),
+            };
+            AreaSpecificQuestObjects = new Dictionary<Area, Dictionary<GameObject, string>>()
+            {
+                [Area.MatronsDen] = new Dictionary<GameObject, string>()
+                {
+                    [GameObject.SparklyChest] = AreaExtensions.NameFromKey("Lilith"),
+                },
+                [Area.FurnaceOfPain] = new Dictionary<GameObject, string>()
+                {
+                    [GameObject.SparklyChest] = AreaExtensions.NameFromKey("Izual"),
+                },
+                [Area.PalaceCellarLevel3] = new Dictionary<GameObject, string>()
+                {
+                    [GameObject.ArcaneSanctuaryPortal] = AreaExtensions.NameFromKey("Arcane Sanctuary"),
+                },
+            };
+        }
         public static List<PointOfInterest> Get(MapApi mapApi, AreaData areaData, GameData gameData)
         {
             var pointsOfInterest = GetArea(mapApi, areaData, gameData);
@@ -459,7 +464,23 @@ namespace MapAssist.Helpers
                     }
                 }
 
-                // Area-specific landmarks
+                // Area-specific quest objects
+                if (AreaSpecificQuestObjects.ContainsKey(areaData.Area))
+                {
+                    if (AreaSpecificQuestObjects[areaData.Area].ContainsKey(obj))
+                    {
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            Label = AreaSpecificQuestObjects[areaData.Area][obj],
+                            Position = points[0],
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
+                            Type = PoiType.AreaSpecificQuest
+                        });
+                    }
+                }
+
+                // Area-specific portals
                 if (AreaPortals.ContainsKey(areaData.Area))
                 {
                     if (AreaPortals[areaData.Area].ContainsKey(obj))
@@ -559,7 +580,7 @@ namespace MapAssist.Helpers
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            Label = "Izual",
+                            Label = AreaExtensions.NameFromKey("Izual"),
                             Position = objAndPoints.Value[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest
                         });

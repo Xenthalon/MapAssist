@@ -40,11 +40,21 @@ Mage Plate:
     - superior
     Sockets: [0, 3]
 
-# This will show unique monarchs as well as non-magical monarchs with 0 or 4 sockets
+# This will show magic and unique monarchs as well as non-magical monarchs with 0 or 4 sockets
 Monarch:
-  - Qualities: unique # Stormshield
+  - Qualities: [magic, unique] # Stormshield
   - Qualities: [normal, superior]
     Sockets: [0, 4]
+
+# This will show a short staff with +1 to skills, +1 to sorc skills, +1 to fire skills, and +1 fire bolt
+Short Staff:
+  - Skills:
+      Fire Bolt: 1
+    Class Skill Tree:
+      Sorceress Fire: 1
+    Class Skills:
+      Sorceress: 1
+    All Skills: 1
 
 # This is just an object that holds all our commonly used aliases
 # Aliases are labeled by the `&` and then the name and provide a simple way to reuse rule criteria later on
@@ -53,11 +63,13 @@ x-bases:
   - &merc-arm-base
     Ethereal: true
     Qualities: [normal, superior]
+    Defense: 680
     Sockets: [0, 3, 4]
   - &player-arm-base
     Ethereal: false
     Qualities: [normal, superior]
     Sockets: [0, 3, 4]
+    Defense: 400
   - &merc-wep-base
     Ethereal: true
     Qualities: [normal, superior]
@@ -65,6 +77,7 @@ x-bases:
   - &pally-shield-base
     # Ethereal: true # Uncomment this if you need an ethereal shield base, or flip it to false for non-ethereal
     Qualities: [normal, superior]
+    All Resist: 25
     Sockets: [0, 4]
 
 # This ring rule will show all magic, rare, and unique rings

@@ -49,15 +49,15 @@ namespace MapAssist.Structs
 
     public enum PlayerClass : uint
     {
-        AMAZON,
-        SORCERESS,
-        NECROMANCER,
-        PALADIN,
-        BARBARIAN,
-        DRUID,
-        ASSASSIN,
-        EVILFORCE,
-        INVALID = 7,
-        NUMBER_OF_PLAYERCLASSES = 7,
+        Amazon,
+        Sorceress,
+        Necromancer,
+        Paladin,
+        Barbarian,
+        Druid,
+        Assassin,
+        EvilForce,
+        Invalid = 7,
+        NumberOfPlayerClasses = 7,
     };
 }

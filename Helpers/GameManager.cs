@@ -21,6 +21,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using MapAssist.Settings;
 using MapAssist.Structs;
 
 namespace MapAssist.Helpers
@@ -148,6 +149,8 @@ namespace MapAssist.Helpers
 
         private static void ClearLastGameProcess()
         {
+            if (MapAssistConfiguration.Loaded.RenderingConfiguration.StickToLastGameWindow) return;
+
             if (_processContext != null && _processContext.OpenContextCount == 0 && _lastGameProcess != null) // Prevent disposing the process when the context is open
             {
                 _lastGameProcess.Dispose();

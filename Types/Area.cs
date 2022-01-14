@@ -17,6 +17,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
+using MapAssist.Helpers;
+using MapAssist.Settings;
+using System;
 using System.Collections.Generic;
 
 namespace MapAssist.Types
@@ -169,6 +172,7 @@ namespace MapAssist.Types
 
     public static class AreaExtensions
     {
+        public static Dictionary<string, LocalizedObj> LocalizedAreas = new Dictionary<string, LocalizedObj>();
         private static readonly Dictionary<Area, AreaLabel> _areaLabels = new Dictionary<Area, AreaLabel>()
         {
             [Area.None] = new AreaLabel() {
@@ -328,7 +332,7 @@ namespace MapAssist.Types
                 Level = new int[] { 6, 39, 76 }
             },
             [Area.MooMooFarm] = new AreaLabel() {
-                Text = "Cow Level",
+                Text = "Moo Moo Farm",
                 Level = new int[] { 28, 64, 81 }
             },
             [Area.LutGholein] = new AreaLabel() {
@@ -369,7 +373,7 @@ namespace MapAssist.Types
             },
             [Area.SewersLevel3Act2] = new AreaLabel() {
                 Text = "Sewers Level 3",
-                Level = new int[] { 13, 44, 75 }
+                Level = new int[] { 14, 44, 75 }
             },
             [Area.HaremLevel1] = new AreaLabel() {
                 Text = "Harem Level 1",
@@ -377,7 +381,7 @@ namespace MapAssist.Types
             },
             [Area.HaremLevel2] = new AreaLabel() {
                 Text = "Harem Level 2",
-                Level = new int[] { 14, 47, 78 }
+                Level = new int[] { 13, 47, 78 }
             },
             [Area.PalaceCellarLevel1] = new AreaLabel() {
                 Text = "Palace Cellar Level 1",
@@ -464,15 +468,15 @@ namespace MapAssist.Types
                 Level = new int[] { 17, 49, 80 }
             },
             [Area.DurielsLair] = new AreaLabel() {
-                Text = "Tal Rasha's Chamber",
+                Text = "Duriel's Lair",
                 Level = new int[] { 17, 49, 80 }
             },
             [Area.ArcaneSanctuary] = new AreaLabel() {
                 Text = "Arcane Sanctuary",
-                Level = new int[] { 14, 84, 79 }
+                Level = new int[] { 14, 48, 79 }
             },
             [Area.KurastDocks] = new AreaLabel() {
-                Text = "Kurast Docks",
+                Text = "Kurast Docktown",
                 Level = new int[] { 0, 0, 0 }
             },
             [Area.SpiderForest] = new AreaLabel() {
@@ -656,7 +660,7 @@ namespace MapAssist.Types
                 Level = new int[] { 37, 68, 87 }
             },
             [Area.NihlathaksTemple] = new AreaLabel() {
-                Text = "Nihlathak's Temple",
+                Text = "Nihlathaks Temple",
                 Level = new int[] { 32, 63, 83 }
             },
             [Area.HallsOfAnguish] = new AreaLabel() {
@@ -664,7 +668,7 @@ namespace MapAssist.Types
                 Level = new int[] { 33, 63, 83 }
             },
             [Area.HallsOfPain] = new AreaLabel() {
-                Text = "Halls of Pain",
+                Text = "Halls of Death's Calling",
                 Level = new int[] { 34, 64, 84 }
             },
             [Area.HallsOfVaught] = new AreaLabel() {
@@ -689,7 +693,7 @@ namespace MapAssist.Types
             },
             [Area.TheWorldStoneKeepLevel2] = new AreaLabel() {
                 Text = "Worldstone Keep Level 2",
-                Level = new int[] { 39, 65, 85 }
+                Level = new int[] { 40, 65, 85 }
             },
             [Area.TheWorldStoneKeepLevel3] = new AreaLabel() {
                 Text = "Worldstone Keep Level 3",
@@ -704,19 +708,19 @@ namespace MapAssist.Types
                 Level = new int[] { 43, 66, 85 }
             },
             [Area.MatronsDen] = new AreaLabel() {
-                Text = "Matron's Den",
+                Text = "Pandemonium Run 1",
                 Level = new int[] { 0, 0, 83 }
             },
             [Area.ForgottenSands] = new AreaLabel() {
-                Text = "Forgotten Sands",
+                Text = "Pandemonium Run 2",
                 Level = new int[] { 0, 0, 83 }
             },
             [Area.FurnaceOfPain] = new AreaLabel() {
-                Text = "Furnace of Pain",
+                Text = "Pandemonium Run 3",
                 Level = new int[] { 0, 0, 83 }
             },
             [Area.UberTristram] = new AreaLabel() {
-                Text = "Uber Tristram",
+                Text = "Tristram",
                 Level = new int[] { 0, 0, 83 }
             },
         };
@@ -735,7 +739,7 @@ namespace MapAssist.Types
             Area.OuterCloister,
             Area.Barracks,
             Area.InnerCloister,
-            Area.Cathedral, 
+            Area.Cathedral,
             Area.LutGholein,
             Area.RockyWaste,
             Area.DryHills,
@@ -764,7 +768,33 @@ namespace MapAssist.Types
             Area.ArreatPlateau,
         };
 
+        public static string NameFromKey(string key)
+        {
+            LocalizedObj localItem;
+            if (!LocalizedAreas.TryGetValue(key, out localItem))
+            {
+                return "AreaNameNotFound";
+            }
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+            return prop.ToString();
+        }
+
         public static string Name(this Area area)
+        {
+            var areaLabel = _areaLabels.TryGetValue(area, out var label) ? label.Text : area.ToString();
+
+            LocalizedObj localItem;
+            if (!LocalizedAreas.TryGetValue(areaLabel, out localItem))
+            {
+                return area.ToString();
+            }
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+            return prop.ToString();
+        }
+
+        public static string NameInternal(this Area area)
         {
             return _areaLabels.TryGetValue(area, out var label) ? label.Text : area.ToString();
         }
@@ -782,6 +812,14 @@ namespace MapAssist.Types
         public static bool RequiresStitching(this Area area)
         {
             return StitchedAreas.Contains(area);
+        }
+        public static bool IsTown(this Area area)
+        {
+            return area == Area.RogueEncampment ||
+                area == Area.LutGholein ||
+                area == Area.KurastDocks ||
+                area == Area.ThePandemoniumFortress ||
+                area == Area.Harrogath;
         }
     }
 }

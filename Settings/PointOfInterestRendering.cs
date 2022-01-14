@@ -28,6 +28,9 @@ namespace MapAssist.Settings
         [YamlMember(Alias = "IconColor", ApplyNamingConventions = false)]
         public Color IconColor { get; set; }
 
+        [YamlMember(Alias = "IconOutlineColor", ApplyNamingConventions = false)]
+        public Color IconOutlineColor { get; set; }
+
         [YamlMember(Alias = "IconShape", ApplyNamingConventions = false)]
         public Shape IconShape { get; set; }
 
@@ -35,11 +38,11 @@ namespace MapAssist.Settings
         public float IconSize { get; set; }
 
         [YamlMember(Alias = "IconThickness", ApplyNamingConventions = false)]
-        public float IconThickness;
+        public float IconThickness { get; set; }
 
         public bool CanDrawIcon()
         {
-            return IconShape != Shape.None && IconSize > 0 && IconColor != Color.Transparent;
+            return IconSize > 0 && (IconColor != Color.Transparent || IconOutlineColor != Color.Transparent);
         }
     }
 
@@ -61,7 +64,10 @@ namespace MapAssist.Settings
         public string LabelFont { get; set; }
 
         [YamlMember(Alias = "LabelFontSize", ApplyNamingConventions = false)]
-        public int LabelFontSize { get; set; }
+        public double LabelFontSize { get; set; }
+
+        [YamlMember(Alias = "LabelTextShadow", ApplyNamingConventions = false)]
+        public bool LabelTextShadow { get; set; }
 
         public bool CanDrawLine()
         {

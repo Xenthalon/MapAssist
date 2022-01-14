@@ -17,6 +17,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
+using MapAssist.Settings;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace MapAssist.Helpers
 
         public static GameData GetGameData()
         {
-            if (!GameManager.IsGameInForeground)
+            if (!MapAssistConfiguration.Loaded.RenderingConfiguration.StickToLastGameWindow && !GameManager.IsGameInForeground)
             {
                 return null;
             }

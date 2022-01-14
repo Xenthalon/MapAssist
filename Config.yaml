@@ -1,66 +1,64 @@
-# IMPORTANT: After changing anything in this file, ensure validity using https://jsonformatter.org/yaml-validator
-
-## HotkeyConfiguration - Keyboard shortcuts for the overlay
+# Change these settings from the Config GUI provided in MapAssist
 HotkeyConfiguration:
-  ToggleKey: '\'
-  ZoomInKey: '+'
-  ZoomOutKey: '-'
-
-## HiddenAreas - Areas where the overlay is not needed and will be hidden
+  ToggleKey: '|'
+  AreaLevelKey: '['
+  ZoomInKey: Num +
+  ZoomOutKey: Num -
 HiddenAreas:
-  - 'Rogue Encampment'
-  - 'Lut Gholein'
-  - 'Kurast Docks'
-  - 'Pandemonium Fortress'
-  - 'Harrogath'
-  - 'Forgotten Tower'
-  - "Nihlathak's Temple"
-
-## RenderingConfiguration - Visual settings for the overlay
+- Rogue Encampment
+- Lut Gholein
+- Kurast Docktown
+- Pandemonium Fortress
+- Harrogath
+- Forgotten Tower
+- Nihlathaks Temple
 RenderingConfiguration:
-  ## Opacity - Map transparency %
   Opacity: 0.5
-  ## Opacity - Icon transparency %
   IconOpacity: 0.9
-  ## OverlayMode - Overlay map over in-game map / can be hidden with hotkey (ToggleKey)
   OverlayMode: true
-  ## Positions - Options are: Center, TopLeft, TopRight
   Position: Center
-  ## ToggleViaInGameMap - Auto-hide map overlay when the in-game map is hidden
   ToggleViaInGameMap: false
-  ## ToggleViaInGamePanels - Auto-hide overlay when in-game panels/menus are opened
   ToggleViaInGamePanels: true
-  ## Size - Overlay map maximum size
+  StickToLastGameWindow: false
   Size: 800
-  ## ZoomLevel - Zoom level / can zoom in/out with hotkeys (ZoomInKey, ZoomOutKey)
   ZoomLevel: 1
-  ## BuffPosition - Options are: Player, Top, Bottom
   BuffPosition: Bottom
-  ## BuffSize - Size of the buff icons (0.8 = 80%, 1 = 100%, 1.2 = 120%)
   BuffSize: 1
-
-## MapConfiguration -- Visual settings for icons, lines and labels
 MapConfiguration:
   SuperUniqueMonster:
-    IconColor: Yellow
+    IconOutlineColor: Yellow
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
   UniqueMonster:
-    IconColor: DarkOrange
+    IconOutlineColor: DarkOrange
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
-  EliteMonster:
-    IconColor: DarkRed
+  ChampionMonster:
+    IconOutlineColor: DarkRed
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
+  MinionMonster:
+    IconOutlineColor: 255, 150, 150
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 1
   NormalMonster:
-    IconColor: Gray
+    IconOutlineColor: Gray
     IconShape: Cross
     IconSize: 6
-    IconThickness: 2
+    IconThickness: 1
+  Npc:
+    IconOutlineColor: 196, 196, 196
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 1
+    LabelColor: 199, 179, 119
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   NextArea:
     IconColor: SpringGreen
     IconShape: Square
@@ -69,16 +67,17 @@ MapConfiguration:
     LineThickness: 2
     ArrowHeadSize: 15
     LabelColor: SpringGreen
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   PreviousArea:
     IconColor: Violet
     IconShape: Square
     IconSize: 5
-    LineColor: ''
     LabelColor: Violet
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   Waypoint:
     IconColor: SteelBlue
     IconShape: Square
@@ -88,121 +87,125 @@ MapConfiguration:
     LineThickness: 2
     ArrowHeadSize: 15
     LabelColor: Tomato
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   Player:
-    IconColor: Chartreuse
+    IconOutlineColor: 33, 136, 253
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
     LabelColor: Chartreuse
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  PartyPlayer:
+    IconOutlineColor: Chartreuse
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 2
+    LabelColor: Chartreuse
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   NonPartyPlayer:
-    IconColor: Orange
+    IconOutlineColor: Orange
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
     LabelColor: Orange
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   HostilePlayer:
-    IconColor: Red
+    IconOutlineColor: Red
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
-    LabelColor: Red
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
     LineColor: Red
     LineThickness: 2
     ArrowHeadSize: 15
+    LabelColor: Red
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   Corpse:
-    IconColor: Magenta
+    IconOutlineColor: Magenta
     IconShape: Cross
     IconSize: 6
     IconThickness: 2
-    LabelColor: Magenta
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
     LineColor: Magenta
     LineThickness: 2
     ArrowHeadSize: 15
+    LabelColor: Magenta
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   Portal:
-    IconColor: Yellow
+    IconOutlineColor: Yellow
     IconShape: Portal
     IconSize: 3
     IconThickness: 2
     LabelColor: Yellow
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
   SuperChest:
-    IconColor: '17, 255, 0'
+    IconColor: 17, 255, 0
     IconShape: Square
     IconSize: 4
   NormalChest:
-    IconColor: '17, 128, 0'
+    IconColor: 17, 128, 0
     IconShape: Square
     IconSize: 3
   LockedChest:
-    IconColor: '128, 0, 0'
+    IconColor: Maroon
     IconShape: Square
     IconSize: 3
   TrappedChest:
-    IconColor: '255, 0, 0'
-    IconShape: SquareOutline
-    IconSize: 4
-    IconThickness: 1
-  Shrine:
-    IconColor: '255, 218, 100'
-    IconShape: Polygon
-    IconSize: 5
-    LabelColor: '255, 218, 100'
-    LabelFontSize: 16
-    LabelFont: 'Exocet Blizzard Mixed Caps'
-  ArmorWeapRack:
-    IconColor: '132, 132, 132'
+    IconColor: Red
     IconShape: Square
     IconSize: 4
-  Item: 
+  Shrine:
+    IconColor: 255, 218, 100
+    IconShape: Polygon
+    IconSize: 5
+    LabelColor: 255, 218, 100
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  ArmorWeapRack:
+    IconColor: 132, 132, 132
+    IconShape: Square
+    IconSize: 4
+  Item:
     IconColor: DarkOrange
     IconShape: Ellipse
     IconSize: 4
-    LabelFont: 'Exocet Blizzard Mixed Caps'
     LabelFontSize: 16
-
-## ItemLog - Alerts for in-game dropped items nearby
+    LabelFont: Exocet Blizzard Mixed Caps
+    LabelTextShadow: true
 ItemLog:
   Enabled: true
-  FilterFileName: "ItemFilter.yaml"
-  IdentifyFileName: "IdentifyFilter.yaml"
+  FilterFileName: ItemFilter.yaml
+  IdentifyFileName: IdentifyFilter.yaml
   ## PlaySoundOnDrop - Play drop sound
   PlaySoundOnDrop: true
-  ## SoundFile - Name of .wav file for drop sound (put .wav file in the MapAssist folder)
-  SoundFile: ""
+  SoundFile: ''
+  SoundVolume: 100
   DisplayForSeconds: 45
-  LabelFont: "Exocet Blizzard Mixed Caps"
+  LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 14
-
-## MapColorConfiguration - Color schema for drawing overlay map
+  LabelTextShadow: true
 MapColorConfiguration:
-  Walkable:
-  Border: '255, 255, 255'
-
-## GameInfo - Display setting for game info
+  Border: 255, 255, 255
 GameInfo:
-  ## ShowGameIP - Display game server IP address
   ShowGameIP: true
-  ## HuntingIP - Set an IP address to display in green instead of red
-  HuntingIP: 'x.x.x.x'
-  ## ShowAreaLevel - Display current area and alvl
+  HuntingIP: 0.0.0.0
   ShowAreaLevel: true
-  ## ShowOverlayFPS - Developer setting, probably not useful
   ShowOverlayFPS: false
-  LabelFont: "Exocet Blizzard Mixed Caps"
+  LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 14
-
-## Path to D2LOD installation. Optional.
-## Should only need to provide if we are not able to look it up
-## automatically via the registry
+  LabelTextShadow: true
 D2Path: ''
+LanguageCode: enUS

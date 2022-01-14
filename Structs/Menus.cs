@@ -59,7 +59,9 @@ namespace MapAssist.Structs
         [FieldOffset(0x18)] public bool Stash;
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x19)] public bool Cube;
-        //missing 4
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x1A)] public bool PotionBelt;
+        //missing 3
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x1E)] public bool MercenaryInventory;
     }

@@ -36,13 +36,14 @@ namespace MapAssist
         private static readonly string githubRunNumber = "GITHUB_RUN_NUMBER";
         private static readonly string appName = "MapAssist";
         private static string messageBoxTitle = $"{appName} v1.0.0";
-        private static Mutex mutex = null; 
-        
+        private static Mutex mutex = null;
+
+        private static ConfigEditor configEditor;
         private static NotifyIcon trayIcon;
         private static Overlay overlay;
         private static BackgroundWorker backWorkOverlay = new BackgroundWorker();
         private static IKeyboardMouseEvents globalHook = Hook.GlobalEvents();
-        private static readonly Logger _log = LogManager.GetCurrentClassLogger(); 
+        private static readonly Logger _log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// The main entry point for the application.
@@ -104,7 +105,7 @@ namespace MapAssist
 
                     var contextMenu = new ContextMenuStrip();
 
-                    var configMenuItem = new ToolStripMenuItem("Config", null, Config);
+                    var configMenuItem = new ToolStripMenuItem("Config", null, ShowConfigEditor);
                     var lootFilterMenuItem = new ToolStripMenuItem("Loot Filter", null, LootFilter);
                     var restartMenuItem = new ToolStripMenuItem("Restart", null, TrayRestart);
                     var exitMenuItem = new ToolStripMenuItem("Exit", null, TrayExit);
@@ -141,14 +142,6 @@ namespace MapAssist
                         }
                     };
 
-                    globalHook.KeyPress += (sender, args) =>
-                    {
-                        if (overlay != null)
-                        {
-                            overlay.KeyPressHandler(sender, args);
-                        }
-                    };
-                    
                     backWorkOverlay.DoWork += new DoWorkEventHandler(RunOverlay);
                     backWorkOverlay.WorkerSupportsCancellation = true;
                     backWorkOverlay.RunWorkerAsync();
@@ -233,16 +226,14 @@ namespace MapAssist
             try
             {
                 LootLogConfiguration.Load();
-                Items.LoadLocalization();
                 configurationOk = true;
             }
             catch (YamlDotNet.Core.YamlException e)
             {
                 _log.Fatal(e);
-                _log.Fatal("Invalid loot log yaml file");
+                _log.Fatal("Invalid item log yaml file");
 
-                MessageBox.Show(e.Message, $"{messageBoxTitle}: Loop filter yaml parsing error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, $"{messageBoxTitle}: Item filter yaml parsing error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception e)
             {
@@ -289,6 +280,7 @@ namespace MapAssist
                 var logfile = new NLog.Targets.FileTarget("logfile")
                 {
                     FileName = "logs\\log.txt",
+                    CreateDirs = true,
                     ArchiveNumbering = NLog.Targets.ArchiveNumberingMode.DateAndSequence,
                     ArchiveOldFileOnStartup = true,
                     MaxArchiveFiles = 5
@@ -312,10 +304,21 @@ namespace MapAssist
             return configurationOk;
         }
 
-        private static void Config(object sender, EventArgs e)
+        private static void ShowConfigEditor(object sender, EventArgs e)
         {
-            var _path = AppDomain.CurrentDomain.BaseDirectory;
-            Process.Start(_path + "\\Config.yaml");
+            if (configEditor == null)
+            {
+                configEditor = new ConfigEditor();
+            }
+
+            if (configEditor.Visible)
+            {
+                configEditor.Activate();
+            }
+            else
+            {
+                configEditor.ShowDialog();
+            }
         }
 
         private static void LootFilter(object sender, EventArgs e)
@@ -328,10 +331,10 @@ namespace MapAssist
         {
             _log.Info("Disposing");
 
+            overlay.Dispose();
             GameManager.Dispose();
             MapApi.Dispose();
             globalHook.Dispose();
-            overlay.Dispose();
             trayIcon.Dispose();
 
             if (backWorkOverlay.IsBusy)

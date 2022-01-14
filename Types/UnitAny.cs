@@ -41,6 +41,7 @@ namespace MapAssist.Types
         private ObjectData _objectData;
         private ObjectTxt _objectTxt;
         private Dictionary<Stat, int> _statList;
+        private Dictionary<Stat, Dictionary<ushort, int>> _itemStatList;
         private List<Resist> _immunities;
         private uint[] _stateFlags;
         private List<State> _stateList;
@@ -49,7 +50,7 @@ namespace MapAssist.Types
         private bool _isMerc;
         private bool _isNpc;
         private bool _updated;
-        private Skill _skill;
+        private Skills _skills;
         private bool _isPlayerUnit;
         private Roster _rosterData;
         private bool _hostileToPlayer;
@@ -114,7 +115,7 @@ namespace MapAssist.Types
                                     _initialArea = Path.Room.RoomEx.Level.LevelId;
                                     if (IsPlayerUnit())
                                     {
-                                        _skill = new Skill(_unitAny.pSkills);
+                                        _skills = new Skills(_unitAny.pSkills);
                                         _stateList = GetStateList();
                                     } else
                                     {
@@ -151,6 +152,32 @@ namespace MapAssist.Types
                                 if (MapAssistConfiguration.Loaded.ItemLog.Enabled)
                                 {
                                     _itemData = processContext.Read<ItemData>(_unitAny.pUnitData);
+
+                                    if (_unitAny.pStatsListEx != IntPtr.Zero)
+                                    {
+                                        var itemStatList = new Dictionary<Stat, Dictionary<ushort, int>>();
+
+                                        var statListStruct = processContext.Read<StatListStruct>(_unitAny.pStatsListEx);
+                                        var statValues = processContext.Read<StatValue>(statListStruct.Stats.FirstStatPtr, Convert.ToInt32(statListStruct.Stats.Size));
+                                        foreach (var stat in statValues)
+                                        {
+                                            if (itemStatList.ContainsKey(stat.Stat))
+                                            {
+                                                if (stat.Layer == 0) continue;
+                                                if (!itemStatList[stat.Stat].ContainsKey(stat.Layer))
+                                                {
+                                                    itemStatList[stat.Stat].Add(stat.Layer, stat.Value);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                itemStatList.Add(stat.Stat, new Dictionary<ushort, int>() { {stat.Layer, stat.Value } });
+                                            }
+                                        }
+
+                                        _itemStatList = itemStatList;
+                                    }
+
                                     if (IsDropped())
                                     {
                                         var processId = processContext.ProcessId;
@@ -185,6 +212,7 @@ namespace MapAssist.Types
         public uint Mode => _unitAny.Mode;
         public IntPtr UnitDataPtr => _unitAny.pUnitData;
         public Dictionary<Stat, int> Stats => _statList;
+        public Dictionary<Stat, Dictionary<ushort, int>> ItemStats => _itemStatList;
         public MonsterData MonsterData => _monsterData;
         public ItemData ItemData => _itemData;
         public ObjectData ObjectData => _objectData;
@@ -201,7 +229,7 @@ namespace MapAssist.Types
         public List<Resist> Immunities => _immunities;
         public uint[] StateFlags => _stateFlags;
         public List<State> StateList => _stateList;
-        public Skill Skill => _skill;
+        public Skills Skills => _skills;
         public ushort PartyId => GetPartyId();
         public bool HostileToPlayer => _hostileToPlayer;
         public bool InPlayerParty => _inPlayerParty;
@@ -290,11 +318,13 @@ namespace MapAssist.Types
         }
         public bool IsShrine()
         {
-            if(UnitType == UnitType.Object && _objectData.pShrineTxt != IntPtr.Zero && _objectData.InteractType <= (byte)ShrineType.Poison)
-            {
-                return true;
-            }
-            return false;
+            return UnitType == UnitType.Object && _objectData.pShrineTxt != IntPtr.Zero &&
+                _objectData.InteractType <= (byte)ShrineType.Poison;
+        }
+        public bool IsWell()
+        {
+            return UnitType == UnitType.Object && _objectData.pObjectTxt != IntPtr.Zero &&
+                _objectTxt.ObjectType == "Well";
         }
         public bool IsChest()
         {
@@ -497,7 +527,7 @@ namespace MapAssist.Types
 
         public override int GetHashCode() => UnitId.GetHashCode();
 
-        public static bool operator ==(UnitAny unit1, UnitAny unit2) => unit1.Equals(unit2);
+        public static bool operator ==(UnitAny unit1, UnitAny unit2) => (unit1 is null && unit2 is null) || (!(unit1 is null) && unit1.Equals(unit2));
 
         public static bool operator !=(UnitAny unit1, UnitAny unit2) => !(unit1 == unit2);
         public UnitAny Clone()

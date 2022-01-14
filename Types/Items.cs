@@ -1,7 +1,27 @@
-﻿using System;
+﻿/**
+ *   Copyright (C) 2021 okaygo
+ *
+ *   https://github.com/misterokaygo/MapAssist/
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ **/
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Timers;
 using MapAssist.Helpers;
@@ -105,45 +125,47 @@ namespace MapAssist.Types
         SOCKETED //Item is Socketed in another Item
     };
 
-    class LocalizedItemList
-    {
-        public List<LocalizedItemObj> Items = new List<LocalizedItemObj>();
-    }
-
-    class LocalizedItemObj
-    {
-        public int ID { get; set; }
-        public string Key { get; set; }
-        public string enUS { get; set; }
-    }
-
-    class Items
+    public class Items
     {
         public static Dictionary<int, HashSet<string>> ItemUnitHashesSeen = new Dictionary<int, HashSet<string>>();
         public static Dictionary<int, HashSet<uint>> ItemUnitIdsSeen = new Dictionary<int, HashSet<uint>>();
         public static Dictionary<int, List<UnitAny>> ItemLog = new Dictionary<int, List<UnitAny>>();
         public static List<UnitAny> CurrentItemLog = new List<UnitAny>();
-        public static LocalizedItemList _localizedItemList;
-        public static Dictionary<string, LocalizedItemObj> LocalizedItems = new Dictionary<string, LocalizedItemObj>();
+        public static Dictionary<string, LocalizedObj> LocalizedItems = new Dictionary<string, LocalizedObj>();
         public static Dictionary<int, List<Timer>> ItemLogTimers = new Dictionary<int, List<Timer>>();
 
-        public static void LoadLocalization()
+        public static string ItemNameFromKey(string key)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resName = "MapAssist.Resources.items-localization.json";
-            using (Stream stream = assembly.GetManifestResourceStream(resName))
+            LocalizedObj localItem;
+            if (!LocalizedItems.TryGetValue(key, out localItem))
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    var jsonString = reader.ReadToEnd();
-                    _localizedItemList = JsonConvert.DeserializeObject<LocalizedItemList>(jsonString);
-                }
-
-                foreach (var item in _localizedItemList.Items)
-                {
-                    LocalizedItems.Add(item.Key, item);
-                }
+                return "ItemNotFound";
             }
+
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
+        }
+
+        public static string ItemNameDisplay(uint txtFileNo)
+        {
+            string itemCode;
+            if (!_ItemCodes.TryGetValue(txtFileNo, out itemCode))
+            {
+                return "ItemNotFound";
+            }
+
+            LocalizedObj localItem;
+            if (!LocalizedItems.TryGetValue(itemCode, out localItem))
+            {
+                return "ItemNotFound";
+            }
+
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
         }
 
         public static string ItemName(uint txtFileNo)
@@ -154,7 +176,7 @@ namespace MapAssist.Types
                 return "ItemNotFound";
             }
 
-            LocalizedItemObj localItem;
+            LocalizedObj localItem;
             if (!LocalizedItems.TryGetValue(itemCode, out localItem))
             {
                 return "ItemNotFound";
@@ -176,13 +198,16 @@ namespace MapAssist.Types
                 return "Unique";
             }
 
-            LocalizedItemObj localItem;
+            LocalizedObj localItem;
             if (!LocalizedItems.TryGetValue(itemCode, out localItem))
             {
                 return "Unique";
             }
 
-            return localItem.enUS;
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
         }
 
         public static string SetName(uint txtFileNo)
@@ -198,20 +223,28 @@ namespace MapAssist.Types
                 return "Set";
             }
 
-            LocalizedItemObj localItem;
+            LocalizedObj localItem;
             if (!LocalizedItems.TryGetValue(itemCode, out localItem))
             {
                 return "Set";
             }
 
-            return localItem.enUS;
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
         }
 
         public static void LogItem(UnitAny unit, int processId)
         {
             if ((!ItemUnitHashesSeen[processId].Contains(unit.ItemHash()) &&
-                !ItemUnitIdsSeen[processId].Contains(unit.UnitId)) && LootFilter.Filter(unit))
+                !ItemUnitIdsSeen[processId].Contains(unit.UnitId)))
             {
+                (var pickupItem, _) = LootFilter.Filter(unit);
+                if (!pickupItem)
+                {
+                    return;
+                }
                 if (MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop)
                 {
                     AudioPlayer.PlayItemAlert();
@@ -236,6 +269,243 @@ namespace MapAssist.Types
             }
         }
 
+        public static string ItemLogDisplayName(UnitAny unit)
+        {
+            var itemBaseName = ItemName(unit.TxtFileNo);
+            var itemSpecialName = "";
+            var itemPrefix = "";
+            var itemSuffix = "";
+
+            (_, var rule) = LootFilter.Filter(unit);
+
+            if (rule == null)
+            {
+                return itemBaseName;
+            }
+
+            if ((unit.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL)
+            {
+                itemPrefix += "[Eth] ";
+            }
+
+            if (unit.Stats.TryGetValue(Stat.STAT_ITEM_NUMSOCKETS, out var numSockets))
+            {
+                itemPrefix += "[" + numSockets + " S] ";
+            }
+
+            if (unit.ItemData.ItemQuality == ItemQuality.SUPERIOR)
+            {
+                itemPrefix += "Sup. ";
+            }
+
+            if (rule.Defense != null)
+            {
+                var itemArmorDefense = GetArmorDefense(unit);
+                if (itemArmorDefense > 0)
+                {
+                    itemSuffix += $" ({itemArmorDefense} def)";
+                }
+            }
+
+            if (rule.AllResist != null)
+            {
+                var itemAllRes = GetItemStatAllResist(unit);
+                if (itemAllRes > 0)
+                {
+                    itemSuffix += $" ({itemAllRes} all res)";
+                }
+            }
+
+            if (rule.AllSkills != null)
+            {
+                var itemAllSkills = GetItemStatAllSkills(unit);
+                if (itemAllSkills > 0)
+                {
+                    itemSuffix += $" (+{itemAllSkills} all skills)";
+                }
+            }
+
+            if (rule.ClassSkills != null)
+            {
+                foreach (var subrule in rule.ClassSkills)
+                {
+                    var classSkills = GetItemStatAddClassSkills(unit, subrule.Key);
+                    if (classSkills > 0)
+                    {
+                        itemSuffix += $" (+{classSkills} {subrule.Key.ToString()} skills)";
+                    }
+                }
+            }
+
+            if (rule.ClassTabSkills != null)
+            {
+                foreach (var subrule in rule.ClassTabSkills)
+                {
+                    var classTabSkills = GetItemStatAddClassTabSkills(unit, subrule.Key);
+                    if (classTabSkills > 0)
+                    {
+                        itemSuffix += $" (+{classTabSkills} {subrule.Key.Name()} skills)";
+                    }
+                }
+            }
+
+            if (rule.Skills != null)
+            {
+                foreach (var subrule in rule.Skills)
+                {
+                    var singleSkills = GetItemStatSingleSkills(unit, subrule.Key);
+                    if (singleSkills > 0)
+                    {
+                        itemSuffix += $" (+{singleSkills} {subrule.Key.Name()})";
+                    }
+                }
+            }
+
+            switch (unit.ItemData.ItemQuality)
+            {
+                case ItemQuality.UNIQUE:
+                    itemSpecialName = UniqueName(unit.TxtFileNo) + " ";
+                    break;
+                case ItemQuality.SET:
+                    itemSpecialName = SetName(unit.TxtFileNo) + " ";
+                    break;
+            }
+
+            return itemPrefix + itemSpecialName + itemBaseName + itemSuffix;
+        }
+
+        public static Color ItemNameColor(UnitAny unit)
+        {
+            Color fontColor;
+            if (unit == null || !Items.ItemColors.TryGetValue(unit.ItemData.ItemQuality, out fontColor))
+            {
+                // Invalid item quality
+                return Color.Empty;
+            }
+
+            var isEth = (unit.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
+            if (isEth && fontColor == Color.White)
+            {
+                return Items.ItemColors[ItemQuality.SUPERIOR];
+            }
+
+            if (unit.Stats.ContainsKey(Stat.STAT_ITEM_NUMSOCKETS) && fontColor == Color.White)
+            {
+                return Items.ItemColors[ItemQuality.SUPERIOR];
+            }
+
+            if (unit.TxtFileNo >= 610 && unit.TxtFileNo <= 642)
+            {
+                // Runes
+                return Items.ItemColors[ItemQuality.CRAFT];
+            }
+
+            switch (unit.TxtFileNo)
+            {
+                case 647: // Key of Terror
+                case 648: // Key of Hate
+                case 649: // Key of Destruction
+                case 653: // Token of Absolution
+                case 654: // Twisted Essence of Suffering
+                case 655: // Charged Essense of Hatred
+                case 656: // Burning Essence of Terror
+                case 657: // Festering Essence of Destruction
+                    return Items.ItemColors[ItemQuality.CRAFT];
+            }
+
+            return fontColor;
+        }
+
+        public static int GetArmorDefense(UnitAny unitAny)
+        {
+            return unitAny.Stats.TryGetValue(Stat.STAT_ARMORCLASS, out var statArmor) ? statArmor : 0;
+        }
+
+        public static int GetItemStatAllResist(UnitAny unitAny)
+        {
+            var fireRes = unitAny.Stats.TryGetValue(Stat.STAT_FIRERESIST, out var fireResValue) ? fireResValue : 0;
+            var lightRes = unitAny.Stats.TryGetValue(Stat.STAT_LIGHTRESIST, out var lightResValue) ? lightResValue : 0;
+            var coldRes = unitAny.Stats.TryGetValue(Stat.STAT_COLDRESIST, out var coldResValue) ? coldResValue : 0;
+            var psnRes = unitAny.Stats.TryGetValue(Stat.STAT_POISONRESIST, out var psnResValue) ? psnResValue : 0;
+            return new[] { fireRes, lightRes, coldRes, psnRes }.Min();
+        }
+
+        public static int GetItemStatAllSkills(UnitAny unitAny)
+        {
+            return unitAny.Stats.TryGetValue(Stat.STAT_ITEM_ALLSKILLS, out var allSkills) ? allSkills : 0;
+        }
+
+        public static int GetItemStatAddClassSkills(UnitAny unitAny)
+        {
+            var addClassSkills = 0;
+            if (unitAny.ItemStats.TryGetValue(Stat.STAT_ITEM_ADDCLASSSKILLS, out var itemStats))
+            {
+                foreach (var stat in itemStats)
+                {
+                    if (stat.Value > addClassSkills)
+                    {
+                        addClassSkills = stat.Value;
+                    }
+                }
+            }
+            return addClassSkills;
+        }
+
+        public static int GetItemStatAddClassSkills(UnitAny unitAny, Structs.PlayerClass playerClass)
+        {
+            if (unitAny.ItemStats.TryGetValue(Stat.STAT_ITEM_ADDCLASSSKILLS, out var itemStats) &&
+                itemStats.TryGetValue((ushort)playerClass, out var addClassSkills))
+            {
+                    return addClassSkills;
+            }
+            return 0;
+        }
+
+        public static int GetItemStatAddClassTabSkills(UnitAny unitAny)
+        {
+            var addSkillTab = 0;
+            if (unitAny.ItemStats.TryGetValue(Stat.STAT_ITEM_ADDSKILL_TAB, out var itemStats))
+            {
+                foreach (var stat in itemStats)
+                {
+                    if (stat.Value > addSkillTab)
+                    {
+                        addSkillTab = stat.Value;
+                    }
+                }
+            }
+            return addSkillTab;
+        }
+
+        public static int GetItemStatAddClassTabSkills(UnitAny unitAny, ClassTabs classTab)
+        {
+            if (unitAny.ItemStats.TryGetValue(Stat.STAT_ITEM_ADDSKILL_TAB, out var itemStats) &&
+                itemStats.TryGetValue((ushort)classTab, out var addSkillTab))
+            {
+                return addSkillTab;
+            }
+            return 0;
+        }
+
+        public static int GetItemStatSingleSkills(UnitAny unitAny, Skill skill)
+        {
+            var itemSkillsStats = new List<Stat>()
+            {
+                Stat.STAT_ITEM_SINGLESKILL,
+                Stat.STAT_ITEM_NONCLASSSKILL,
+            };
+
+            foreach (var statType in itemSkillsStats)
+            {
+                if (unitAny.ItemStats.TryGetValue(statType, out var itemStats) &&
+                    itemStats.TryGetValue((ushort)skill, out var skillLevel))
+                {
+                    return skillLevel;
+                }
+            }
+            return 0;
+        }
+
         public static void ItemLogTimerElapsed(object sender, ElapsedEventArgs args, Timer self, int procId)
         {
             if (ItemLog.TryGetValue(procId, out var itemLog))
@@ -245,9 +515,9 @@ namespace MapAssist.Types
                     itemLog.RemoveAt(0);
                 }
 
-                if (ItemLogTimers.TryGetValue(procId, out var timer))
+                if (ItemLogTimers.TryGetValue(procId, out var timer) && timer.Contains(self))
                 {
-                    timer.Remove(self);
+                    try { timer.Remove(self); } catch (Exception) { } // This still randomly errors, even with the proper checks in place, hence the try catch block
                 }
             }
 

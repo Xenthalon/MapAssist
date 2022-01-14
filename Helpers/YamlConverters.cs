@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
 using System.Linq;
+using MapAssist.Settings;
 using MapAssist.Types;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
@@ -8,6 +11,120 @@ using YamlDotNet.Serialization;
 
 namespace MapAssist.Helpers
 {
+    internal sealed class FloatPrecisionConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(double);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            emitter.Emit(new Scalar(null, ((double)value).ToString(new CultureInfo("en-US")))); // Otherwise some bug in the yamlconverter won't have the right precisions on doubles
+        }
+    }
+    
+    internal sealed class MapColorConfigurationTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(MapColorConfiguration);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            emitter.Emit(new MappingStart(null, null, false, MappingStyle.Block));
+
+            var node = (MapColorConfiguration)value;
+            if (node.Walkable != null)
+            {
+                var col = (Color)node.Walkable;
+                emitter.Emit(new Scalar(null, "Walkable"));
+                emitter.Emit(new Scalar(null, col.R + ", " + col.G + ", " + col.B));
+            }
+            if (node.Border != null)
+            {
+                var col = (Color)node.Border;
+                emitter.Emit(new Scalar(null, "Border"));
+                emitter.Emit(new Scalar(null, col.R + ", " + col.G + ", " + col.B));
+            }
+
+            emitter.Emit(new MappingEnd());
+        }
+    }
+    internal sealed class PortalRenderingTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(PortalRendering);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            emitter.Emit(new MappingStart(null, null, false, MappingStyle.Block));
+
+            Helpers.WritePOIRendering(emitter, (PortalRendering)value);
+
+            emitter.Emit(new MappingEnd());
+        }
+    }
+    internal sealed class PointOfInterestRenderingTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(PointOfInterestRendering);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            emitter.Emit(new MappingStart(null, null, false, MappingStyle.Block));
+
+            Helpers.WritePOIRendering(emitter, (PointOfInterestRendering)value);
+
+            emitter.Emit(new MappingEnd());
+        }
+    }
+    internal sealed class IconRenderingTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(IconRendering);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            emitter.Emit(new MappingStart(null, null, false, MappingStyle.Block));
+
+            Helpers.WriteIconRendering(emitter, (IconRendering)value);
+
+            emitter.Emit(new MappingEnd());
+        }
+    }
     internal sealed class AreaArrayYamlTypeConverter : IYamlTypeConverter
     {
         public bool Accepts(Type type)
@@ -38,7 +155,15 @@ namespace MapAssist.Helpers
 
         public void WriteYaml(IEmitter emitter, object value, Type type)
         {
-            throw new NotImplementedException();
+            var node = (Area[])value;
+            emitter.Emit(new SequenceStart(null, null, false, SequenceStyle.Block));
+
+            foreach (var child in node)
+            {
+                emitter.Emit(new Scalar(null, child.NameInternal()));
+            }
+
+            emitter.Emit(new SequenceEnd());
         }
 
         private Area[] ParseAreaStringList(List<string> areas)
@@ -51,7 +176,7 @@ namespace MapAssist.Helpers
 
         private Area LookupAreaByName(string name)
         {
-            return Enum.GetValues(typeof(Area)).Cast<Area>().FirstOrDefault(area => area.Name() == name);
+            return Enum.GetValues(typeof(Area)).Cast<Area>().FirstOrDefault(area => area.NameInternal().ToLower() == name.ToLower());
         }
     }
 
@@ -98,6 +223,140 @@ namespace MapAssist.Helpers
         public void WriteYaml(IEmitter emitter, object value, Type type)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    internal sealed class ClassTabsYamlTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(ClassTabs);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            if (parser.TryConsume<Scalar>(out var scalar))
+            {
+                if (Enum.TryParse(scalar.Value.Replace(" ", ""), out ClassTabs classTab))
+                {
+                    return classTab;
+                }
+            }
+
+            return null;
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal sealed class SkillsYamlTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(Skill);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            if (parser.TryConsume<Scalar>(out var scalar))
+            {
+                if (Enum.TryParse(scalar.Value.Replace(" ", ""), out Skill skill))
+                {
+                    return skill;
+                }
+            }
+
+            return null;
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal static class Helpers
+    {
+        internal static void WriteIconRendering(IEmitter emitter, IconRendering node)
+        {
+            var isFilled = node.IconColor != null && node.IconColor.A > 0;
+            var isOutline = node.IconOutlineColor != null && node.IconOutlineColor.A > 0;
+
+            if (isFilled)
+            {
+                emitter.Emit(new Scalar(null, "IconColor"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName(node.IconColor)));
+            }
+
+            if (isOutline)
+            {
+                emitter.Emit(new Scalar(null, "IconOutlineColor"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName(node.IconOutlineColor)));
+            }
+
+            if (isFilled || isOutline)
+            {
+                emitter.Emit(new Scalar(null, "IconShape"));
+                emitter.Emit(new Scalar(null, node.IconShape.ToString()));
+                emitter.Emit(new Scalar(null, "IconSize"));
+                emitter.Emit(new Scalar(null, node.IconSize.ToString()));
+            }
+
+            if (isOutline)
+            {
+                emitter.Emit(new Scalar(null, "IconThickness"));
+                emitter.Emit(new Scalar(null, node.IconThickness.ToString()));
+            }
+        }
+
+        internal static void WritePOIRendering(IEmitter emitter, PointOfInterestRendering node)
+        {
+            WriteIconRendering(emitter, node);
+            
+            var hasLine = node.LineColor != null && node.LineColor.A > 0 && node.LineThickness > 0;
+            var hasLabelColor = node.LabelColor != null && node.LabelColor.A > 0;
+            var hasLabel = node.LabelFontSize > 0;
+
+            if (hasLine)
+            {
+                emitter.Emit(new Scalar(null, "LineColor"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName(node.LineColor)));
+                emitter.Emit(new Scalar(null, "LineThickness"));
+                emitter.Emit(new Scalar(null, node.LineThickness.ToString()));
+                emitter.Emit(new Scalar(null, "ArrowHeadSize"));
+                emitter.Emit(new Scalar(null, node.ArrowHeadSize.ToString()));
+            }
+
+            if (hasLabelColor)
+            {
+                emitter.Emit(new Scalar(null, "LabelColor"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName(node.LabelColor)));
+            }
+
+            if (hasLabel)
+            {
+                emitter.Emit(new Scalar(null, "LabelFontSize"));
+                emitter.Emit(new Scalar(null, node.LabelFontSize.ToString()));
+                emitter.Emit(new Scalar(null, "LabelFont"));
+                emitter.Emit(new Scalar(null, node.LabelFont.ToString()));
+                emitter.Emit(new Scalar(null, "LabelTextShadow"));
+                emitter.Emit(new Scalar(null, node.LabelTextShadow.ToString().ToLower()));
+            }
+        }
+
+        internal static string GetColorName(Color color)
+        {
+            if (color.IsNamedColor)
+            {
+                return color.Name;
+            }
+            else
+            {
+                return color.R + ", " + color.G + ", " + color.B;
+            }
         }
     }
 }
