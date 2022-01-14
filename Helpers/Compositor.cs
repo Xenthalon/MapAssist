@@ -717,7 +717,7 @@ namespace MapAssist.Helpers
             //        var worldPoint = new Point(i + _areaData.Origin.X, k + _areaData.Origin.Y);
             //        Point screenPosition = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, worldPoint, playerPositionScreen);
 
-            //        if (screenPosition.X > 0 && screenPosition.X < 2841 && screenPosition.Y > 0 && screenPosition.Y < 1361)
+            //        if (screenPosition.X > 0 && screenPosition.X < 1920 && screenPosition.Y > 0 && screenPosition.Y < 1080)
             //        {
             //            DrawText(gfx, screenPosition, _areaData.CollisionGrid[k][i].ToString(),
             //                MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
@@ -736,18 +736,37 @@ namespace MapAssist.Helpers
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
                 gfx.DrawEllipse(CreateSolidBrush(gfx, pathing.HasLineOfSight(gameData.PlayerPosition, monster.Position) ? Color.Green : Color.Red), screenPosition.X, screenPosition.Y, 24, 12, 1.0f);
 
-                //for (var i = 3; i < 21; i += 3)
+                // draw line of sight
+                //var pointsBetween = pathing.GetGridPointsBetween(gameData.PlayerPosition, monster.Position);
+
+                //foreach (var pointBetween in pointsBetween)
+                //{
+                //    Point screenPosition1 = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, pointBetween.Item1, playerPositionScreen);
+                //    DrawText(gfx, screenPosition1, pointBetween.Item2.ToString(),
+                //        MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                //        MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                //        pointBetween.Item2 == 0 ? Color.Green : Color.Red);
+                //}
+
+                // restrict to mephisto
+                //if (monster.TxtFileNo != (uint)Npc.Mephisto)
+                //    continue;
+
+                //for (var i = 8; i < 19; i += 1)
                 //{
                 //    var pointsAround = movement.GetCirclePoints(monster.Position, i);
 
-                //    foreach(var point in pointsAround)
+                //    foreach (var point in pointsAround)
                 //    {
                 //        Point onScreen = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, point, playerPositionScreen);
+
+                //        if (onScreen.X < 0 || onScreen.X > 1920 || onScreen.Y < 0 || onScreen.Y > 1080)
+                //            continue;
 
                 //        DrawText(gfx, onScreen, "x",
                 //            MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
                 //            MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
-                //            pathing.HasLineOfSight(point, monster.Position) ? Color.Green : Color.Red);
+                //            pathing.HasLineOfSight(monster.Position, point) && pathing.IsWalkable(point) ? Color.Green : Color.Red);
                 //    }
                 //}
             }
@@ -759,6 +778,22 @@ namespace MapAssist.Helpers
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
                     MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelColor);
+
+                // draw line of sight
+                //var pointsBetween = pathing.GetGridPointsBetween(gameData.PlayerPosition, npc.Position);
+
+                //foreach (var pointBetween in pointsBetween)
+                //{
+                //    Point screenPosition1 = Automaton.TranslateToScreenOffset(gameData.PlayerPosition, pointBetween.Item1, playerPositionScreen);
+
+                //    if (screenPosition1.X < 0 || screenPosition1.X > 1920 || screenPosition1.Y < 0 || screenPosition1.Y > 1080)
+                //        continue;
+
+                //    DrawText(gfx, screenPosition1, pointBetween.Item2.ToString(),
+                //        MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFont,
+                //        MapAssistConfiguration.Loaded.MapConfiguration.Player.LabelFontSize,
+                //        pointBetween.Item2 == 0 ? Color.Green : Color.Red);
+                //}
             }
 
             foreach (Types.UnitAny item in gameData.Items)
