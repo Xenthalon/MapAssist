@@ -361,6 +361,12 @@ namespace MapAssist.Automation
         {
             var result = new List<Point>();
 
+            if (teleport && Automaton.GetDistance(fromLocation, toLocation) < 15)
+            {
+                result.Add(toLocation);
+                return result;
+            }
+
             // cancel if the provided points dont map into the collisionMap of the AreaData
             if (!_areaData.TryMapToPointInMap(fromLocation, out var fromPosition) || !_areaData.TryMapToPointInMap(toLocation, out var toPosition))
             {
