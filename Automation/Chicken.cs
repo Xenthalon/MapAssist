@@ -14,6 +14,8 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly int MAX_GAME_LENGTH = 7 * 60 * 1000;
+
         private BackgroundWorker _chickenWorker;
         private Combat _combat;
         private Input _input;
@@ -22,6 +24,7 @@ namespace MapAssist.Automation
 
         private bool _mercIsDead = true;
         private bool _amDead = false;
+        private long _gamestart = 0;
 
         public int potionDrinkWaitInterval = 500;
         public double potionLifePercentage = 35.0;
@@ -52,6 +55,11 @@ namespace MapAssist.Automation
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit() && gameData.PlayerUnit.Stats != null)
             {
+                if (_gamestart == 0)
+                {
+                    _gamestart = Now;
+                }
+
                 var health = -1;
 
                 if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_HITPOINTS))
@@ -92,6 +100,7 @@ namespace MapAssist.Automation
         {
             _mercIsDead = true;
             _amDead = false;
+            _gamestart = 0;
 
             playerHealth = -1;
             playerHealthMax = -1;
@@ -115,6 +124,13 @@ namespace MapAssist.Automation
 
             if (playerHealth <= 0 || playerHealthMax == -1)
             {
+                return;
+            }
+
+            if (_gamestart > 0 && Now - _gamestart > MAX_GAME_LENGTH)
+            {
+                _log.Error($"Tripped MAX_GAME_LENGTH timer of {MAX_GAME_LENGTH / (1000 * 60)} minutes! Emergency abort!");
+                _menuman.ExitGame();
                 return;
             }
 
@@ -164,5 +180,7 @@ namespace MapAssist.Automation
             hexValue = hexValue.Substring(0, hexValue.Length - 2);
             return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
         }
+
+        private long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }
 }
