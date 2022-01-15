@@ -13,6 +13,7 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static readonly double REPAIR_THRESHOLD = 0.3;
+        private static readonly int GAMBLE_START_AT = 2000000;
 
         private static bool _needsRepair = false;
 
@@ -25,8 +26,11 @@ namespace MapAssist.Automation
 
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
         public static int TPScrolls = 20;
+        public static int Gold = 0;
+        public static int Freespace = 0;
         public static UnitAny IDScroll = new UnitAny(IntPtr.Zero);
         public static bool NeedsRepair => _needsRepair;
+        public static bool NeedsGamble => Gold > GAMBLE_START_AT;
 
         public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
         public static IEnumerable<UnitAny> ItemsToIdentify = new HashSet<UnitAny>();
@@ -38,8 +42,10 @@ namespace MapAssist.Automation
         public static bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
         public static bool AnyItemsToBelt => ItemsToBelt.Count() > 0;
 
-        public static void Update(uint playerUnitId, HashSet<UnitAny> items)
+        public static void Update(UnitAny playerUnit, HashSet<UnitAny> items)
         {
+            var playerUnitId = playerUnit.UnitId;
+
             var equippedItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc != BodyLoc.NONE);
 
             _needsRepair = false;
@@ -94,6 +100,33 @@ namespace MapAssist.Automation
 
             IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
+            playerUnit.Stats.TryGetValue(Stat.STAT_GOLDBANK, out Gold);
+
+            var free = 0;
+
+            foreach (var line in InventoryOpen)
+            {
+                foreach (var element in line)
+                {
+                    if (element == 1)
+                    {
+                        free += 1;
+                    }
+                }
+            }
+
+            foreach (var item in ItemsToStash)
+            {
+                var size = GetItemSize(item);
+
+                free -= size.width * size.height;
+            }
+
+            if (free != Freespace)
+            {
+                Freespace = free;
+            }
+
             //foreach (var item in ItemsToStash)
             //{
             //    _log.Debug($"Gotta stash {item.TxtFileNo} from {item.X}/{item.Y}!");
@@ -119,6 +152,31 @@ namespace MapAssist.Automation
         public static bool IsBeltFull()
         {
             return BeltSlotsOpen[0] == 0 && BeltSlotsOpen[1] == 0 && BeltSlotsOpen[2] == 0 && BeltSlotsOpen[3] == 0;
+        }
+
+        public static int GetItemTotalSize(UnitAny item)
+        {
+            var size = GetItemSize(item);
+
+            return size.height * size.width;
+        }
+
+        private static (int width, int height) GetItemSize(UnitAny item)
+        {
+            var itemName = Items.ItemName(item.TxtFileNo);
+
+            if (itemName == "Ring")
+            {
+                return (1, 1);
+            }
+            else if (itemName == "Amulet")
+            {
+                return (1, 1);
+            }
+
+            // TODO: get weapon, armor and misc sizes from .txt files ugh
+
+            return (1, 1);
         }
     }
 }

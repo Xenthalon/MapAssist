@@ -53,7 +53,7 @@ namespace MapAssist
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
 
-            Inventory.Update(_currentGameData.PlayerUnit.UnitId, _currentGameData.Items);
+            Inventory.Update(_currentGameData.PlayerUnit, _currentGameData.Items);
             _input.Update(gameData, windowRect);
             _pathing.Update(areaData);
             _buffBoy.Update(gameData);

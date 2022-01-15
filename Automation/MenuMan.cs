@@ -180,6 +180,23 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
+        public void DepositGold()
+        {
+            if (!_menus.Stash)
+            {
+                _log.Error("Got to be in stash menu to stash things!");
+                return;
+            }
+
+            var screenLocation = new Point(_inventoryAnchor.X + (int)(3.3 * _window.Width * 0.0247), _inventoryAnchor.Y + (int)(4 * _window.Height * 0.048));
+
+            System.Threading.Thread.Sleep(SHORT_SLEEP);
+            _input.DoInputAtScreenPosition("{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(SHORT_SLEEP);
+            _input.DoInput("{ENTER}");
+            System.Threading.Thread.Sleep(LONG_SLEEP);
+        }
+
         public void PutItemIntoBelt(int x, int y)
         {
             if (!_menus.Inventory)

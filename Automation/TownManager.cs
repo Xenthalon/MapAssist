@@ -27,6 +27,7 @@ namespace MapAssist.Automation
         REVIVE,
         OPEN_TRADE_MENU,
         OPEN_GAMBLE_MENU,
+        OPEN_GAMBLE_TRADE,
         OPEN_WAYPOINT_MENU,
         OPEN_STASH_MENU,
         NONE
@@ -129,6 +130,14 @@ namespace MapAssist.Automation
             _worker.RunWorkerAsync();
         }
 
+        // open trade menu at gambler
+        public void OpenGambleTradeMenu()
+        {
+            CancelWork();
+            _task = TownTask.OPEN_GAMBLE_TRADE;
+            _worker.RunWorkerAsync();
+        }
+
         public void Update(GameData gameData, AreaData areaData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
@@ -175,6 +184,9 @@ namespace MapAssist.Automation
                     target = _npcs.Where(x => x.Act == _act && x.HasScrolls).First();
                     break;
                 case TownTask.OPEN_GAMBLE_MENU:
+                    target = _npcs.Where(x => x.Act == _act && x.CanGamble).First();
+                    break;
+                case TownTask.OPEN_GAMBLE_TRADE:
                     target = _npcs.Where(x => x.Act == _act && x.CanGamble).First();
                     break;
                 case TownTask.OPEN_STASH_MENU:
@@ -304,6 +316,18 @@ namespace MapAssist.Automation
 
                     _activeNpc = clickTarget;
                     _state = TownState.GAMBLE_MENU;
+                    break;
+                case TownTask.OPEN_GAMBLE_TRADE:
+                    var downTimes3 = target.Name == "Jamella" ? 1 : 2;
+
+                    _input.MouseMove(new Point(100, 100));
+                    System.Threading.Thread.Sleep(100);
+                    _input.DoInput("{DOWN " + downTimes3 + "}{ENTER}");
+
+                    System.Threading.Thread.Sleep(500);
+
+                    _activeNpc = clickTarget;
+                    _state = TownState.TRADE_MENU;
                     break;
                 case TownTask.OPEN_STASH_MENU:
                     _state = TownState.STASH_MENU;

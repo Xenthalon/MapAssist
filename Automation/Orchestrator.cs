@@ -14,7 +14,9 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static readonly short MAX_RETRIES = 3;
-        
+        private static readonly string GAMBLE_ITEM = "Ring";
+        private static readonly int GAMBLE_STOP_AT = 150000;
+
         private static List<RunProfile> _runProfiles = new List<RunProfile>();
         private static readonly int _gameChangeSafetyLimit = 75;
         private static readonly bool _autostart = true;
@@ -197,9 +199,10 @@ namespace MapAssist.Automation
             RecoverCorpse();
             BeltAnyPotions();
             GoHeal();
+            ReviveMerc();
             GoRepair();
             GoTrade();
-            ReviveMerc();
+            GoGamble();
             var stashed = GoStash();
 
             if (!stashed)
@@ -611,6 +614,66 @@ namespace MapAssist.Automation
             }
         }
 
+        public void GoGamble()
+        {
+            if (Inventory.NeedsGamble)
+            {
+                _log.Info("GAMBLE GAMBLE GAMBLE!");
+
+                while (Inventory.Gold > GAMBLE_STOP_AT)
+                {
+                    _townManager.OpenGambleMenu();
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    while (_townManager.State != TownState.GAMBLE_MENU);
+
+                    System.Threading.Thread.Sleep(1000);
+
+                    var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
+
+                    var gambleItem = npcInventory.Where(x => Items.ItemName(x.TxtFileNo) == GAMBLE_ITEM).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                    if (gambleItem.IsValidPointer())
+                    {
+                        do
+                        {
+                            _menuMan.VendorBuyOne(gambleItem.X, gambleItem.Y);
+                        }
+                        while (Inventory.Gold > GAMBLE_STOP_AT && Inventory.Freespace >= Inventory.GetItemTotalSize(gambleItem));
+                    }
+                    else
+                    {
+                        _log.Error("Couldn't find " + GAMBLE_ITEM + " in Gamble inventory, something is wrong!");
+                        return;
+                    }
+
+                    _menuMan.CloseMenu();
+
+                    _townManager.OpenGambleTradeMenu();
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    while (_townManager.State != TownState.TRADE_MENU);
+
+                    foreach (var item in Inventory.ItemsToStash)
+                    {
+                        if (!Identification.IdentificationFilter.IsKeeper(item))
+                        {
+                            _log.Info(item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + " didn't make the cut, selling!");
+                            _menuMan.SellItemAt(item.X, item.Y);
+                        }
+                    }
+
+                    _menuMan.CloseMenu();
+                }
+            }
+        }
+
         private bool GoStash()
         {
             var success = true;
@@ -630,6 +693,8 @@ namespace MapAssist.Automation
                     _log.Info("Stashing " + Items.ItemName(item.TxtFileNo));
                     _menuMan.StashItemAt(item.X, item.Y);
                 }
+
+                _menuMan.DepositGold();
 
                 if (Inventory.AnyItemsToStash)
                 {
