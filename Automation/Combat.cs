@@ -177,6 +177,8 @@ namespace MapAssist.Automation
             _reposition = true;
             _lastEscapeAttempt = 0;
             _blacklist = new List<uint>();
+            _monsters = new HashSet<UnitAny>();
+            _chests = new List<UnitAny>();
             _attackAttempts = 0;
             _targetLastHealth = int.MaxValue;
             _target = new UnitAny(IntPtr.Zero);

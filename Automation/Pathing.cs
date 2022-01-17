@@ -49,6 +49,7 @@ namespace MapAssist.Automation
 
         private Grid Grid;
         private AreaData _areaData;
+        private IEnumerable<UnitAny> _chests;
 
         // Stuff for stinkyness exploration
         private static readonly Random Randomizer = new Random();
@@ -69,8 +70,13 @@ namespace MapAssist.Automation
         {
         }
 
-        public void Update(AreaData areaData)
+        public void Update(GameData gameData, AreaData areaData)
         {
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            {
+                _chests = gameData.Objects.Where(x => x.IsChest());
+            }
+
             if (_areaData == null || areaData.Area != _areaData.Area)
             {
                 _areaData = areaData;
@@ -124,6 +130,9 @@ namespace MapAssist.Automation
 
         public bool HasLineOfSight(Point point1, Point point2)
         {
+            if (_areaData == null)
+                return false;
+
             var maxY = _areaData.CollisionGrid.GetLength(0);
             var maxX = _areaData.CollisionGrid[0].GetLength(0);
 
@@ -352,9 +361,11 @@ namespace MapAssist.Automation
             if (gridLocation.X < 0 || gridLocation.Y < 0 || gridLocation.X >= maxX || gridLocation.Y >= maxY)
                 return false;
 
+            var chestInPlace = _chests.Where(x => x.Position.X == worldPoint.X && x.Position.Y == worldPoint.Y).Any();
+
             var value = _areaData.CollisionGrid[(int)gridLocation.Y][(int)gridLocation.X];
 
-            return value == 0 || value == 16; // IsMovable implementation
+            return (value == 0 || value == 16) && !chestInPlace; // IsMovable implementation
         }
 
         public List<Point> GetPathToLocation(uint mapId, Difficulty difficulty, bool teleport, Point fromLocation, Point toLocation)

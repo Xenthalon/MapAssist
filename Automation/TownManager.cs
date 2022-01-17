@@ -199,7 +199,7 @@ namespace MapAssist.Automation
 
             _state = TownState.MOVING;
 
-            if (_area == Area.RogueEncampment &&
+            if (_area == Area.RogueEncampment && _task != TownTask.OPEN_TRADE_MENU &&
                 Automaton.GetDistance(_playerPosition, _npcs.Where(x => x.TxtFileId == ((int)Npc.Akara)).First().Position) < 10)
             {
                 // sometimes get stuck finding path from akara, go to kashya first
@@ -362,6 +362,17 @@ namespace MapAssist.Automation
             {
                 _state = TownState.IDLE;
                 _worker.CancelAsync();
+            }
+
+            var counter = 0;
+
+            while (_worker.IsBusy)
+            {
+                if (counter > _retrys)
+                    break;
+
+                System.Threading.Thread.Sleep(1000);
+                counter++;
             }
 
             _activeNpc = new Types.UnitAny(IntPtr.Zero);

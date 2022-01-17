@@ -80,7 +80,7 @@ namespace MapAssist.Automation
 
             _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
             _runProfiles.Add(new RunProfile { Name = "Ancient Tunnels", Type = RunType.Explore, AreaPath = new Area[] { Area.LostCity, Area.AncientTunnels } });
-            _runProfiles.Add(new RunProfile { Name = "Andariel", Type = RunType.KillTarget, AreaPath = new Area[] { Area.CatacombsLevel2, Area.CatacombsLevel3, Area.CatacombsLevel4 }, KillSpot = new Point(22547, 9550), MonsterType = Npc.Andariel });
+            _runProfiles.Add(new RunProfile { Name = "Andariel", Type = RunType.ClearArea, AreaPath = new Area[] { Area.CatacombsLevel2, Area.CatacombsLevel3, Area.CatacombsLevel4 }, KillSpot = new Point(22547, 9550) });
             _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234), Reposition = false });
         }
 

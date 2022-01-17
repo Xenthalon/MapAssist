@@ -132,27 +132,30 @@ namespace MapAssist.Types
 
         public static bool TryMapToPointInMap(this AreaData areaData, Point point, out Point relativePoint)
         {
-            try
+            if (areaData != null)
             {
-                var relativePosition = new Point(point.X - areaData.Origin.X, point.Y - areaData.Origin.Y);
-                ;
-                var rows = areaData.CollisionGrid.GetLength(0);
-                if (rows == 0)
+                try
                 {
-                    relativePoint = new Point();
-                    return false;
+                    var relativePosition = new Point(point.X - areaData.Origin.X, point.Y - areaData.Origin.Y);
+                
+                    var rows = areaData.CollisionGrid.GetLength(0);
+                    if (rows == 0)
+                    {
+                        relativePoint = new Point();
+                        return false;
+
+                    }
+                    var columns = areaData.CollisionGrid[0].GetLength(0);
+                    if (relativePosition.X < columns && relativePosition.Y < rows)
+                    {
+                        relativePoint = relativePosition;
+                        return true;
+                    }
+                }
+                catch (ArithmeticException)
+                {
 
                 }
-                var columns = areaData.CollisionGrid[0].GetLength(0);
-                if (relativePosition.X < columns && relativePosition.Y < rows)
-                {
-                    relativePoint = relativePosition;
-                    return true;
-                }
-            }
-            catch (ArithmeticException)
-            {
-
             }
 
             relativePoint = new Point();

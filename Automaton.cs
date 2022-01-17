@@ -55,7 +55,7 @@ namespace MapAssist
 
             Inventory.Update(_currentGameData.PlayerUnit, _currentGameData.Items);
             _input.Update(gameData, windowRect);
-            _pathing.Update(areaData);
+            _pathing.Update(gameData, areaData);
             _buffBoy.Update(gameData);
             _chicken.Update(gameData);
             _combat.Update(gameData);

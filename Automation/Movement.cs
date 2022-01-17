@@ -12,10 +12,10 @@ namespace MapAssist.Automation
 {
     public class Movement
     {
+        private static readonly int MAX_RETRIES = 3;
+
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static readonly int _areaChangeSafetyLimit = 3;
-        private static readonly int _moveMaxTries = 3;
-        private static readonly int _abortLimit = 3;
         private static readonly string FORCE_MOVE_KEY = ".";
         private static readonly string TELEPORT_KEY = "w";
 
@@ -85,7 +85,7 @@ namespace MapAssist.Automation
             }
         }
 
-        public void GetInLOSRange(Point target, double minRange, double maxRange, bool hasTeleport = false)
+        public void GetInLOSRange(Point target, double minRange, double maxRange, bool hasTeleport = false, bool usePathing = true)
         {
             if (target == null || (target.X == 0 && target.Y == 0))
             {
@@ -112,24 +112,38 @@ namespace MapAssist.Automation
                 nicestSpot = target;
             }
 
-            try
+            if (usePathing)
+            {
+                try
+                {
+                    if (hasTeleport)
+                    {
+                        TeleportTo(nicestSpot);
+                    }
+                    else
+                    {
+                        WalkTo(nicestSpot);
+                    }
+                }
+                catch (NoPathFoundException) { }
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (Busy);
+            }
+            else
             {
                 if (hasTeleport)
                 {
-                    TeleportTo(nicestSpot);
+                    Teleport(nicestSpot);
                 }
                 else
                 {
-                    WalkTo(nicestSpot);
+                    Walk(nicestSpot);
                 }
             }
-            catch (NoPathFoundException) { }
-
-            do
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            while (Busy);
         }
 
         // adapted from https://stackoverflow.com/questions/5300938/calculating-the-position-of-points-in-a-circle
@@ -165,7 +179,23 @@ namespace MapAssist.Automation
                 _log.Debug($"Teleporting to {worldPosition}");
                 _useTeleport = true;
                 _targetLocation = worldPosition;
-                _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
+                _path = new List<Point>();
+                var retries = 0;
+
+                do
+                {
+                    retries += 1;
+                    _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
+
+                    if (_path.Count == 0)
+                    {
+                        Point retryPoint = GetRecoveryPoint(retries);
+
+                        _log.Warn($"Seems we can't find a path, trying again from {retryPoint.X}/{retryPoint.Y}.");
+
+                        Teleport(retryPoint);
+                    }
+                } while (_path.Count == 0 && retries <= MAX_RETRIES);
 
                 if (_path.Count() > 0)
                 {
@@ -195,8 +225,24 @@ namespace MapAssist.Automation
                 _log.Debug($"Walking to {worldPosition}");
                 _useTeleport = false;
                 _targetLocation = worldPosition;
-                _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, false, _gameData.PlayerPosition, worldPosition);
+                _path = new List<Point>();
+                var retries = 0;
 
+                do
+                {
+                    retries += 1;
+                    _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, false, _gameData.PlayerPosition, worldPosition);
+
+                    if (_path.Count == 0)
+                    {
+                        Point retryPoint = GetRecoveryPoint(retries);
+
+                        _log.Warn($"Seems we can't find a path, trying again from {retryPoint.X}/{retryPoint.Y}.");
+
+                        Walk(retryPoint);
+                    }
+                } while (_path.Count == 0 && retries <= MAX_RETRIES);
+                
                 if (_path.Count() > 0)
                 {
                     _moving = true;
@@ -205,7 +251,9 @@ namespace MapAssist.Automation
                 }
                 else
                 {
-                    _log.Error("Unable to find path to " + worldPosition);
+                    _log.Error("Unable to find A* path to " + worldPosition + ", fucked.");
+                    Reset();
+                    _menuMan.ExitGame();
                 }
             }
         }
@@ -238,7 +286,7 @@ namespace MapAssist.Automation
                     _log.Warn("Move went wrong, recalculating and retrying!");
                     _moveTries += 1;
 
-                    if (_failuresUntilAbort > _abortLimit)
+                    if (_failuresUntilAbort > MAX_RETRIES)
                     {
                         _log.Error("Reached abort limit, exiting game!");
                         Reset();
@@ -246,7 +294,7 @@ namespace MapAssist.Automation
                         return;
                     }
 
-                    if (_moveTries >= _moveMaxTries)
+                    if (_moveTries >= MAX_RETRIES)
                     {
                         _failuresUntilAbort += 1;
 
