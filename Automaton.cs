@@ -143,7 +143,6 @@ namespace MapAssist
                     while (_buffBoy.Busy);
                 }
 
-                _log.Info("Lets search for treasure!");
                 _pickit.Run();
             }
         }

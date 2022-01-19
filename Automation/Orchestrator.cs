@@ -198,12 +198,7 @@ namespace MapAssist.Automation
 
             RecoverCorpse();
             BeltAnyPotions();
-            GoHeal();
-            ReviveMerc();
-            GoRepair();
-            GoTrade();
-            GoGamble();
-            var stashed = GoStash();
+            var stashed = DoChores();
 
             if (!stashed)
             {
@@ -304,7 +299,7 @@ namespace MapAssist.Automation
                         return;
                     }
 
-                    var changedArea = ChangeArea(area, (Point)interactPoint);
+                    var changedArea = ChangeArea(area, (Point)interactPoint, area == Area.NihlathaksTemple);
 
                     if (_goBotGo == false)
                     {
@@ -418,15 +413,9 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(300);
 
-            _combat.CheckChests();            
+            _combat.CheckChests();
 
-            _pickit.Run();
-
-            do
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            while (_pickit.Busy);
+            PickThings();
 
             if (_goBotGo == false)
             {
@@ -492,6 +481,30 @@ namespace MapAssist.Automation
 
                 _combat.CheckChests();
 
+                PickThings();
+            }
+        }
+
+        private bool DoChores()
+        {
+            GoHeal();
+            ReviveMerc();
+            GoRepair();
+            GoTrade();
+            GoGamble();
+            return GoStash();
+        }
+
+        private void PickThings()
+        {
+            while (_pickit.HasWork)
+            {
+                if (_goBotGo == false)
+                {
+                    _log.Info("Aborting run while picking things.");
+                    return;
+                }
+
                 _pickit.Run();
 
                 do
@@ -500,11 +513,62 @@ namespace MapAssist.Automation
 
                     if (_goBotGo == false)
                     {
-                        _log.Info("Aborting run while picking things while exploring.");
+                        _log.Info("Aborting run while picking things.");
                         return;
                     }
                 }
                 while (_pickit.Busy);
+
+                if (_pickit.Full)
+                {
+                    var currentArea = _gameData.Area;
+
+                    TakePortalHome();
+
+                    DoChores();
+
+                    _townManager.GoToPortalSpot();
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+
+                        if (_goBotGo == false)
+                        {
+                            _log.Info("Aborting run while going to town portal.");
+                            return;
+                        }
+                    }
+                    while (_townManager.State != TownState.PORTAL_SPOT);
+
+                    var portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal &&
+                                                              (Area)Enum.ToObject(typeof(Area), x.ObjectData.InteractType) == currentArea).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+
+                    if (portal.IsValidPointer())
+                    {
+                        if (Automaton.GetDistance(_gameData.PlayerPosition, portal.Position) > 10)
+                        {
+                            _movement.WalkTo(portal.Position);
+                        }
+
+                        var success = ChangeArea(currentArea, portal.Position, true);
+
+                        if (success)
+                        {
+                            _pickit.Reset();
+                        }
+                        else
+                        {
+                            _log.Error("Unable to return to world area, please help!");
+                            _goBotGo = false;
+                        }
+                    }
+                    else
+                    {
+                        _log.Error("Couldn't find town portal, help!");
+                        _goBotGo = false;
+                    }
+                }
             }
         }
 
@@ -826,7 +890,7 @@ namespace MapAssist.Automation
             {
                 var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
 
-                success = ChangeArea(destinationArea, portal.Position);
+                success = ChangeArea(destinationArea, portal.Position, true);
                 System.Threading.Thread.Sleep(1500); // town loads take longer than other area changes
             }
             else
@@ -839,13 +903,13 @@ namespace MapAssist.Automation
             return success;
         }
 
-        private bool ChangeArea(Area destination, Point interactionPoint)
+        private bool ChangeArea(Area destination, Point interactionPoint, bool isPortal = false)
         {
             var success = true;
 
             var isActChange = _menuMan.IsActChange(destination);
 
-            _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
+            _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
 
             var loopLimit = 10;
             var loops = 0;
@@ -862,7 +926,7 @@ namespace MapAssist.Automation
                     retrys += 1;
                     loops = 0;
 
-                    _input.DoInputAtWorldPosition("{LMB}", interactionPoint);
+                    _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
 
                     if (retrys >= MAX_RETRIES)
                     {
@@ -880,6 +944,8 @@ namespace MapAssist.Automation
                 }
             }
             while (_currentArea != destination);
+
+            _log.Info("Changed area to " + _currentArea);
 
             // wait for load
             if (isActChange)

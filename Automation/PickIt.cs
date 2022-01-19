@@ -14,8 +14,9 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly int MAX_RETRY_COUNT = 3;
+
         private static double _pickRange = 5;
-        private static int _retryLimit = 3;
 
         private BackgroundWorker _worker;
         private Input _input;
@@ -24,8 +25,16 @@ namespace MapAssist.Automation
         private IEnumerable<UnitAny> _items;
         private Point _playerPosition;
         private bool _working = false;
+        private bool _full = false;
 
         public bool Busy => _working;
+        public bool Full => _full;
+        public bool HasWork => _items.Any(x => x.IsDropped() &&
+                                            (LootFilter.Filter(x).Item1 ||
+                                            (!Inventory.IsBeltFull() && (
+                                                Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
+                                                Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"
+                                            ))));
 
         public PickIt(Movement movement, Input input)
         {
@@ -69,6 +78,7 @@ namespace MapAssist.Automation
         public void Reset()
         {
             _working = false;
+            _full = false;
             _worker.CancelAsync();
         }
 
@@ -93,6 +103,7 @@ namespace MapAssist.Automation
                 _log.Info($"Picking up {Items.ItemName(item.TxtFileNo)}.");
 
                 var itemId = item.UnitId;
+                var picked = false;
 
                 if (Automaton.GetDistance(item.Position, _playerPosition) > _pickRange)
                 {
@@ -108,9 +119,9 @@ namespace MapAssist.Automation
                     System.Threading.Thread.Sleep(500);
                 }
 
-                for (var i = 0; i < _retryLimit; i++)
+                for (var i = 0; i < MAX_RETRY_COUNT; i++)
                 {
-                    _log.Info($"Clicking it {i + 1}/{_retryLimit}");
+                    _log.Info($"Clicking it {i + 1}/{MAX_RETRY_COUNT}");
                     _input.DoInputAtWorldPosition("{LMB}", item.Position);
                     System.Threading.Thread.Sleep(1000);
 
@@ -119,8 +130,16 @@ namespace MapAssist.Automation
                     if (refreshedItem.IsValidPointer() && ((ItemMode)refreshedItem.Mode == ItemMode.STORED || (ItemMode)refreshedItem.Mode == ItemMode.INBELT))
                     {
                         _log.Info("Got it!");
+                        picked = true;
                         break;
                     }
+                }
+
+                if (!picked)
+                {
+                    _log.Info("Seems we are full, please help.");
+                    _full = true;
+                    _working = false;
                 }
             }
             else

@@ -17,7 +17,8 @@ namespace MapAssist.Automation
         WP_MENU,
         TRADE_MENU,
         GAMBLE_MENU,
-        STASH_MENU
+        STASH_MENU,
+        PORTAL_SPOT
     }
 
     enum TownTask
@@ -30,6 +31,7 @@ namespace MapAssist.Automation
         OPEN_GAMBLE_TRADE,
         OPEN_WAYPOINT_MENU,
         OPEN_STASH_MENU,
+        GO_TO_PORTAL_SPOT,
         NONE
     }
 
@@ -138,6 +140,13 @@ namespace MapAssist.Automation
             _worker.RunWorkerAsync();
         }
 
+        public void GoToPortalSpot()
+        {
+            CancelWork();
+            _task = TownTask.GO_TO_PORTAL_SPOT;
+            _worker.RunWorkerAsync();
+        }
+
         public void Update(GameData gameData, AreaData areaData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
@@ -195,22 +204,12 @@ namespace MapAssist.Automation
                 case TownTask.OPEN_WAYPOINT_MENU:
                     target = _npcs.Where(x => x.Act == _act && x.IsWaypoint).First();
                     break;
+                case TownTask.GO_TO_PORTAL_SPOT:
+                    target = _npcs.Where(x => x.Act == _act && x.IsPortalSpot).First();
+                    break;
             }
 
             _state = TownState.MOVING;
-
-            if (_area == Area.RogueEncampment && _task != TownTask.OPEN_TRADE_MENU &&
-                Automaton.GetDistance(_playerPosition, _npcs.Where(x => x.TxtFileId == ((int)Npc.Akara)).First().Position) < 10)
-            {
-                // sometimes get stuck finding path from akara, go to kashya first
-                _movement.WalkTo(_npcs.Where(x => x.TxtFileId == ((int)Npc.Kashya)).First().Position);
-
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                while (_movement.Busy);
-            }
 
             _movement.WalkTo(target.Position);
 
@@ -219,6 +218,12 @@ namespace MapAssist.Automation
                 System.Threading.Thread.Sleep(100);
             }
             while (_movement.Busy);
+
+            if (target.IsPortalSpot)
+            {
+                _state = TownState.PORTAL_SPOT;
+                return;
+            }
 
             var clickTarget = FindClickTarget(target.TxtFileId);
 

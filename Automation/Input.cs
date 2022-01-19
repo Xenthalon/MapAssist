@@ -35,12 +35,14 @@ namespace MapAssist.Automation
             }
         }
 
-        public void DoInputAtWorldPosition(string input, Point worldPosition)
+        public void DoInputAtWorldPosition(string input, Point worldPosition, bool targetFloor = true)
         {
             Point screenPosition = Automaton.TranslateToScreenOffset(_playerPositionWorld, worldPosition, _playerPositionScreen);
 
-            // move Y axis up ever so slightly
-            screenPosition.Y = (float)(screenPosition.Y - (_window.Height * 0.02));
+            // move Y axis up ever so slightly if floor, otherwise more
+            var upfactor = targetFloor ? 0.02 : 0.07;
+
+            screenPosition.Y = (float)(screenPosition.Y - (_window.Height * upfactor));
 
             DoInputAtScreenPosition(input, screenPosition);
         }
