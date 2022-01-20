@@ -272,11 +272,26 @@ namespace MapAssist.Automation
                     }
                     else
                     {
-                        var target = _pointsOfInterest.Where(x => x.Label == Utils.GetAreaLabel(area, _gameData.Difficulty)).FirstOrDefault();
+                        var count = 0;
+                        PointOfInterest target = null;
+
+                        while (target == null && count < MAX_RETRIES)
+                        {
+                            target = _pointsOfInterest.Where(x => x.Label == Utils.GetAreaLabel(area, _gameData.Difficulty)).FirstOrDefault();
+
+                            if (target != null)
+                            {
+                                break;
+                            }
+
+                            System.Threading.Thread.Sleep(3000);
+                            count += 1;
+                        }
 
                         if (target == null)
                         {
                             _log.Error("Couldn't find PointOfInterest for " + Utils.GetAreaLabel(area, _gameData.Difficulty) + "! Help!");
+                            TakePortalHome();
                             return;
                         }
 
