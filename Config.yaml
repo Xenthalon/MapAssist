@@ -207,5 +207,6 @@ GameInfo:
   LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 14
   LabelTextShadow: true
+  WebAPI: localhost:8080
 D2Path: ''
 LanguageCode: enUS

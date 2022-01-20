@@ -19,9 +19,11 @@
 
 using GameOverlay.Drawing;
 using GameOverlay.Windows;
+using MapAssist.API;
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
+using Nancy.Hosting.Self;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -42,12 +44,18 @@ namespace MapAssist
         private bool _show = true;
 
         private Automaton _automation;
+        private NancyHost _webhost;
         private List<PointOfInterest> _pointsOfInterests;
         private static readonly object _lock = new object();
         public Overlay()
         {
             _gameDataReader = new GameDataReader();
             _automation = new Automaton();
+
+            var hostConfigs = new HostConfiguration();
+            hostConfigs.UrlReservations.CreateAutomatically = true;
+            _webhost = new NancyHost(new Uri("http://" + MapAssistConfiguration.Loaded.GameInfo.WebAPI), new CustomNancyBootstrapper(_automation), hostConfigs);
+            _webhost.Start();
 
             GameOverlay.TimerService.EnableHighPrecisionTimers();
 
@@ -279,6 +287,7 @@ namespace MapAssist
                 if (!disposed)
                 {
                     disposed = true; // This first to let GraphicsWindow.DrawGraphics know to return instantly
+                    _webhost.Stop();
                     _window.Dispose(); // This second to dispose of GraphicsWindow
                     if (_compositor != null) _compositor.Dispose(); // This last so it's disposed after GraphicsWindow stops using it
                 }

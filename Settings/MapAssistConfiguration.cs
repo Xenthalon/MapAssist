@@ -228,6 +228,10 @@ public class GameInfoConfiguration
 
     [YamlMember(Alias = "LabelTextShadow", ApplyNamingConventions = false)]
     public bool LabelTextShadow { get; set; }
+
+    [YamlMember(Alias = "WebAPI", ApplyNamingConventions = false)]
+    public string WebAPI { get; set; }
+
 }
 
 public class ItemLogConfiguration

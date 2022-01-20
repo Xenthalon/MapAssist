@@ -1,18 +1,15 @@
 ﻿using GameOverlay.Drawing;
+using MapAssist.API;
 using MapAssist.Automation;
 using MapAssist.Helpers;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace MapAssist
 {
-    class Automaton
+    public class Automaton
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
@@ -69,6 +66,15 @@ namespace MapAssist
         public void Reset()
         {
             _orchestrator.Reset();
+        }
+
+        public BotStateModel GetState()
+        {
+            return new BotStateModel() {
+                InGame = _currentGameData != null ? _currentGameData.MenuOpen.InGame : false,
+                CharacterName = _currentGameData != null ? _currentGameData.PlayerName : "",
+                MapSeed = _currentGameData != null ? _currentGameData.MapSeed : 0
+            };
         }
 
         public void dumpGameData()
