@@ -12,9 +12,12 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        private static int MAX_RETRIES = 3;
+
         private BackgroundWorker _worker;
         private Input _input;
         List<State> _playerStates;
+        Skills _skills;
 
         private bool _useCta = true;
         private string _switchKey = "x";
@@ -42,6 +45,7 @@ namespace MapAssist.Automation
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
+                _skills = gameData.PlayerUnit.Skills;
                 _playerStates = gameData.PlayerUnit.StateList;
             }
         }
@@ -80,20 +84,40 @@ namespace MapAssist.Automation
 
                 if (_useCta)
                 {
-                    _input.DoInput(_switchKey);
-                    System.Threading.Thread.Sleep(500);
+                    var retries = 0;
 
-                    var battleCommand = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLECOMMAND).First();
+                    while (!_skills.AllSkills.ContainsKey(Skill.BattleOrders) && retries < MAX_RETRIES)
+                    {
+                        _input.DoInput(_switchKey);
+                        System.Threading.Thread.Sleep(500);
 
-                    CastBuff(battleCommand);
-                    CastBuff(battleCommand);
+                        retries += 1;
+                    }
 
-                    var battleOrders = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLEORDERS).First();
+                    if (_skills.AllSkills.ContainsKey(Skill.BattleCommand))
+                    {
+                        var battleCommand = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLECOMMAND).First();
 
-                    CastBuff(battleOrders);
+                        CastBuff(battleCommand);
+                        CastBuff(battleCommand);
+                    }
 
-                    _input.DoInput(_switchKey);
-                    System.Threading.Thread.Sleep(500);
+                    if (_skills.AllSkills.ContainsKey(Skill.BattleOrders))
+                    {
+                        var battleOrders = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLEORDERS).First();
+
+                        CastBuff(battleOrders);
+                    }
+
+                    retries = 0;
+
+                    while (_skills.AllSkills.ContainsKey(Skill.BattleOrders) && retries < MAX_RETRIES)
+                    {
+                        _input.DoInput(_switchKey);
+                        System.Threading.Thread.Sleep(500);
+
+                        retries += 1;
+                    }
 
                     remainingBuffs = _availableBuffs.Where(x => x.BuffState != State.STATE_BATTLECOMMAND && x.BuffState != State.STATE_BATTLEORDERS);
                 }
@@ -109,7 +133,7 @@ namespace MapAssist.Automation
 
         private void CastBuff(CombatSkill buff)
         {
-            _log.Info("Casting " + buff.Name);
+            _log.Debug("Casting " + buff.Name);
             _input.DoInput(buff.Key);
             System.Threading.Thread.Sleep(buff.Cooldown);
         }
