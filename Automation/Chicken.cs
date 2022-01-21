@@ -62,26 +62,26 @@ namespace MapAssist.Automation
 
                 var health = -1;
 
-                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_HITPOINTS))
+                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.Life))
                 {
-                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_HITPOINTS, out health);
+                    gameData.PlayerUnit.Stats.TryGetValue(Stat.Life, out health);
                     playerHealth = ConvertHexHealthToInt(health);
                 }
 
-                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.STAT_MAXHP))
+                if (gameData.PlayerUnit.Stats.ContainsKey(Stat.MaxLife))
                 {
-                    gameData.PlayerUnit.Stats.TryGetValue(Stat.STAT_MAXHP, out health);
+                    gameData.PlayerUnit.Stats.TryGetValue(Stat.MaxLife, out health);
                     playerHealthMax = ConvertHexHealthToInt(health);
                 }
 
-                _amDead = playerHealth == -1 && gameData.PlayerUnit.IsCorpse && gameData.PlayerUnit.Mode == 17;
+                _amDead = (playerHealth <= 0) && gameData.PlayerUnit.IsCorpse;
 
-                UnitAny merc = gameData.Mercs.Where(x => x.IsMerc()).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                UnitAny merc = gameData.Mercs.Where(x => x.IsMerc() && x.IsPlayerOwned()).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
                 if (merc.IsValidPointer() && merc.IsValidUnit() &&
-                    merc.Stats.ContainsKey(Stat.STAT_HITPOINTS))
+                    merc.Stats.ContainsKey(Stat.Life))
                 {
-                    merc.Stats.TryGetValue(Stat.STAT_HITPOINTS, out mercHealth);
+                    merc.Stats.TryGetValue(Stat.Life, out mercHealth);
                     _mercIsDead = false;
                 }
                 else

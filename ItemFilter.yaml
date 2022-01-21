@@ -11,6 +11,48 @@
 Shako:                              # Item Base Type
   - Qualities: unique               # Rule starts with "-" and lists one of 3 criteria
 
+# Criteria options are:
+#   Ethereal: (true/false)
+#   Sockets: [0 - 6]
+#   Qualities: [inferior, normal, superior, magic, set, rare, unique, crafted]
+#   Defense: (number)
+#   Strength: (number)
+#   Dexterity: (number)
+#   Vitality: (number)
+#   Energy: (number)
+#   Max Life: (number)
+#   Max Mana: (number)
+#   Attack Rating: (number)
+#   Min Damage: (number)
+#   Max Damage: (number)
+#   Damage Reduced: (number)
+#   Life Steal: (number)
+#   Mana Steal: (number)
+#   Cold Skill Damage: (number)
+#   Lightning Skill Damage: (number)
+#   Fire Skill Damage: (number)
+#   Poison Skill Damage: (number)
+#   Increased Attack Speed: (number)
+#   Faster Run Walk: (number)
+#   Faster Hit Recovery: (number)
+#   Faster Cast Rate: (number)
+#   Magic Find: (number)
+#   Gold Find: (number)
+#   Cold Resist: (number)
+#   Lightning Resist: (number)
+#   Fire Resist: (number)
+#   Poison Resist: (number)
+#   All Resist: (number)
+#   Skills:
+#      <Skill Name>: (number)
+#   Skill Charges:
+#      <Skill Name>: (number)
+#   Class Skill Tree:
+#      <Class Tree>: (number)
+#   Class Skills:
+#      <Class>: (number)
+#   All Skills: (number)
+
 # Additional criteria can be listed below the first. Do not prefix a "-" to lines with criteria you wish to include
 # as part of the same rule. You can also list multiple values for both Qualities and Sockets as shown in the Thresher
 # example below
@@ -25,10 +67,54 @@ Thresher:
     Sockets: [0, 4]
   - Qualities: unique # The Reaper's Toll
 
-# Criteria are: Ethereal (true/false), Sockets (0-6), and Qualities
-# Qualities is one of the item quality levels. Item qualities start at inferior for low quality/cracked/etc items,
-# and move from there to normal, superior, magic, set, rare, unique, and crafted
-#
+# Possible classes of items are:
+#   Axes
+#   Wands
+#   Clubs
+#   Scepters
+#   Maces
+#   Hammers
+#   Swords
+#   Daggers
+#   Throwing Knifes
+#   Throwing Axes
+#   Javelins
+#   Spears
+#   Polearms
+#   Staves
+#   Bows
+#   Crossbows
+#   Helms
+#   Armors
+#   Shields
+#   Gloves
+#   Boots
+#   Belts
+#   Circlets
+#   Assassin Katars
+#   Sorceress Orbs
+#   Amazon Bows
+#   Amazon Spears
+#   Amazon Javelins
+#   Druid Helms
+#   Barbarian Helms
+#   Paladin Shields
+#   Necromancer Shields
+# Possible tiers of items are (note that these will not work with circlets):
+#   Normal
+#   Exceptional
+#   Elite
+
+# This will show 3/20 Javazon Gloves when a town vendor has a pair for sale
+# It will work with all exceptional and elite gloves
+Gloves:
+  - Tiers: [exceptional, elite]
+    Qualities: magic
+    Increased Attack Speed: 20
+    Class Skill Tree:
+      Amazon Javelin And Spear: 3
+
+# Listing multiple values
 # Another way to list multiple values for Qualities and Sockets is to list each desired quality or number of sockets
 # on its own line with an extra indent and a "-"
 # This format is supported but its use is discouraged
@@ -47,6 +133,7 @@ Monarch:
     Sockets: [0, 4]
 
 # This will show a short staff with +1 to skills, +1 to sorc skills, +1 to fire skills, and +1 fire bolt
+# Notifications are turned off for this item specifically using the PlaySoundOnDrop: false option
 Short Staff:
   - Skills:
       Fire Bolt: 1
@@ -55,6 +142,13 @@ Short Staff:
     Class Skills:
       Sorceress: 1
     All Skills: 1
+    PlaySoundOnDrop: false
+
+# This will show Barbarian Warcry Sticks when a town vendor has them for sale
+Glaive:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
 
 # This is just an object that holds all our commonly used aliases
 # Aliases are labeled by the `&` and then the name and provide a simple way to reuse rule criteria later on
@@ -287,7 +381,7 @@ Fury Visor:
   - Qualities: [magic, rare]
 Destroyer Helm:
   - Qualities: [magic, rare]
-Conquieror Crown:
+Conqueror Crown:
   - Qualities: [magic, rare]
 Guardian Crown:
   - Qualities: [magic, rare]

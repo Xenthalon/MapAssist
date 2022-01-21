@@ -277,7 +277,7 @@ namespace MapAssist.Automation
 
                         while (target == null && count < MAX_RETRIES)
                         {
-                            target = _pointsOfInterest.Where(x => x.Label == Utils.GetAreaLabel(area, _gameData.Difficulty)).FirstOrDefault();
+                            target = _pointsOfInterest.Where(x => x.NextArea == area).FirstOrDefault();
 
                             if (target != null)
                             {
@@ -290,7 +290,7 @@ namespace MapAssist.Automation
 
                         if (target == null)
                         {
-                            _log.Error("Couldn't find PointOfInterest for " + Utils.GetAreaLabel(area, _gameData.Difficulty) + "! Help!");
+                            _log.Error("Couldn't find PointOfInterest for " + area.Name() + "! Help!");
                             TakePortalHome();
                             return;
                         }
@@ -833,7 +833,7 @@ namespace MapAssist.Automation
 
         private void RecoverCorpse()
         {
-            if (_gameData.Players.Any(x => x.Value.IsCorpse && x.Value.Name == _gameData.PlayerUnit.Name && x.Value.Mode == 17 && x.Value.UnitId != _gameData.PlayerUnit.UnitId))
+            if (_gameData.Players.Any(x => x.Value.IsCorpse && x.Value.Name == _gameData.PlayerUnit.Name && x.Value.UnitId != _gameData.PlayerUnit.UnitId))
             {
                 _log.Info("Awww shucks, seems we died, grabbing corpse.");
 

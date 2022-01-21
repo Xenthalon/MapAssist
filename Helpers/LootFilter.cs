@@ -1,6 +1,6 @@
 ﻿/**
  *   Copyright (C) 2021 okaygo
- *   
+ *
  *   https://github.com/misterokaygo/MapAssist/
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,90 +17,93 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using System.Linq;
-using MapAssist.Types;
 using MapAssist.Settings;
+using MapAssist.Types;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using YamlDotNet.Serialization;
 
 namespace MapAssist.Helpers
 {
     public static class LootFilter
     {
+        public static Dictionary<Stat, int> StatShifts = new Dictionary<Stat, int>()
+        {
+            [Stat.MaxLife] = 8,
+            [Stat.MaxMana] = 8,
+        };
+
         public static (bool, ItemFilter) Filter(UnitAny unitAny)
         {
-            //skip low quality items
+            // Skip low quality items
             var lowQuality = (unitAny.ItemData.ItemFlags & ItemFlags.IFLAG_LOWQUALITY) == ItemFlags.IFLAG_LOWQUALITY;
-            if (lowQuality)
-            {
-                return (false, null);
-            }
+            if (lowQuality) return (false, null);
 
-            var baseName = Items.ItemName(unitAny.TxtFileNo);
-            //populate a list of filter rules by combining rules from "Any" and the item base name
-            //use only one list or the other depending on if "Any" exists
-            var matches =
-                LootLogConfiguration.Filters
-                    .Where(f => f.Key == "Any" || f.Key == baseName).ToList();
+            // Populate a list of filter rules by combining rules from "Any" and the item base name
+            // Use only one list or the other depending on if "Any" exists
+            var matches = LootLogConfiguration.Filters.Where(f => f.Key == Item.Any || (uint)f.Key == unitAny.TxtFileNo).ToList();
 
             // Early breakout
             // We know that there is an item in here without any actual filters
             // So we know that simply having the name match means we can return true
-            if (matches.Any(kv => kv.Value == null))
-            {
-                return (true, null);
-            }
+            if (matches.Any(kv => kv.Value == null)) return (true, null);
 
-            //get other item stats to use for filtering
-            var itemQuality = unitAny.ItemData.ItemQuality;
-            var isEth = (unitAny.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
-            var numSockets = unitAny.Stats.TryGetValue(Stat.STAT_ITEM_NUMSOCKETS, out var socketCount) ? socketCount : 0;
-
-            //scan the list of rules
+            // Scan the list of rules
             foreach (var rule in matches.SelectMany(kv => kv.Value))
             {
-                var qualityReqMet = rule.Qualities == null || rule.Qualities.Length == 0 || rule.Qualities.Contains(itemQuality);
-                if (!qualityReqMet) { continue; }
-
-                var socketReqMet = rule.Sockets == null || rule.Sockets.Length == 0 || rule.Sockets.Contains(numSockets);
-                if (!socketReqMet) { continue; }
-
-                var defenseReqMet = rule.Defense == null || rule.Defense == 0 || Items.GetArmorDefense(unitAny) >= rule.Defense;
-                if (!defenseReqMet) { continue; }
-
-                var allResReqMet = rule.AllResist == null || rule.AllResist == 0 || Items.GetItemStatAllResist(unitAny) >= rule.AllResist;
-                if (!allResReqMet) { continue; }
-
-                var ethReqMet = (rule.Ethereal == null || rule.Ethereal == isEth);
-                if (!ethReqMet) { continue; }
-
-                var allSkillsReqMet = (rule.AllSkills == null || rule.AllSkills == 0 || Items.GetItemStatAllSkills(unitAny) >= rule.AllSkills);
-                if (!allSkillsReqMet) { continue; }
-
-                // Item class skills
-                var addClassSkillsReqMet = (rule.ClassSkills.Count == 0);
-                foreach (var subrule in rule.ClassSkills)
+                // Requirement check functions
+                var requirementsFunctions = new Dictionary<string, Func<bool>>()
                 {
-                    addClassSkillsReqMet = (subrule.Value == null || subrule.Value == 0 || Items.GetItemStatAddClassSkills(unitAny, subrule.Key) >= subrule.Value);
-                    if (!addClassSkillsReqMet) { continue; }
-                }
-                if (!addClassSkillsReqMet) { continue; }
+                    ["Qualities"] = () => rule.Qualities.Contains(unitAny.ItemData.ItemQuality),
+                    ["Sockets"] = () => rule.Sockets.Contains(Items.GetItemStat(unitAny, Stat.NumSockets)),
+                    ["Ethereal"] = () => ((unitAny.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL) == rule.Ethereal,
+                    ["AllAttributes"] = () => Items.GetItemStatAllAttributes(unitAny) >= rule.AllAttributes,
+                    ["AllResist"] = () => Items.GetItemStatAllResist(unitAny) >= rule.AllResist,
+                    ["ClassSkills"] = () =>
+                    {
+                        if (rule.ClassSkills.Count() == 0) return true;
+                        return rule.ClassSkills.All(subrule => Items.GetItemStatAddClassSkills(unitAny, subrule.Key) >= subrule.Value);
+                    },
+                    ["ClassTabSkills"] = () =>
+                    {
+                        if (rule.ClassTabSkills.Count() == 0) return true;
+                        return rule.ClassTabSkills.All(subrule => Items.GetItemStatAddClassTabSkills(unitAny, subrule.Key) >= subrule.Value);
+                    },
+                    ["Skills"] = () =>
+                    {
+                        if (rule.Skills.Count() == 0) return true;
+                        return rule.Skills.All(subrule => Items.GetItemStatSingleSkills(unitAny, subrule.Key) >= subrule.Value);
+                    },
+                    ["SkillCharges"] = () =>
+                    {
+                        if (rule.SkillCharges.Count() == 0) return true;
+                        return rule.SkillCharges.All(subrule => Items.GetItemStatAddSkillCharges(unitAny, subrule.Key).Item1 >= subrule.Value);
+                    },
+                };
 
-                // Item class tab skills
-                var addClassTabSkillsReqMet = (rule.ClassTabSkills.Count == 0);
-                foreach (var subrule in rule.ClassTabSkills)
+                foreach (var (stat, shift) in StatShifts.Select(x => (x.Key, x.Value)))
                 {
-                    addClassTabSkillsReqMet = (subrule.Value == null || subrule.Value == 0 || Items.GetItemStatAddClassTabSkills(unitAny, subrule.Key) >= subrule.Value);
-                    if (!addClassTabSkillsReqMet) { continue; }
+                    requirementsFunctions.Add(stat.ToString(), () => Items.GetItemStatShifted(unitAny, stat, shift) >= (int)rule[stat]);
                 }
-                if (!addClassTabSkillsReqMet) { continue; }
 
-                // Item single skills
-                var singleSkillsReqMet = (rule.Skills.Count == 0);
-                foreach (var subrule in rule.Skills)
+                var requirementMet = true;
+                foreach (var property in rule.GetType().GetProperties())
                 {
-                    singleSkillsReqMet = (subrule.Value == null || subrule.Value == 0 || Items.GetItemStatSingleSkills(unitAny, subrule.Key) >= subrule.Value);
-                    if (!singleSkillsReqMet) { continue; }
+                    if (property.PropertyType == typeof(object)) continue; // This is the item from Stat property
+
+                    var propertyValue = rule.GetType().GetProperty(property.Name).GetValue(rule, null);
+                    if (requirementsFunctions.TryGetValue(property.Name, out var requirementFunc))
+                    {
+                        requirementMet &= propertyValue == null || requirementFunc();
+                    }
+                    else if (Enum.TryParse<Stat>(property.Name, out var stat))
+                    {
+                        requirementMet &= propertyValue == null || Items.GetItemStat(unitAny, stat) >= (int)propertyValue;
+                    }
+                    if (!requirementMet) break;
                 }
-                if (!singleSkillsReqMet) { continue; }
+                if (!requirementMet) continue;
 
                 // Item meets all filter requirements
                 return (true, rule);

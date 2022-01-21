@@ -86,7 +86,7 @@ namespace MapAssist.Automation
                 {
                     var retries = 0;
 
-                    while (!_skills.AllSkills.ContainsKey(Skill.BattleOrders) && retries < MAX_RETRIES)
+                    while (!_skills.AllSkills.Any(x => x.Skill == Skill.BattleOrders) && retries < MAX_RETRIES)
                     {
                         _input.DoInput(_switchKey);
                         System.Threading.Thread.Sleep(500);
@@ -94,7 +94,7 @@ namespace MapAssist.Automation
                         retries += 1;
                     }
 
-                    if (_skills.AllSkills.ContainsKey(Skill.BattleCommand))
+                    if (_skills.AllSkills.Any(x => x.Skill == Skill.BattleCommand))
                     {
                         var battleCommand = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLECOMMAND).First();
 
@@ -102,7 +102,7 @@ namespace MapAssist.Automation
                         CastBuff(battleCommand);
                     }
 
-                    if (_skills.AllSkills.ContainsKey(Skill.BattleOrders))
+                    if (_skills.AllSkills.Any(x => x.Skill == Skill.BattleOrders))
                     {
                         var battleOrders = _availableBuffs.Where(x => x.BuffState == State.STATE_BATTLEORDERS).First();
 
@@ -111,7 +111,7 @@ namespace MapAssist.Automation
 
                     retries = 0;
 
-                    while (_skills.AllSkills.ContainsKey(Skill.BattleOrders) && retries < MAX_RETRIES)
+                    while (_skills.AllSkills.Any(x => x.Skill == Skill.BattleOrders) && retries < MAX_RETRIES)
                     {
                         _input.DoInput(_switchKey);
                         System.Threading.Thread.Sleep(500);

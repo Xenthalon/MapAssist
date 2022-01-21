@@ -768,6 +768,37 @@ namespace MapAssist.Types
             Area.ArreatPlateau,
         };
 
+        public static string MapLabel(this Area area, Difficulty difficulty)
+        {
+            var label = area.Name();
+            var areaLevel = area.Level(difficulty);
+            if (areaLevel > 0)
+            {
+                label += $" ({areaLevel})";
+            }
+            return label;
+        }
+
+        public static string PortalLabel(this Area area, Difficulty difficulty, string playerName = null)
+        {
+            if (playerName != null)
+            {
+                switch (area)
+                {
+                    case Area.RogueEncampment:
+                    case Area.LutGholein:
+                    case Area.KurastDocks:
+                    case Area.ThePandemoniumFortress:
+                    case Area.Harrogath:
+                        return $"TP ({playerName})";
+
+                    default:
+                        return $"{area.Name()} ({playerName})";
+                }
+            }
+            return area.MapLabel(difficulty);
+        }
+
         public static string NameFromKey(string key)
         {
             LocalizedObj localItem;

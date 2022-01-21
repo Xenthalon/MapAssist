@@ -17,9 +17,9 @@
 *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 **/
 
-using System.Collections.Generic;
 using MapAssist.Helpers;
 using MapAssist.Settings;
+using System.Collections.Generic;
 
 namespace MapAssist.Types
 {
@@ -158,9 +158,87 @@ namespace MapAssist.Types
             { 514, Npc.NihlathakTown },
             { 515, Npc.QualKehk }
         };
+
+        public static List<Npc> Bosses = new List<Npc> {
+            Npc.Andariel,
+            Npc.Duriel,
+            Npc.Mephisto,
+            Npc.Diablo,
+            Npc.BaalCrab,
+        };
+
+        public static Dictionary<string, string> SuperUniques = new Dictionary<string, string>()
+        {
+            { "Corpsefire", "zombie1" },
+            { "Bishibosh", "fallenshaman1" },
+            { "Coldcrow", "cr_archer1" },
+            { "Bonebreak", "skeleton1" },
+            { "Rakanishu", "fallen2" },
+            { "Treehead WoodFist", "brute2" },
+            { "Griswold", "griswold" },
+            { "The Countess", "corruptrogue3" },
+            { "Pitspawn Fouldog", "bighead2" },
+            { "Flamespike the Crawler", "quillrat4" },
+            { "Boneash", "skmage_pois3" },
+            { "Radament", "radament" },
+            { "Bloodwitch the Wild", "pantherwoman1" },
+            { "Fangskin", "clawviper3" },
+            { "Beetleburst", "scarab2" },
+            { "Leatherarm", "mummy2" },
+            { "Coldworm the Burrower", "maggotqueen1" },
+            { "Fire Eye", "sandraider3" },
+            { "Dark Elder", "darkelder" },
+            { "The Summoner", "summoner" },
+            { "Ancient Kaa the Soulless", "unraveler3" },
+            { "The Smith", "smith" },
+            { "Web Mage the Burning", "arach4" },
+            { "Witch Doctor Endugu", "fetishshaman4" },
+            { "Stormtree", "thornhulk3" },
+            { "Sarina the Battlemaid", "corruptrogue5" },
+            { "Icehawk Riftwing", "batdemon3" },
+            //{ "Ismail Vilehand", "councilmember1" },
+            //{ "Geleb Flamefinger", "councilmember2" },
+            //{ "Bremm Sparkfist", "councilmember3" },
+            //{ "Toorc Icefist", "councilmember1" },
+            //{ "Wyand Voidfinger", "councilmember2" },
+            //{ "Maffer Dragonhand", "councilmember3" },
+            //{ "Winged Death", "megademon3" },
+            { "The Tormentor", "willowisp3" },
+            { "Taintbreeder", "vilemother2" },
+            { "Riftwraith the Cannibal", "regurgitator2" },
+            { "Infector of Souls", "megademon3" },
+            { "Lord De Seis", "doomknight3" },
+            { "Grand Vizier of Chaos", "fingermage3" },
+            { "The Cow King", "cowking" },
+            { "The Feature Creep", "hephasto" },
+            { "Siege Boss", "overseer1" },
+            { "Ancient Barbarian 1", "ancientbarb1" },
+            { "Ancient Barbarian 2", "ancientbarb2" },
+            { "Ancient Barbarian 3", "ancientbarb3" },
+            { "Axe Dweller", "bloodlord3" },
+            { "Bonesaw Breaker", "reanimatedhorde2" },
+            { "Dac Farren", "imp3" },
+            { "Megaflow Rectifier", "minion1" },
+            { "Eyeback Unleashed", "deathmauler1" },
+            { "Threash Socket", "siegebeast3" },
+            { "Pindleskin", "reanimatedhorde" },
+            { "Snapchip Shatter", "frozenhorror1" },
+            { "Anodized Elite", "succubus4" },
+            { "Vinvear Molech", "succubuswitch2" },
+            { "Sharp Tooth Sayer", "overseer3" },
+            { "Magma Torquer", "imp5" },
+            { "Blaze Ripper", "deathmauler5" },
+            { "Frozenstein", "snowyeti4" },
+            { "Nihlathak Boss", "nihlathakboss" },
+            { "Baal Subject 1", "fallenshaman5" },
+            { "Baal Subject 2", "unraveler5" },
+            { "Baal Subject 3", "baalhighpriest" },
+            { "Baal Subject 4", "venomlord" },
+            { "Baal Subject 5", "baalminion1" },
+        };
     }
 
-    public enum Npc
+    public enum Npc : ushort
     {
         Skeleton = 0,
         Returned = 1,
@@ -572,9 +650,7 @@ namespace MapAssist.Types
         RatMan3 = 407,
         Malachai = 408,
         Hephasto = 409, // The Feature Creep ?!?
-
-        // Expansion (Are We missing something here?  D2BS has a 410 that we DONT have)
-        WakeOfDestruction = 410,
+        WakeOfDestruction = 410, // Expansion (Are We missing something here?  D2BS has a 410 that we DONT have)
         ChargedBoltSentry = 411,
         LightningSentry = 412,
         BladeCreeper = 413,
@@ -899,6 +975,7 @@ namespace MapAssist.Types
         Specter3 = 732,
         BurningSoul3 = 733,
         Invalid,
+        Unknown,
         NpcNotApplicable = 0xFFFF
     }
 
@@ -930,6 +1007,7 @@ namespace MapAssist.Types
             [Npc.NihlathakTown] = "Nihlathak Town",
             [Npc.Navi] = "navi",
             [Npc.Izual2] = "Izual",
+            [Npc.BaalCrab] = "Baal",
         };
 
         public static readonly HashSet<Npc> _npcTownsfolk = new HashSet<Npc>()
@@ -988,6 +1066,11 @@ namespace MapAssist.Types
         {
             var key = _npcLocalizationKeys.TryGetValue(npc, out var label) ? label : npc.ToString();
 
+            return LocalizedName(key);
+        }
+
+        public static string LocalizedName(string key)
+        {
             LocalizedObj localItem;
             if (!LocalizedNpcs.TryGetValue(key, out localItem))
             {

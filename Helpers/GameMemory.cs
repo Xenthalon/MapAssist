@@ -21,6 +21,7 @@ using MapAssist.Settings;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MapAssist.Helpers
 {
@@ -32,6 +33,8 @@ namespace MapAssist.Helpers
 
         public static Dictionary<int, UnitAny> PlayerUnits = new Dictionary<int, UnitAny>();
         public static Dictionary<int, Dictionary<uint, UnitAny>> Corpses = new Dictionary<int, Dictionary<uint, UnitAny>>();
+
+        private static bool _firstMemoryRead = true;
 
         public static GameData GetGameData()
         {
@@ -53,15 +56,17 @@ namespace MapAssist.Helpers
 
                 var menuOpen = processContext.Read<byte>(GameManager.MenuOpenOffset);
                 var menuData = processContext.Read<Structs.MenuData>(GameManager.MenuDataOffset);
+                var lastHoverData = processContext.Read<Structs.HoverData>(GameManager.LastHoverDataOffset);
+                var lastNpcInteracted = (Npc)processContext.Read<ushort>(GameManager.InteractedNpcOffset);
 
-                if (!menuData.InGame && Corpses.TryGetValue(_currentProcessId, out var _))
+                if (!menuData.InGame && Corpses.ContainsKey(_currentProcessId))
                 {
                     Corpses[_currentProcessId].Clear();
                 }
 
                 var playerUnit = GameManager.PlayerUnit;
 
-                if (!PlayerUnits.TryGetValue(_currentProcessId, out var _))
+                if (!PlayerUnits.ContainsKey(_currentProcessId))
                 {
                     PlayerUnits.Add(_currentProcessId, playerUnit);
                 }
@@ -78,7 +83,7 @@ namespace MapAssist.Helpers
                     {
                         throw new Exception("Map seed is out of bounds.");
                     }
-                    if (!_lastMapSeed.TryGetValue(_currentProcessId, out var _))
+                    if (!_lastMapSeed.ContainsKey(_currentProcessId))
                     {
                         _lastMapSeed.Add(_currentProcessId, 0);
                     }
@@ -86,28 +91,35 @@ namespace MapAssist.Helpers
                     {
                         _lastMapSeed[_currentProcessId] = mapSeed;
                         //dispose leftover timers in this process if we started a new game
-                        if (Items.ItemLogTimers.TryGetValue(_currentProcessId, out var _))
+                        if (Items.ItemLogTimers.ContainsKey(_currentProcessId))
                         {
                             foreach (var timer in Items.ItemLogTimers[_currentProcessId])
                             {
-                                timer.Dispose();
+                                if (timer != null)
+                                {
+                                    timer.Dispose();
+                                }
                             }
                         }
 
-                        if (!Items.ItemUnitHashesSeen.TryGetValue(_currentProcessId, out var _))
+                        if (!Items.ItemUnitHashesSeen.ContainsKey(_currentProcessId))
                         {
                             Items.ItemUnitHashesSeen.Add(_currentProcessId, new HashSet<string>());
                             Items.ItemUnitIdsSeen.Add(_currentProcessId, new HashSet<uint>());
+                            Items.ItemUnitIdsToSkip.Add(_currentProcessId, new HashSet<uint>());
+                            Items.ItemVendors.Add(_currentProcessId, new Dictionary<uint, Npc>());
                             Items.ItemLog.Add(_currentProcessId, new List<UnitAny>());
                         }
                         else
                         {
                             Items.ItemUnitHashesSeen[_currentProcessId].Clear();
                             Items.ItemUnitIdsSeen[_currentProcessId].Clear();
+                            Items.ItemUnitIdsToSkip[_currentProcessId].Clear();
+                            Items.ItemVendors[_currentProcessId].Clear();
                             Items.ItemLog[_currentProcessId].Clear();
                         }
 
-                        if (!Corpses.TryGetValue(_currentProcessId, out var _))
+                        if (!Corpses.ContainsKey(_currentProcessId))
                         {
                             Corpses.Add(_currentProcessId, new Dictionary<uint, UnitAny>());
                         }
@@ -147,7 +159,38 @@ namespace MapAssist.Helpers
                         var itemList = new HashSet<UnitAny>();
                         var objectList = new HashSet<UnitAny>();
                         var playerList = new Dictionary<uint, UnitAny>();
-                        GetUnits(rosterData, ref monsterList, ref itemList, ref playerList, ref objectList, ref mercList, ref npcList);
+                        GetUnits(rosterData, ref monsterList, ref mercList, ref itemList, ref playerList, ref objectList, ref npcList);
+
+                        if (lastHoverData.IsHovered)
+                        {
+                            var units = monsterList.Concat(mercList).Concat(itemList).Concat(playerList.Values).Concat(objectList).Where(x => x.UnitId == lastHoverData.UnitId).ToArray();
+                            if (units.Length > 0) units[0].IsHovered = true;
+                        }
+
+                        foreach (var item in itemList)
+                        {
+                            if (!item.IsInStore()) continue;
+
+                            if (Items.ItemVendors[_currentProcessId].TryGetValue(item.UnitId, out var vendor))
+                            {
+                                item.VendorOwner = vendor;
+                            }
+                            else
+                            {
+                                item.VendorOwner = !_firstMemoryRead ? lastNpcInteracted : Npc.Unknown; // This prevents marking the VendorOwner for all store items when restarting MapAssist in the middle of the game
+                                Items.ItemVendors[_currentProcessId].Add(item.UnitId, item.VendorOwner);
+                            }
+                        }
+
+                        foreach (var item in itemList.Where(item => item.IsPlayerHolding()))
+                        {
+                            if (!Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
+                            {
+                                Items.ItemUnitIdsToSkip[_currentProcessId].Add(item.UnitId);
+                            }
+                        }
+
+                        _firstMemoryRead = false;
 
                         return new GameData
                         {
@@ -168,6 +211,7 @@ namespace MapAssist.Helpers
                             PlayerUnit = playerUnit,
                             MenuOpen = menuData,
                             MenuPanelOpen = menuOpen,
+                            LastNpcInteracted = lastNpcInteracted,
                             ProcessId = _currentProcessId
                         };
                     }
@@ -178,7 +222,7 @@ namespace MapAssist.Helpers
             return null;
         }
 
-        private static void GetUnits(Roster rosterData, ref HashSet<UnitAny> monsterList, ref HashSet<UnitAny> itemList, ref Dictionary<uint, UnitAny> playerList, ref HashSet<UnitAny> objectList, ref HashSet<UnitAny> mercList, ref HashSet<UnitAny> npcList)
+        private static void GetUnits(Roster rosterData, ref HashSet<UnitAny> monsterList, ref HashSet<UnitAny> mercList, ref HashSet<UnitAny> itemList, ref Dictionary<uint, UnitAny> playerList, ref HashSet<UnitAny> objectList, ref HashSet<UnitAny> npcList)
         {
             for (var i = 0; i <= 4; i++)
             {
@@ -205,8 +249,7 @@ namespace MapAssist.Helpers
                                 {
                                     monsterList.Add(unitAny);
                                 }
-
-                                if (!mercList.Contains(unitAny) && unitAny.IsMerc())
+                                else if (!monsterList.Contains(unitAny) && unitAny.IsMerc())
                                 {
                                     mercList.Add(unitAny);
                                 }
@@ -233,7 +276,7 @@ namespace MapAssist.Helpers
                                 break;
 
                             case UnitType.Player:
-                                if (!playerList.TryGetValue(unitAny.UnitId, out var _) && unitAny.IsPlayer())
+                                if (!playerList.ContainsKey(unitAny.UnitId) && unitAny.IsPlayer())
                                 {
                                     playerList.Add(unitAny.UnitId, unitAny);
                                 }

@@ -17,13 +17,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GameOverlay.Drawing;
 using MapAssist.Settings;
 using MapAssist.Types;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MapAssist.Helpers
 {
@@ -158,6 +157,7 @@ namespace MapAssist.Helpers
                 },
             };
         }
+
         public static List<PointOfInterest> Get(MapApi mapApi, AreaData areaData, GameData gameData)
         {
             var pointsOfInterest = GetArea(mapApi, areaData, gameData);
@@ -187,7 +187,7 @@ namespace MapAssist.Helpers
             switch (areaData.Area)
             {
                 case Area.CanyonOfTheMagi:
-                    // Work out which tomb is the right once. 
+                    // Work out which tomb is the right once.
                     // Load the maps for all of the tombs, and check which one has the Orifice.
                     // Declare that tomb as point of interest.
                     Area[] tombs = new[]
@@ -210,7 +210,8 @@ namespace MapAssist.Helpers
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            Label = Utils.GetAreaLabel(realTomb, gameData.Difficulty),
+                            NextArea = realTomb,
+                            Label = realTomb.MapLabel(gameData.Difficulty),
                             Position = areaData.AdjacentLevels[realTomb].Exits[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                             Type = PoiType.NextArea
@@ -256,7 +257,8 @@ namespace MapAssist.Helpers
                             pointsOfInterest.Add(new PointOfInterest
                             {
                                 Area = areaData.Area,
-                                Label = Utils.GetAreaLabel(Area.MonasteryGate, gameData.Difficulty),
+                                NextArea = Area.MonasteryGate,
+                                Label = Area.MonasteryGate.MapLabel(gameData.Difficulty),
                                 Position = new Point(outerCloister.Exits[0].X, monastery.Exits[0].Y),
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                 Type = PoiType.NextArea
@@ -275,7 +277,8 @@ namespace MapAssist.Helpers
                                     pointsOfInterest.Add(new PointOfInterest
                                     {
                                         Area = areaData.Area,
-                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        NextArea = Area.Barracks,
+                                        Label = Area.Barracks.MapLabel(gameData.Difficulty),
                                         Position = new Point(15280, 4940),
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                         Type = PoiType.NextArea
@@ -289,7 +292,8 @@ namespace MapAssist.Helpers
                                     pointsOfInterest.Add(new PointOfInterest
                                     {
                                         Area = areaData.Area,
-                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        NextArea = Area.Barracks,
+                                        Label = Area.Barracks.MapLabel(gameData.Difficulty),
                                         Position = new Point(15141, 4802),
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                         Type = PoiType.NextArea
@@ -303,7 +307,8 @@ namespace MapAssist.Helpers
                                     pointsOfInterest.Add(new PointOfInterest
                                     {
                                         Area = areaData.Area,
-                                        Label = Utils.GetAreaLabel(Area.Barracks, gameData.Difficulty),
+                                        NextArea = Area.Barracks,
+                                        Label = Area.Barracks.MapLabel(gameData.Difficulty),
                                         Position = new Point(15002, 4943),
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                         Type = PoiType.NextArea
@@ -318,7 +323,8 @@ namespace MapAssist.Helpers
                             pointsOfInterest.Add(new PointOfInterest
                             {
                                 Area = areaData.Area,
-                                Label = Utils.GetAreaLabel(Area.Cathedral, gameData.Difficulty),
+                                NextArea = Area.Cathedral,
+                                Label = Area.Cathedral.MapLabel(gameData.Difficulty),
                                 Position = new Point(20053, 5000),
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                 Type = PoiType.NextArea
@@ -333,7 +339,8 @@ namespace MapAssist.Helpers
                                 pointsOfInterest.Add(new PointOfInterest
                                 {
                                     Area = areaData.Area,
-                                    Label = Utils.GetAreaLabel(nextArea, gameData.Difficulty),
+                                    NextArea = nextArea,
+                                    Label = nextArea.MapLabel(gameData.Difficulty),
                                     Position = nextLevel.Exits[0],
                                     RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                     Type = PoiType.NextArea
@@ -352,7 +359,8 @@ namespace MapAssist.Helpers
                                     pointsOfInterest.Add(new PointOfInterest
                                     {
                                         Area = areaData.Area,
-                                        Label = Utils.GetAreaLabel(maxAdjacentArea, gameData.Difficulty),
+                                        NextArea = maxAdjacentArea,
+                                        Label = maxAdjacentArea.MapLabel(gameData.Difficulty),
                                         Position = nextLevel.Exits[0],
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                                         Type = PoiType.NextArea
@@ -371,7 +379,8 @@ namespace MapAssist.Helpers
                                 pointsOfInterest.Add(new PointOfInterest
                                 {
                                     Area = areaData.Area,
-                                    Label = Utils.GetAreaLabel(questArea, gameData.Difficulty),
+                                    NextArea = questArea,
+                                    Label = questArea.MapLabel(gameData.Difficulty),
                                     Position = questLevel.Exits[0],
                                     RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
                                     Type = PoiType.Quest
@@ -389,7 +398,8 @@ namespace MapAssist.Helpers
                             pointsOfInterest.Add(new PointOfInterest
                             {
                                 Area = areaData.Area,
-                                Label = Utils.GetAreaLabel(tamoe.Area, gameData.Difficulty),
+                                NextArea = tamoe.Area,
+                                Label = tamoe.Area.MapLabel(gameData.Difficulty),
                                 Position = new Point(outerCloister.Exits[0].X, tamoe.Exits[0].Y),
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
                                 Type = PoiType.PreviousArea
@@ -404,7 +414,8 @@ namespace MapAssist.Helpers
                             pointsOfInterest.Add(new PointOfInterest
                             {
                                 Area = areaData.Area,
-                                Label = Utils.GetAreaLabel(Area.OuterCloister, gameData.Difficulty),
+                                NextArea = Area.OuterCloister,
+                                Label = Area.OuterCloister.MapLabel(gameData.Difficulty),
                                 Position = barracks.Position,
                                 RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
                                 Type = PoiType.PreviousArea
@@ -425,7 +436,8 @@ namespace MapAssist.Helpers
                                     pointsOfInterest.Add(new PointOfInterest
                                     {
                                         Area = areaData.Area,
-                                        Label = Utils.GetAreaLabel(level.Area, gameData.Difficulty),
+                                        NextArea = level.Area,
+                                        Label = level.Area.MapLabel(gameData.Difficulty),
                                         Position = position,
                                         RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
                                         Type = PoiType.PreviousArea
@@ -437,7 +449,7 @@ namespace MapAssist.Helpers
 
                     break;
             }
-            
+
             foreach (var objAndPoints in areaData.Objects)
             {
                 GameObject obj = objAndPoints.Key;
@@ -488,7 +500,7 @@ namespace MapAssist.Helpers
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            Label = Utils.GetPortalName(AreaPortals[areaData.Area][obj], gameData.Difficulty),
+                            Label = AreaPortals[areaData.Area][obj].PortalLabel(gameData.Difficulty),
                             Position = points[0],
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Portal,
                             Type = PoiType.AreaPortal
@@ -515,7 +527,7 @@ namespace MapAssist.Helpers
                         new Point[] { points[0] };
 
                     foreach (var point in usePoints)
-                    { 
+                    {
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
@@ -572,7 +584,7 @@ namespace MapAssist.Helpers
                 }
             }
 
-            switch(areaData.Area)
+            switch (areaData.Area)
             {
                 case Area.PlainsOfDespair:
                     foreach (var objAndPoints in areaData.NPCs)

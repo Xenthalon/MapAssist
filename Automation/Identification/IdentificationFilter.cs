@@ -107,7 +107,7 @@ namespace MapAssist.Automation.Identification
 
                     stats.TryGetValue(filter.Stat, out value);
 
-                    if (filter.Stat == Stat.STAT_MAXHP || filter.Stat == Stat.STAT_MAXMANA)
+                    if (filter.Stat == Stat.MaxLife || filter.Stat == Stat.MaxMana)
                     {
                         value = Chicken.ConvertHexHealthToInt(value);
                     }

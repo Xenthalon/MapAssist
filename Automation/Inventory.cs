@@ -54,8 +54,8 @@ namespace MapAssist.Automation
                 var durability = -1;
                 var maxDurability = -1;
 
-                item.Stats.TryGetValue(Stat.STAT_DURABILITY, out durability);
-                item.Stats.TryGetValue(Stat.STAT_MAXDURABILITY, out maxDurability);
+                item.Stats.TryGetValue(Stat.Durability, out durability);
+                item.Stats.TryGetValue(Stat.MaxDurability, out maxDurability);
 
                 if (durability > -1 && maxDurability > -1 &&
                     durability/(double)maxDurability < REPAIR_THRESHOLD)
@@ -95,12 +95,12 @@ namespace MapAssist.Automation
 
             if (tpTome.IsValidUnit())
             {
-                tpTome.Stats.TryGetValue(Stat.STAT_QUANTITY, out TPScrolls);
+                tpTome.Stats.TryGetValue(Stat.Quantity, out TPScrolls);
             }
 
             IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
-            playerUnit.Stats.TryGetValue(Stat.STAT_GOLDBANK, out Gold);
+            playerUnit.Stats.TryGetValue(Stat.StashGold, out Gold);
 
             var free = 0;
 

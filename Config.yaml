@@ -17,6 +17,7 @@ RenderingConfiguration:
   IconOpacity: 0.9
   OverlayMode: true
   Position: Center
+  MonsterHealthBar: true
   ToggleViaInGameMap: false
   ToggleViaInGamePanels: true
   StickToLastGameWindow: false
@@ -129,6 +130,16 @@ MapConfiguration:
     LabelFontSize: 14
     LabelFont: Formal 436
     LabelTextShadow: true
+  MyMerc:
+    IconOutlineColor: 77, 120, 124
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 1
+  OtherMercs:
+    IconOutlineColor: 81, 167, 60
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 1
   Corpse:
     IconOutlineColor: Magenta
     IconShape: Cross
@@ -187,6 +198,7 @@ MapConfiguration:
     LabelTextShadow: true
 ItemLog:
   Enabled: true
+  Position: TopLeft
   FilterFileName: ItemFilter.yaml
   IdentifyFileName: IdentifyFilter.yaml
   ## PlaySoundOnDrop - Play drop sound
@@ -195,17 +207,21 @@ ItemLog:
   SoundVolume: 100
   DisplayForSeconds: 45
   LabelFont: Exocet Blizzard Mixed Caps
-  LabelFontSize: 14
+  LabelFontSize: 16
   LabelTextShadow: true
 MapColorConfiguration:
   Border: 255, 255, 255
 GameInfo:
+  Position: TopLeft
+  ShowGameName: true
+  ShowDifficulty: true
   ShowGameIP: true
   HuntingIP: 0.0.0.0
+  ShowArea: true
   ShowAreaLevel: true
   ShowOverlayFPS: false
   LabelFont: Exocet Blizzard Mixed Caps
-  LabelFontSize: 14
+  LabelFontSize: 16
   LabelTextShadow: true
   WebAPI: localhost:8080
 D2Path: ''

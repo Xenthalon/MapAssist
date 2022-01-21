@@ -211,11 +211,11 @@ namespace MapAssist.Automation
             {
                 var castLocation = new Point(_target.Position.X, _target.Position.Y);
 
-                if (_target.Mode != 0 && _target.Mode != 12) // if not dying or dead
+                if (_target.Mode != 0 && (uint)_target.Mode != 12) // if not dying or dead
                 {
                     var targetLife = 0;
 
-                    _target.Stats.TryGetValue(Stat.STAT_HITPOINTS, out targetLife);
+                    _target.Stats.TryGetValue(Stat.Life, out targetLife);
 
                     if (targetLife < _targetLastHealth)
                     {

@@ -17,10 +17,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using System;
-using System.Collections.Generic;
 using GameOverlay.Drawing;
 using MapAssist.Structs;
+using System;
+using System.Collections.Generic;
 
 namespace MapAssist.Types
 {
@@ -43,6 +43,7 @@ namespace MapAssist.Types
         public UnitAny PlayerUnit;
         public byte MenuPanelOpen;
         public MenuData MenuOpen;
+        public Npc LastNpcInteracted;
         public int ProcessId;
 
         public bool HasGameChanged(GameData other)

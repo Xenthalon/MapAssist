@@ -1,9 +1,7 @@
-﻿using MapAssist.Structs;
-using MapAssist.Types;
+﻿using MapAssist.Types;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace MapAssist.Helpers
 {
@@ -39,6 +37,11 @@ namespace MapAssist.Helpers
                 NpcExtensions.LocalizedNpcs.Add(item.Key, item);
             }
 
+            foreach (var item in _localization.Monsters)
+            {
+                NpcExtensions.LocalizedNpcs.Add(item.Key, item);
+            }
+
             foreach (var item in _localization.Shrines)
             {
                 Shrine.LocalizedShrines.Add(item.Key, item);
@@ -52,6 +55,7 @@ namespace MapAssist.Helpers
         public List<LocalizedObj> Items = new List<LocalizedObj>();
         public List<LocalizedObj> Npcs = new List<LocalizedObj>();
         public List<LocalizedObj> Shrines = new List<LocalizedObj>();
+        public List<LocalizedObj> Monsters = new List<LocalizedObj>();
     }
 
     public class LocalizedObj

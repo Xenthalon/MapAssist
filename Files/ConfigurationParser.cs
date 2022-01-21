@@ -21,6 +21,7 @@ namespace MapAssist.Files
         private static IDeserializer deserializer = new DeserializerBuilder()
                 .WithNamingConvention(PascalCaseNamingConvention.Instance)
                 .WithTypeConverter(new AreaArrayYamlTypeConverter())
+                .WithTypeConverter(new ItemYamlTypeConverter())
                 .WithTypeConverter(new ItemQualityYamlTypeConverter())
                 .WithTypeConverter(new Automation.Identification.IdentifyYamlTypeConverter())
                 .WithTypeConverter(new ClassTabsYamlTypeConverter())

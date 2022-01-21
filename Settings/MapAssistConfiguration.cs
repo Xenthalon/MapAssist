@@ -125,6 +125,12 @@ namespace MapAssist.Settings
         [YamlMember(Alias = "HostilePlayer", ApplyNamingConventions = false)]
         public PointOfInterestRendering HostilePlayer { get; set; }
 
+        [YamlMember(Alias = "MyMerc", ApplyNamingConventions = false)]
+        public PointOfInterestRendering MyMerc { get; set; }
+
+        [YamlMember(Alias = "OtherMercs", ApplyNamingConventions = false)]
+        public PointOfInterestRendering OtherMercs { get; set; }
+
         [YamlMember(Alias = "Corpse", ApplyNamingConventions = false)]
         public PointOfInterestRendering Corpse { get; set; }
 
@@ -168,6 +174,9 @@ public class RenderingConfiguration
     [YamlMember(Alias = "Position", ApplyNamingConventions = false)]
     public MapPosition Position { get; set; }
 
+    [YamlMember(Alias = "MonsterHealthBar", ApplyNamingConventions = false)]
+    public bool MonsterHealthBar { get; set; }
+
     [YamlMember(Alias = "ToggleViaInGameMap", ApplyNamingConventions = false)]
     public bool ToggleViaInGameMap { get; set; }
 
@@ -208,6 +217,18 @@ public class HotkeyConfiguration
 
 public class GameInfoConfiguration
 {
+    [YamlMember(Alias = "Position", ApplyNamingConventions = false)]
+    public GameInfoPosition Position { get; set; }
+
+    [YamlMember(Alias = "ShowGameName", ApplyNamingConventions = false)]
+    public bool ShowGameName { get; set; }
+
+    [YamlMember(Alias = "ShowArea", ApplyNamingConventions = false)]
+    public bool ShowArea { get; set; }
+
+    [YamlMember(Alias = "ShowDifficulty", ApplyNamingConventions = false)]
+    public bool ShowDifficulty { get; set; }
+
     [YamlMember(Alias = "ShowGameIP", ApplyNamingConventions = false)]
     public bool ShowGameIP { get; set; }
 
@@ -238,6 +259,9 @@ public class ItemLogConfiguration
 {
     [YamlMember(Alias = "Enabled", ApplyNamingConventions = false)]
     public bool Enabled { get; set; }
+
+    [YamlMember(Alias = "Position", ApplyNamingConventions = false)]
+    public GameInfoPosition Position { get; set; }
 
     [YamlMember(Alias = "FilterFileName", ApplyNamingConventions = false)]
     public string FilterFileName { get; set; }

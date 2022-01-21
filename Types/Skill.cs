@@ -30,10 +30,10 @@ namespace MapAssist.Types
     public class Skills : IUpdatable<Skills>
     {
         private readonly IntPtr _pSkills;
-        private Dictionary<Skill, SkillPoints> _allSkills;
-        private Skill _rightSkillId;
-        private Skill _leftSkillId;
-        private Skill _usedSkillId;
+        public List<SkillPoints> AllSkills { get; set; }
+        public Skill RightSkillId { get; set; }
+        public Skill LeftSkillId { get; set; }
+        public Skill UsedSkillId { get; set; }
 
         public Skills(IntPtr pSkills)
         {
@@ -49,24 +49,25 @@ namespace MapAssist.Types
 
                 var skill = processContext.Read<SkillStrc>(skillList.pRightSkill);
                 var skillTxt = processContext.Read<SkillTxt>(skill.SkillTxt);
-                _rightSkillId = skillTxt.Id;
+                RightSkillId = skillTxt.Id;
 
                 skill = processContext.Read<SkillStrc>(skillList.pLeftSkill);
                 skillTxt = processContext.Read<SkillTxt>(skill.SkillTxt);
-                _leftSkillId = skillTxt.Id;
+                LeftSkillId = skillTxt.Id;
 
                 skill = processContext.Read<SkillStrc>(skillList.pUsedSkill);
                 skillTxt = processContext.Read<SkillTxt>(skill.SkillTxt);
-                _usedSkillId = skillTxt.Id;
+                UsedSkillId = skillTxt.Id;
 
-                var allSkills = new Dictionary<Skill, SkillPoints>();
+                AllSkills = new List<SkillPoints>();
                 var skillPtr = skillList.pFirstSkill;
                 while (true)
                 {
                     skill = processContext.Read<SkillStrc>(skillPtr);
                     skillTxt = processContext.Read<SkillTxt>(skill.SkillTxt);
-                    allSkills.Add(skillTxt.Id, new SkillPoints()
+                    AllSkills.Add(new SkillPoints()
                     {
+                        Skill = skillTxt.Id,
                         HardPoints = skill.HardPoints,
                         Quantity = skill.Quantity,
                         Charges = skill.Charges
@@ -75,17 +76,10 @@ namespace MapAssist.Types
                     skillPtr = skill.pNextSkill;
                     if (skillPtr == IntPtr.Zero) break;
                 }
-
-                _allSkills = allSkills;
             }
 
             return this;
         }
-
-        public Dictionary<Skill, SkillPoints> AllSkills => _allSkills;
-        public Skill RightSkillId => _rightSkillId;
-        public Skill LeftSkillId => _leftSkillId;
-        public Skill UsedSkillId => _usedSkillId;
     }
 
     public enum Skill : short
@@ -119,7 +113,7 @@ namespace MapAssist.Types
         PlagueJavelin,
         Strafe,
         ImmolationArrow,
-        Dopplezon,
+        Decoy,
         Evade,
         Fend,
         FreezingArrow,
@@ -225,7 +219,7 @@ namespace MapAssist.Types
         FindPotion,
         Leap,
         DoubleSwing,
-        PoleArmMastery,
+        PolearmMastery,
         ThrowingMastery,
         SpearMastery,
         Taunt,
@@ -309,30 +303,30 @@ namespace MapAssist.Types
         MonFrenzy,
         QueenDeath,
         ScrollOfIdentify,
-        BookOfIdentify,
-        ScrollOfTownportal,
-        BookOfTownportal,
+        TomeOfIdentify,
+        ScrollOfTownPortal,
+        TomeOfTownPortal,
         Raven,
-        PlaguePoppy,
-        Wearwolf,
-        ShapeShifting,
+        PoisonCreeper,
+        Werewolf,
+        Lycanthropy,
         Firestorm,
         OakSage,
         SummonSpiritWolf,
-        Wearbear,
+        Werebear,
         MoltenBoulder,
         ArcticBlast,
-        CycleOfLife,
+        CarrionVine,
         FeralRage,
         Maul,
-        Eruption,
+        Fissure,
         CycloneArmor,
         HeartOfWolverine,
-        SummonFenris,
+        SummonDireWolf,
         Rabies,
         FireClaws,
         Twister,
-        Vines,
+        SolarCreeper,
         Hunger,
         ShockWave,
         Volcano,
@@ -342,18 +336,18 @@ namespace MapAssist.Types
         Fury,
         Armageddon,
         Hurricane,
-        FireTrauma,
+        FireBlast,
         ClawMastery,
         PsychicHammer,
         TigerStrike,
         DragonTalon,
-        ShockField,
+        ShockWeb,
         BladeSentinel,
-        Quickness,
+        BurstOfSpeed,
         FistsOfFire,
         DragonClaw,
         ChargedBoltSentry,
-        WakeOfFireSentry,
+        WakeOfFire,
         WeaponBlock,
         CloakOfShadows,
         CobraStrike,
@@ -363,7 +357,7 @@ namespace MapAssist.Types
         ClawsOfThunder,
         DragonTail,
         LightningSentry,
-        InfernoSentry,
+        WakeOfInferno,
         MindBlast,
         BladesOfIce,
         DragonFlight,
@@ -371,7 +365,7 @@ namespace MapAssist.Types
         BladeShield,
         Venom,
         ShadowMaster,
-        RoyalStrike,
+        PhoenixStrike,
         WakeOfDestructionSentry,
         ImpInferno,
         ImpFireball,
@@ -478,6 +472,7 @@ namespace MapAssist.Types
 
     public class SkillPoints
     {
+        public Skill Skill;
         public uint HardPoints;
         public uint Quantity;
         public uint Charges;
