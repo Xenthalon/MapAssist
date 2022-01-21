@@ -50,6 +50,7 @@ namespace MapAssist.Helpers
         private static IntPtr _MenuDataOffset;
         private static IntPtr _RosterDataOffset;
         private static IntPtr _InteractedNpcOffset;
+        private static IntPtr _LastHoverDataOffset;
 
         private static WindowsExternal.WinEventDelegate _eventDelegate = null;
 
@@ -308,6 +309,24 @@ namespace MapAssist.Helpers
                 }
 
                 return _RosterDataOffset;
+            }
+        }
+
+        public static IntPtr LastHoverDataOffset
+        {
+            get
+            {
+                if (_LastHoverDataOffset != IntPtr.Zero)
+                {
+                    return _LastHoverDataOffset;
+                }
+
+                using (var processContext = GetProcessContext())
+                {
+                    _LastHoverDataOffset = processContext.GetLastHoverDataOffset();
+                }
+
+                return _LastHoverDataOffset;
             }
         }
 

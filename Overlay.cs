@@ -24,6 +24,7 @@ using MapAssist.Settings;
 using MapAssist.Types;
 using System;
 using System.Windows.Forms;
+
 //using WK.Libraries.HotkeyListenerNS;
 using Graphics = GameOverlay.Drawing.Graphics;
 
@@ -100,6 +101,7 @@ namespace MapAssist
                             case MapPosition.TopLeft:
                                 drawBounds = new Rectangle(PlayerIconWidth() + 40, PlayerIconWidth() + 100, 0, PlayerIconWidth() + 100 + size);
                                 break;
+
                             case MapPosition.TopRight:
                                 drawBounds = new Rectangle(0, 100, gfx.Width, 100 + size);
                                 break;
@@ -112,9 +114,16 @@ namespace MapAssist
                             _compositor.DrawGamemap(gfx);
                             _compositor.DrawOverlay(gfx);
                             _compositor.DrawBuffs(gfx);
+                            _compositor.DrawMonsterBar(gfx);
                         }
 
-                        _compositor.DrawGameInfo(gfx, new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50), e, errorLoadingAreaData);
+                        var gameInfoAnchor = GameInfoAnchor(MapAssistConfiguration.Loaded.GameInfo.Position);
+                        var nextAnchor = _compositor.DrawGameInfo(gfx, gameInfoAnchor, e, errorLoadingAreaData);
+
+                        var itemLogAnchor = (MapAssistConfiguration.Loaded.ItemLog.Position == MapAssistConfiguration.Loaded.GameInfo.Position)
+                            ? nextAnchor.Add(0, GameInfoPadding())
+                            : GameInfoAnchor(MapAssistConfiguration.Loaded.ItemLog.Position);
+                        _compositor.DrawItemLog(gfx, itemLogAnchor);
                     }
                 }
             }
@@ -204,6 +213,28 @@ namespace MapAssist
         {
             var rect = WindowRect();
             return rect.Height / 20f;
+        }
+
+        private float GameInfoPadding()
+        {
+            var rect = WindowRect();
+            return rect.Height / 100f;
+        }
+
+        private Point GameInfoAnchor(GameInfoPosition position)
+        {
+            switch (position)
+            {
+                case GameInfoPosition.TopLeft:
+                    return new Point(PlayerIconWidth() + 50, PlayerIconWidth() + 50);
+
+                case GameInfoPosition.TopRight:
+                    var rect = WindowRect();
+                    var rightMargin = -(rect.Width / 75f);
+                    var topMargin = rect.Height / 35f;
+                    return new Point(rect.Width + rightMargin, topMargin);
+            }
+            return new Point();
         }
 
         private void _window_DestroyGraphics(object sender, DestroyGraphicsEventArgs e)

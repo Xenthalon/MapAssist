@@ -1,4 +1,4 @@
-﻿/**
+/**
  *   Copyright (C) 2021 okaygo
  *
  *   https://github.com/misterokaygo/MapAssist/
@@ -36,6 +36,7 @@ namespace MapAssist.Types
         private Path _path;
         private Inventory _inventory;
         private MonsterData _monsterData;
+        private MonStats _monsterStats;
         private ItemData _itemData;
         private ObjectData _objectData;
         private ObjectTxt _objectTxt;
@@ -55,6 +56,7 @@ namespace MapAssist.Types
         private PlayerClass _playerClass;
         private Area _initialArea;
         public Npc VendorOwner { get; set; } = Npc.Invalid;
+        public bool IsHovered { get; set; } = false;
 
         public UnitAny(IntPtr pUnit)
         {
@@ -148,6 +150,7 @@ namespace MapAssist.Types
                                 if (IsMonster())
                                 {
                                     _monsterData = processContext.Read<MonsterData>(_unitAny.pUnitData);
+                                    _monsterStats = processContext.Read<MonStats>(_monsterData.pMonStats);
                                 }
                                 break;
 
@@ -217,6 +220,7 @@ namespace MapAssist.Types
         public Dictionary<Stat, int> Stats => _statList;
         public Dictionary<Stat, Dictionary<ushort, int>> ItemStats => _itemStatList;
         public MonsterData MonsterData => _monsterData;
+        public MonStats MonsterStats => _monsterStats;
         public ItemData ItemData => _itemData;
         public ObjectData ObjectData => _objectData;
         public ObjectTxt ObjectTxt => _objectTxt;
@@ -332,6 +336,12 @@ namespace MapAssist.Types
             var name = Enum.GetName(typeof(GameObject), TxtFileNo);
             return ((!string.IsNullOrWhiteSpace(name) && name.Contains("Portal") &&
                      castedType != GameObject.WaypointPortal) || castedType == GameObject.HellGate);
+        }
+
+        public bool IsWaypoint()
+        {
+            var castedType = (GameObject)TxtFileNo;
+            return castedType.IsWaypoint();
         }
 
         public bool IsShrine()
@@ -531,6 +541,16 @@ namespace MapAssist.Types
         public double DistanceTo(Point position)
         {
             return Math.Sqrt((Math.Pow(position.X - Position.X, 2) + Math.Pow(position.Y - Position.Y, 2)));
+        }
+
+        public float GetHealthPercentage()
+        {
+            if (_statList.TryGetValue(Stat.Life, out var health) &&
+                _statList.TryGetValue(Stat.MaxLife, out var maxHp) && maxHp > 0)
+            {
+                return (float)health / maxHp;
+            }
+            return 0.0f;
         }
 
         public override bool Equals(object obj) => obj is UnitAny other && Equals(other);

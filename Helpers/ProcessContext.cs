@@ -175,6 +175,23 @@ namespace MapAssist.Helpers
             return IntPtr.Add(_baseAddr, (int)(offsetAddressToInt - 0xC4));
         }
 
+        public IntPtr GetLastHoverDataOffset()
+        {
+            var pattern = "\xC6\x84\xC2\x00\x00\x00\x00\x00\x48\x8B\x74\x24\x00";
+            var mask = "xxx?????xxxx?";
+            IntPtr patternAddress = FindPattern(pattern, mask);
+
+            var offsetBuffer = new byte[4];
+            var resultRelativeAddress = IntPtr.Add(patternAddress, 3);
+            if (!WindowsExternal.ReadProcessMemory(_handle, resultRelativeAddress, offsetBuffer, sizeof(int), out _))
+            {
+                _log.Info($"Failed to find pattern {PatternToString(pattern)}");
+                return IntPtr.Zero;
+            }
+            var offsetAddressToInt = BitConverter.ToInt32(offsetBuffer, 0) - 1;
+            return IntPtr.Add(_baseAddr, offsetAddressToInt);
+        }
+
         public byte[] GetProcessMemory()
         {
             var memoryBuffer = new byte[_moduleSize];

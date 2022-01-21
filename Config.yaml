@@ -17,6 +17,7 @@ RenderingConfiguration:
   IconOpacity: 0.9
   OverlayMode: true
   Position: Center
+  MonsterHealthBar: true
   ToggleViaInGameMap: false
   ToggleViaInGamePanels: true
   StickToLastGameWindow: false
@@ -197,23 +198,28 @@ MapConfiguration:
     LabelTextShadow: true
 ItemLog:
   Enabled: true
+  Position: TopLeft
   FilterFileName: ItemFilter.yaml
   PlaySoundOnDrop: true
   SoundFile: ''
   SoundVolume: 100
   DisplayForSeconds: 45
   LabelFont: Exocet Blizzard Mixed Caps
-  LabelFontSize: 14
+  LabelFontSize: 16
   LabelTextShadow: true
 MapColorConfiguration:
   Border: 255, 255, 255
 GameInfo:
+  Position: TopLeft
+  ShowGameName: true
+  ShowDifficulty: true
   ShowGameIP: true
   HuntingIP: 0.0.0.0
+  ShowArea: true
   ShowAreaLevel: true
   ShowOverlayFPS: false
   LabelFont: Exocet Blizzard Mixed Caps
-  LabelFontSize: 14
+  LabelFontSize: 16
   LabelTextShadow: true
 D2Path: ''
 LanguageCode: enUS

@@ -44,6 +44,12 @@ namespace MapAssist
                 cboLanguage.Items.Add(LocaleExtensions.Name(element));
             }
 
+            foreach (var element in Enum.GetNames(typeof(GameInfoPosition)))
+            {
+                cboGameInfoPosition.Items.Add(element.ToProperCase());
+                cboItemLogPosition.Items.Add(element.ToProperCase());
+            }
+
             cboLanguage.SelectedIndex = (int)MapAssistConfiguration.Loaded.LanguageCode;
 
             opacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.Opacity * 100d / 5);
@@ -59,6 +65,7 @@ namespace MapAssist
             lblMapZoomValue.Text = MapAssistConfiguration.Loaded.RenderingConfiguration.ZoomLevel.ToString();
 
             chkOverlayMode.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.OverlayMode;
+            chkMonsterHealthBar.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.MonsterHealthBar;
             chkToggleViaMap.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGameMap;
             chkToggleViaPanels.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGamePanels;
             chkStickToLastGameWindow.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.StickToLastGameWindow;
@@ -68,7 +75,11 @@ namespace MapAssist
             lblBuffSizeValue.Text = MapAssistConfiguration.Loaded.RenderingConfiguration.BuffSize.ToString();
             cboBuffPosition.SelectedIndex = cboBuffPosition.FindStringExact(MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition.ToString().ToProperCase());
 
-            chkGameInfo.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowGameIP;
+            chkShowGameName.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowGameName;
+            chkShowArea.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowArea;
+            chkShowAreaLevel.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel;
+            chkShowDifficulty.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowDifficulty;
+            chkShowGameIP.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowGameIP;
             chkShowArea.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel;
             txtHuntIP.ReadOnly = !MapAssistConfiguration.Loaded.GameInfo.ShowGameIP;
             txtHuntIP.Text = MapAssistConfiguration.Loaded.GameInfo.HuntingIP;
@@ -77,12 +88,14 @@ namespace MapAssist
             btnClearGameInfoFont.Visible = MapAssistConfiguration.Loaded.GameInfo.LabelFont != MapAssistConfiguration.Default.GameInfo.LabelFont ||
                 MapAssistConfiguration.Loaded.GameInfo.LabelFontSize != MapAssistConfiguration.Default.GameInfo.LabelFontSize;
             chkShowOverlayFPS.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowOverlayFPS;
+            cboGameInfoPosition.SelectedIndex = cboGameInfoPosition.FindStringExact(MapAssistConfiguration.Loaded.GameInfo.Position.ToString().ToProperCase());
 
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey.ToString()).Monitor(txtToggleMapKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.AreaLevelKey.ToString()).Monitor(txtAreaLevelKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomInKey.ToString()).Monitor(txtZoomInKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomOutKey.ToString()).Monitor(txtZoomOutKey);
 
+            cboItemLogPosition.SelectedIndex = cboItemLogPosition.FindStringExact(MapAssistConfiguration.Loaded.ItemLog.Position.ToString().ToProperCase());
             chkItemLogEnabled.Checked = MapAssistConfiguration.Loaded.ItemLog.Enabled;
             chkPlaySound.Checked = MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop;
             txtFilterFile.Text = MapAssistConfiguration.Loaded.ItemLog.FilterFileName;
@@ -210,6 +223,11 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.RenderingConfiguration.OverlayMode = chkOverlayMode.Checked;
         }
 
+        private void chkMonsterHealthBar_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.RenderingConfiguration.MonsterHealthBar = chkMonsterHealthBar.Checked;
+        }
+
         private void cboPosition_SelectedIndexChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.RenderingConfiguration.Position = (MapPosition)cboPosition.SelectedIndex;
@@ -235,15 +253,30 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition = (BuffPosition)cboBuffPosition.SelectedIndex;
         }
 
-        private void chkGameInfo_CheckedChanged(object sender, EventArgs e)
+        private void chkShowGameIP_CheckedChanged(object sender, EventArgs e)
         {
-            MapAssistConfiguration.Loaded.GameInfo.ShowGameIP = chkGameInfo.Checked;
+            MapAssistConfiguration.Loaded.GameInfo.ShowGameIP = chkShowGameIP.Checked;
             txtHuntIP.ReadOnly = !MapAssistConfiguration.Loaded.GameInfo.ShowGameIP;
+        }
+
+        private void chkShowGameName_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.GameInfo.ShowGameName = chkShowGameName.Checked;
+        }
+
+        private void chkShowDifficulty_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.GameInfo.ShowDifficulty = chkShowDifficulty.Checked;
+        }
+
+        private void chkShowAreaLevel_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel = chkShowAreaLevel.Checked;
         }
 
         private void chkShowArea_CheckedChanged(object sender, EventArgs e)
         {
-            MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel = chkShowArea.Checked;
+            MapAssistConfiguration.Loaded.GameInfo.ShowArea = chkShowArea.Checked;
         }
 
         private void txtHuntIP_TextChanged(object sender, EventArgs e)
@@ -297,6 +330,11 @@ namespace MapAssist
         private void chkGameInfoTextShadow_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.GameInfo.LabelTextShadow = chkGameInfoTextShadow.Checked;
+        }
+
+        private void cboGameInfoPosition_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.GameInfo.Position = (GameInfoPosition)cboGameInfoPosition.SelectedIndex;
         }
 
         private void cboRenderOption_SelectedIndexChanged(object sender, EventArgs e)
@@ -543,6 +581,11 @@ namespace MapAssist
         private void chkItemLogEnabled_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.ItemLog.Enabled = chkItemLogEnabled.Checked;
+        }
+
+        private void cboItemLogPosition_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.ItemLog.Position = (GameInfoPosition)cboItemLogPosition.SelectedIndex;
         }
 
         private void txtFilterFile_TextChanged(object sender, EventArgs e)

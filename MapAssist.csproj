@@ -193,7 +193,6 @@
     <Compile Include="Settings\MapPosition.cs" />
     <Compile Include="Settings\PointOfInterestRendering.cs" />
     <Compile Include="Settings\Shape.cs" />
-    <Compile Include="Settings\Utils.cs" />
     <Compile Include="Types\UnitAny.cs" />
     <Compile Include="Types\UnitType.cs" />
     <EmbeddedResource Include="AddAreaForm.resx">

@@ -56,6 +56,7 @@ namespace MapAssist.Helpers
 
                 var menuOpen = processContext.Read<byte>(GameManager.MenuOpenOffset);
                 var menuData = processContext.Read<Structs.MenuData>(GameManager.MenuDataOffset);
+                var lastHoverData = processContext.Read<Structs.HoverData>(GameManager.LastHoverDataOffset);
                 var lastNpcInteracted = (Npc)processContext.Read<ushort>(GameManager.InteractedNpcOffset);
 
                 if (!menuData.InGame && Corpses.ContainsKey(_currentProcessId))
@@ -158,6 +159,12 @@ namespace MapAssist.Helpers
                         var objectList = new HashSet<UnitAny>();
                         var playerList = new Dictionary<uint, UnitAny>();
                         GetUnits(rosterData, ref monsterList, ref mercList, ref itemList, ref playerList, ref objectList);
+
+                        if (lastHoverData.IsHovered)
+                        {
+                            var units = monsterList.Concat(mercList).Concat(itemList).Concat(playerList.Values).Concat(objectList).Where(x => x.UnitId == lastHoverData.UnitId).ToArray();
+                            if (units.Length > 0) units[0].IsHovered = true;
+                        }
 
                         foreach (var item in itemList)
                         {
