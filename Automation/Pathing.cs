@@ -381,6 +381,7 @@ namespace MapAssist.Automation
             // cancel if the provided points dont map into the collisionMap of the AreaData
             if (!_areaData.TryMapToPointInMap(fromLocation, out var fromPosition) || !_areaData.TryMapToPointInMap(toLocation, out var toPosition))
             {
+                _log.Error("FromLocation or ToLocation did not map into grid!");
                 return result;
             }
 
