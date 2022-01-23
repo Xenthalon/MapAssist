@@ -16,6 +16,8 @@ namespace MapAssist.Automation
         private static readonly int GAMBLE_START_AT = 2000000;
 
         private static bool _needsRepair = false;
+        private static int _freeSpace = 0;
+        private static int _gold = 0;
 
         public static int[][] InventoryOpen = new int[][] {
             new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
@@ -26,8 +28,8 @@ namespace MapAssist.Automation
 
         public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
         public static int TPScrolls = 20;
-        public static int Gold = 0;
-        public static int Freespace = 0;
+        public static int Gold => _gold;
+        public static int Freespace => _freeSpace;
         public static UnitAny IDScroll = new UnitAny(IntPtr.Zero);
         public static bool NeedsRepair => _needsRepair;
         public static bool NeedsGamble => Gold > GAMBLE_START_AT;
@@ -100,7 +102,7 @@ namespace MapAssist.Automation
 
             IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
-            playerUnit.Stats.TryGetValue(Stat.StashGold, out Gold);
+            playerUnit.Stats.TryGetValue(Stat.StashGold, out _gold);
 
             var free = 0;
 
@@ -122,9 +124,9 @@ namespace MapAssist.Automation
                 free -= size.width * size.height;
             }
 
-            if (free != Freespace)
+            if (free != _freeSpace)
             {
-                Freespace = free;
+                _freeSpace = free;
             }
 
             //foreach (var item in ItemsToStash)

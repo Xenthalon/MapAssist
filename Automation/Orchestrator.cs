@@ -717,11 +717,11 @@ namespace MapAssist.Automation
 
                     if (gambleItem.IsValidPointer())
                     {
-                        do
+                        while (Inventory.Gold > GAMBLE_STOP_AT && Inventory.Freespace >= Inventory.GetItemTotalSize(gambleItem))
                         {
+                            _log.Info($"Buying one more {GAMBLE_ITEM}, free {Inventory.Freespace}, gold {Inventory.Gold}");
                             _menuMan.VendorBuyOne(gambleItem.X, gambleItem.Y);
                         }
-                        while (Inventory.Gold > GAMBLE_STOP_AT && Inventory.Freespace >= Inventory.GetItemTotalSize(gambleItem));
                     }
                     else
                     {
@@ -894,7 +894,7 @@ namespace MapAssist.Automation
 
             do
             {
-                _input.DoInput(PortalKey);
+                _input.DoInputAtWorldPosition(PortalKey, _gameData.PlayerPosition);
                 System.Threading.Thread.Sleep(1500);
                 portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
                 retryCount += 1;

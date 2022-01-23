@@ -194,6 +194,7 @@ namespace MapAssist.Automation
                         _log.Warn($"Seems we can't find a path, trying again from {retryPoint.X}/{retryPoint.Y}.");
 
                         Teleport(retryPoint);
+                        System.Threading.Thread.Sleep(300);
                     }
                 } while (_path.Count == 0 && retries <= MAX_RETRIES);
 
@@ -413,7 +414,7 @@ namespace MapAssist.Automation
 
         private bool IsNear(Point p1, Point p2)
         {
-            var range = 5;
+            var range = 6;
 
             return Automaton.GetDistance(p1, p2) < range;
         }

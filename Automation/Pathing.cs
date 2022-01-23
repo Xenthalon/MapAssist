@@ -50,6 +50,7 @@ namespace MapAssist.Automation
         private Grid Grid;
         private AreaData _areaData;
         private IEnumerable<UnitAny> _chests;
+        private GameData _gameData;
 
         // Stuff for stinkyness exploration
         private static readonly Random Randomizer = new Random();
@@ -75,6 +76,7 @@ namespace MapAssist.Automation
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
                 _chests = gameData.Objects.Where(x => x.IsChest());
+                _gameData = gameData;
             }
 
             if (_areaData == null || areaData.Area != _areaData.Area)
@@ -379,11 +381,19 @@ namespace MapAssist.Automation
             }
 
             // cancel if the provided points dont map into the collisionMap of the AreaData
-            if (!_areaData.TryMapToPointInMap(fromLocation, out var fromPosition) || !_areaData.TryMapToPointInMap(toLocation, out var toPosition))
+            if (!_areaData.IncludesPoint(fromLocation) || !_areaData.IncludesPoint(toLocation))
             {
-                _log.Error("FromLocation or ToLocation did not map into grid!");
+                var maxY = _areaData.CollisionGrid.GetLength(0);
+                var maxX = maxY > 0 ? _areaData.CollisionGrid[0].GetLength(0) : 0;
+                var fromAfter = new Point(fromLocation.X - _areaData.Origin.X, fromLocation.Y - _areaData.Origin.Y);
+                var toAfter = new Point(toLocation.X - _areaData.Origin.X, toLocation.Y - _areaData.Origin.Y);
+                _log.Error($"FromLocation or ToLocation did not map into grid! Seed {_gameData.MapSeed} Difficulty {_gameData.Difficulty} Area {_areaData.Area}, Grid [{maxX},{maxY}], FromLocation {fromLocation.X}/{fromLocation.Y} => {fromAfter.X}/{fromAfter.Y}, ToLocation {toLocation.X}/{toLocation.Y} => {toAfter.X}/{toAfter.Y}");
+
                 return result;
             }
+
+            var fromPosition = new Point(fromLocation.X - _areaData.Origin.X, fromLocation.Y - _areaData.Origin.Y);
+            var toPosition = new Point(toLocation.X - _areaData.Origin.X, toLocation.Y - _areaData.Origin.Y);
 
             if (teleport)
             {
