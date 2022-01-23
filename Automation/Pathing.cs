@@ -54,21 +54,29 @@ namespace MapAssist.Automation
 
         // Stuff for stinkyness exploration
         private static readonly Random Randomizer = new Random();
-        private static readonly short StinkSampleSize = 50;
-        private static readonly short StinkRange = 30;
-        private static readonly short StinkMaximum = 500;
-        private static readonly double MaxStinkSaturation = 0.98;
+        private short STINK_SAMPLE_SIZE;
+        private short STINK_RANGE;
+        private short STINK_MAXIMUM;
+        private double MAX_STINK_SATURATION;
 
         // Stuff for teleport pathing
-        private static readonly short RangeInvalid = 10000;
-        private static readonly short TpRange = 20;
-        private static readonly short BlockRange = 2;
+        private short RANGE_INVALID;
+        private short TP_RANGE;
+        private short BLOCK_RANGE;
         private short[,] m_distanceMatrix;
         private int m_rows;
         private int m_columns;
 
-        public Pathing()
+        public Pathing(BotConfiguration config)
         {
+            STINK_SAMPLE_SIZE = (short)config.Settings.Pathing.StinkSampleSize;
+            STINK_RANGE = (short)config.Settings.Pathing.StinkRange;
+            STINK_MAXIMUM = (short)config.Settings.Pathing.StinkMaximum;
+            MAX_STINK_SATURATION = config.Settings.Pathing.StinkMaxSaturation;
+
+            RANGE_INVALID = (short)config.Settings.Pathing.RangeInvalid;
+            TP_RANGE = (short)config.Settings.Pathing.RangeTp;
+            BLOCK_RANGE = (short)config.Settings.Pathing.RangeBlock;
         }
 
         public void Update(GameData gameData, AreaData areaData)
@@ -98,7 +106,7 @@ namespace MapAssist.Automation
 
             var samples = new List<(List<Point> points, double coverage)>();
 
-            for (var i = 0; i < StinkSampleSize; i++)
+            for (var i = 0; i < STINK_SAMPLE_SIZE; i++)
             {
                 samples.Add(GetStinkyPath(gridLocation, teleport));
             }
@@ -450,14 +458,14 @@ namespace MapAssist.Automation
                 farts += 1;
                 coverage = GetStinkCoverage(cleanArea);
             }
-            while (farts < StinkMaximum && coverage < MaxStinkSaturation);
+            while (farts < STINK_MAXIMUM && coverage < MAX_STINK_SATURATION);
 
             return (path, Math.Round(coverage * 100, 2));
         }
 
         private Point FindClosestCleanSpot(Navigation.StinkySpot[,] area, int placeX, int placeY, bool teleport = false)
         {
-            var range = teleport ? TpRange : 5;
+            var range = teleport ? TP_RANGE : 5;
 
             var currentSmell = double.MaxValue;
             var bestLocations = new List<Point>();
@@ -499,9 +507,9 @@ namespace MapAssist.Automation
 
         private void StinkUpThePlace(ref Navigation.StinkySpot[,] cleanArea, int placeX, int placeY)
         {
-            for (var j = StinkRange * -1; j < StinkRange; j++)
+            for (var j = STINK_RANGE * -1; j < STINK_RANGE; j++)
             {
-                for (var i = StinkRange * -1; i < StinkRange; i++)
+                for (var i = STINK_RANGE * -1; i < STINK_RANGE; i++)
                 {
                     if (placeX + i < 0 || placeY + j < 0 ||
                         placeX + i >= cleanArea.GetUpperBound(0) || placeY + j >= cleanArea.GetUpperBound(1) ||
@@ -512,7 +520,7 @@ namespace MapAssist.Automation
 
                     var distance = CalculateDistance(placeX, placeY, placeX + i, placeY + j);
 
-                    var stinkyness = distance == 0 ? StinkRange * 25 : StinkRange / distance;
+                    var stinkyness = distance == 0 ? STINK_RANGE * 25 : STINK_RANGE / distance;
                     // _log.Info($"{i}/{j}: {stinkyness}");
 
                     cleanArea[placeX + i, placeY + j].Stinkyness += stinkyness;
@@ -556,7 +564,7 @@ namespace MapAssist.Automation
                 Result = PathingResult.DestinationNotReachedYet
             };
 
-            var move = GetBestMove(bestMove.Move, toLocation, BlockRange);
+            var move = GetBestMove(bestMove.Move, toLocation, BLOCK_RANGE);
             while (move.Result != PathingResult.Failed && idxPath < 100)
             {
                 // Reached?
@@ -583,7 +591,7 @@ namespace MapAssist.Automation
                     AddToListAtIndex(path, move.Move, idxPath);
                 }
 
-                move = GetBestMove(move.Move, toLocation, BlockRange);
+                move = GetBestMove(move.Move, toLocation, BLOCK_RANGE);
             }
 
             pathFound = false;
@@ -610,7 +618,7 @@ namespace MapAssist.Automation
                     if ((m_distanceMatrix[x, y] % 2) == 0)
                         m_distanceMatrix[x, y] = (short)CalculateDistance(x, y, toLocation.X, toLocation.Y);
                     else
-                        m_distanceMatrix[x, y] = RangeInvalid;
+                        m_distanceMatrix[x, y] = RANGE_INVALID;
                 }
             }
 
@@ -636,7 +644,7 @@ namespace MapAssist.Automation
 
         private BestMove GetBestMove(Point position, Point toLocation, int blockRange)
         {
-            if (CalculateDistance(toLocation, position) <= TpRange)
+            if (CalculateDistance(toLocation, position) <= TP_RANGE)
             {
                 return new BestMove
                 {
@@ -657,18 +665,18 @@ namespace MapAssist.Automation
             Block(position, blockRange);
 
             var best = new Point(0, 0);
-            int value = RangeInvalid;
+            int value = RANGE_INVALID;
 
-            for (var x = position.X - TpRange; x <= position.X + TpRange; x++)
+            for (var x = position.X - TP_RANGE; x <= position.X + TP_RANGE; x++)
             {
-                for (var y = position.Y - TpRange; y <= position.Y + TpRange; y++)
+                for (var y = position.Y - TP_RANGE; y <= position.Y + TP_RANGE; y++)
                 {
                     if (!IsValidIndex((int)x, (int)y))
                         continue;
 
                     var p = new Point((ushort)x, (ushort)y);
 
-                    if (m_distanceMatrix[(int)p.X, (int)p.Y] < value && CalculateDistance(p, position) <= TpRange)
+                    if (m_distanceMatrix[(int)p.X, (int)p.Y] < value && CalculateDistance(p, position) <= TP_RANGE)
                     {
                         value = m_distanceMatrix[(int)p.X, (int)p.Y];
                         best = p;
@@ -676,7 +684,7 @@ namespace MapAssist.Automation
                 }
             }
 
-            if (value >= RangeInvalid || best == null)
+            if (value >= RANGE_INVALID || best == null)
             {
                 return new BestMove
                 {
@@ -703,7 +711,7 @@ namespace MapAssist.Automation
                 for (var j = position.Y - nRange; j < position.Y + nRange; j++)
                 {
                     if (IsValidIndex((int)i, (int)j))
-                        m_distanceMatrix[(int)i, (int)j] = RangeInvalid;
+                        m_distanceMatrix[(int)i, (int)j] = RANGE_INVALID;
                 }
             }
         }
@@ -713,7 +721,7 @@ namespace MapAssist.Automation
             // step redundancy check
             for (var i = 1; i < idxPath; i++)
             {
-                if (CalculateDistance(currentPath[i].X, currentPath[i].Y, position.X, position.Y) <= TpRange / 2.0)
+                if (CalculateDistance(currentPath[i].X, currentPath[i].Y, position.X, position.Y) <= TP_RANGE / 2.0)
                     return i;
             }
 

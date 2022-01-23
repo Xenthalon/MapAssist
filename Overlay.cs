@@ -20,6 +20,7 @@
 using GameOverlay.Drawing;
 using GameOverlay.Windows;
 using MapAssist.API;
+using MapAssist.Automation;
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
@@ -45,17 +46,19 @@ namespace MapAssist
         private bool _show = true;
 
         private Automaton _automation;
+        private BotConfiguration _botConfig;
         private NancyHost _webhost;
         private List<PointOfInterest> _pointsOfInterests;
         private static readonly object _lock = new object();
-        public Overlay()
+        public Overlay(BotConfiguration botConfig)
         {
             _gameDataReader = new GameDataReader();
-            _automation = new Automaton();
+            _botConfig = botConfig;
+            _automation = new Automaton(_botConfig);
 
             var hostConfigs = new HostConfiguration();
             hostConfigs.UrlReservations.CreateAutomatically = true;
-            _webhost = new NancyHost(new Uri("http://" + MapAssistConfiguration.Loaded.GameInfo.WebAPI), new CustomNancyBootstrapper(_automation), hostConfigs);
+            _webhost = new NancyHost(new Uri("http://" + _botConfig.Settings.WebApiUrl), new CustomNancyBootstrapper(_automation), hostConfigs);
             _webhost.Start();
 
             GameOverlay.TimerService.EnableHighPrecisionTimers();
@@ -156,10 +159,10 @@ namespace MapAssist
 
                         Rectangle window = WindowRect();
 
-                        var input = new Automation.Input();
+                        var input = new Input();
                         input.Update(null, window);
 
-                        var oog = new Automation.OOG(input);
+                        var oog = new OOG(_botConfig, input);
                         oog.Update(window);
                         oog.CreateGame();
                         System.Threading.Thread.Sleep(3000);

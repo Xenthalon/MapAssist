@@ -13,21 +13,21 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly short DETECTION_RANGE = 30;
-        private static readonly short COMBAT_RANGE = 20;
-        private static readonly short TOO_CLOSE_RANGE = 7;
-        private static readonly short MAX_ATTACK_ATTEMPTS = 10;
-        private static readonly int ESCAPE_COOLDOWN = 3000;
-        private static readonly bool OPEN_CHESTS = true;
-        private static readonly bool HAS_TELEPORT = true;
-        private static readonly short CHEST_RANGE = 20;
+        private short DETECTION_RANGE = 30;
+        private short COMBAT_RANGE = 20;
+        private short TOO_CLOSE_RANGE = 7;
+        private short MAX_ATTACK_ATTEMPTS = 10;
+        private int ESCAPE_COOLDOWN = 3000;
+        private bool OPEN_CHESTS = true;
+        private bool HAS_TELEPORT = true;
+        private short CHEST_RANGE = 20;
+        private List<CombatSkill> COMBAT_SKILLS = new List<CombatSkill>();
 
         private BackgroundWorker _combatWorker;
         private bool _fighting = false;
         private Input _input;
         private Movement _movement;
         private Pathing _pathing;
-        private List<CombatSkill> _skills = new List<CombatSkill>();
         private bool _reposition = true;
         private Point _playerPosition;
         private HashSet<UnitAny> _monsters;
@@ -43,8 +43,19 @@ namespace MapAssist.Automation
                 Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
         public bool Busy => _fighting;
 
-        public Combat(Input input, Movement movement, Pathing pathing)
+        public Combat(BotConfiguration config, Input input, Movement movement, Pathing pathing)
         {
+            COMBAT_RANGE = (short)config.Settings.CombatRange;
+            DETECTION_RANGE = (short)config.Settings.DetectionRange;
+            TOO_CLOSE_RANGE = (short)config.Settings.TooCloseRange;
+            MAX_ATTACK_ATTEMPTS = (short)config.Settings.MaxAttackAttempts;
+            ESCAPE_COOLDOWN = config.Settings.EscapeCooldown;
+            CHEST_RANGE = (short)config.Settings.ChestRange;
+            OPEN_CHESTS = config.Character.OpenChests;
+            HAS_TELEPORT = config.Character.HasTeleport;
+
+            COMBAT_SKILLS.AddRange(config.Character.Skills);
+
             _input = input;
             _movement = movement;
             _pathing = pathing;
@@ -54,12 +65,6 @@ namespace MapAssist.Automation
             _combatWorker.WorkerSupportsCancellation = true;
 
             _target = new UnitAny(IntPtr.Zero);
-
-            _skills.Add(new CombatSkill { Name = "Glacial Spike", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 250, Key = "+{LMB}", IsRanged = true, IsMainSkill = true });
-            _skills.Add(new CombatSkill { Name = "Blizzard", DamageType = Resist.COLD, MaxRange = 20, Cooldown = 1900, Key = "{RMB}", IsRanged = true, IsAoe = true });
-            _skills.Add(new CombatSkill { Name = "Fireball", DamageType = Resist.FIRE, MaxRange = 20, Cooldown = 250, Key = "a", IsRanged = true });
-            _skills.Add(new CombatSkill { Name = "Static", DamageType = Resist.LIGHTNING, MaxRange = 8, Cooldown = 350, Key = "s", IsRanged = true, IsStatic = true });
-            _skills.Add(new CombatSkill { Name = "Telekinesis", MaxRange = 22, Cooldown = 300, Key = "e", IsRanged = true, IsTelekinesis = true });
         }
 
         public void Kill(string name)
@@ -107,7 +112,7 @@ namespace MapAssist.Automation
             {
                 var interactRange = 5.0;
 
-                var telekinesis = _skills.Where(x => x.IsTelekinesis).FirstOrDefault();
+                var telekinesis = COMBAT_SKILLS.Where(x => x.IsTelekinesis).FirstOrDefault();
 
                 if (telekinesis != null)
                 {
@@ -225,9 +230,9 @@ namespace MapAssist.Automation
 
                     var targetLifePercentage = targetLife / 32768.0;
 
-                    if (_skills.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
+                    if (COMBAT_SKILLS.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
                     {
-                        CombatSkill skillToUse = _skills.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
                         System.Threading.Thread.Sleep(200);
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
@@ -236,9 +241,9 @@ namespace MapAssist.Automation
 
                     if ((_target.TxtFileNo == (uint)Npc.Mephisto || _target.TxtFileNo == (uint)Npc.Diablo || _target.TxtFileNo == (uint)Npc.BaalThrone) &&
                         targetLifePercentage > 0.6 &&
-                        _skills.Any(x => x.IsStatic))
+                        COMBAT_SKILLS.Any(x => x.IsStatic))
                     {
-                        CombatSkill staticSkill = _skills.Where(x => x.IsStatic && Now - x.LastUsage > x.Cooldown).FirstOrDefault();
+                        CombatSkill staticSkill = COMBAT_SKILLS.Where(x => x.IsStatic && Now - x.LastUsage > x.Cooldown).FirstOrDefault();
 
                         // means static is still on cooldown
                         if (staticSkill != null)
@@ -254,9 +259,9 @@ namespace MapAssist.Automation
                             System.Threading.Thread.Sleep(200);
                         }
                     }
-                    else if (_skills.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
                     {
-                        CombatSkill skillToUse = _skills.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
                         
                         if (_reposition &&
                             Automaton.GetDistance(_target.Position, _playerPosition) < TOO_CLOSE_RANGE &&
@@ -311,8 +316,8 @@ namespace MapAssist.Automation
         private UnitAny GetNextVictim(IEnumerable<UnitAny> monsters)
         {
             _targetLastHealth = int.MaxValue;
-            var mainSkill = _skills.Where(x => x.IsMainSkill).FirstOrDefault();
-            var fallbackSkill = _skills.Where(x => !x.IsMainSkill && !x.IsAoe && !x.IsBuff && !x.IsStatic).FirstOrDefault();
+            var mainSkill = COMBAT_SKILLS.Where(x => x.IsMainSkill).FirstOrDefault();
+            var fallbackSkill = COMBAT_SKILLS.Where(x => !x.IsMainSkill && !x.IsAoe && !x.IsBuff && !x.IsStatic).FirstOrDefault();
             var victim = new UnitAny(IntPtr.Zero);
 
             var supers = monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||

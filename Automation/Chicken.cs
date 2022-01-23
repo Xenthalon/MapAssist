@@ -14,22 +14,22 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly int MAX_GAME_LENGTH = 7 * 60 * 1000;
+        private int MAX_GAME_LENGTH;
+        public int POTION_DRINK_WAIT_INTERVAL;
+        public double POTION_LIFE_PERCENTAGE;
+        public double MERC_POTION_LIFE_PERCENTAGE;
+        public string[] POTION_KEYS;
 
         private BackgroundWorker _chickenWorker;
         private Combat _combat;
         private Input _input;
+        private Inventory _inventory;
         private MenuMan _menuman;
         private Movement _movement;
 
         private bool _mercIsDead = true;
         private bool _amDead = false;
         private long _gamestart = 0;
-
-        public int potionDrinkWaitInterval = 500;
-        public double potionLifePercentage = 35.0;
-        public double mercPotionLifePercentage = 15.0;
-        public string[] potionKeys = { "1", "2", "3", "4" };
 
         public int playerHealth = -1;
         public int playerHealthMax = -1;
@@ -39,10 +39,17 @@ namespace MapAssist.Automation
         public double MercLifePercentage => mercHealth / (double)32768.0;
         public bool MercIsDead => _mercIsDead;
 
-        public Chicken(Combat combat, Input input, MenuMan menuman, Movement movement)
+        public Chicken(BotConfiguration config, Combat combat, Input input, Inventory inventory, MenuMan menuman, Movement movement)
         {
+            MAX_GAME_LENGTH = config.Settings.MaxGameLength;
+            POTION_DRINK_WAIT_INTERVAL = config.Character.PotionWaitInterval;
+            POTION_LIFE_PERCENTAGE = config.Character.PotionLifePercent;
+            MERC_POTION_LIFE_PERCENTAGE = config.Character.PotionMercLifePercent;
+            POTION_KEYS = config.Character.KeysPotion;
+
             _combat = combat;
             _input = input;
+            _inventory = inventory;
             _menuman = menuman;
             _movement = movement;
 
@@ -136,11 +143,11 @@ namespace MapAssist.Automation
 
             var nextPotionSlot = -1;
 
-            if (PlayerLifePercentage < potionLifePercentage / 100)
+            if (PlayerLifePercentage < POTION_LIFE_PERCENTAGE / 100)
             {
                 _log.Info($"Life at {PlayerLifePercentage * 100}%, eating a potion from slot {nextPotionSlot}.");
 
-                nextPotionSlot = Inventory.GetNextPotionSlotToUse();
+                nextPotionSlot = _inventory.GetNextPotionSlotToUse();
 
                 if (nextPotionSlot == -1)
                 {
@@ -148,8 +155,8 @@ namespace MapAssist.Automation
                     return;
                 }
 
-                _input.DoInput(potionKeys[nextPotionSlot]);
-                System.Threading.Thread.Sleep(potionDrinkWaitInterval);
+                _input.DoInput(POTION_KEYS[nextPotionSlot]);
+                System.Threading.Thread.Sleep(POTION_DRINK_WAIT_INTERVAL);
             }
 
             if (_mercIsDead || mercHealth == -1)
@@ -157,11 +164,11 @@ namespace MapAssist.Automation
                 return;
             }
 
-            if (MercLifePercentage < mercPotionLifePercentage / 100)
+            if (MercLifePercentage < MERC_POTION_LIFE_PERCENTAGE / 100)
             {
                 _log.Info($"Merc life at {MercLifePercentage * 100}%, giving a potion from slot {nextPotionSlot}.");
 
-                nextPotionSlot = Inventory.GetNextPotionSlotToUse();
+                nextPotionSlot = _inventory.GetNextPotionSlotToUse();
 
                 if (nextPotionSlot == -1)
                 {
@@ -169,8 +176,8 @@ namespace MapAssist.Automation
                     return;
                 }
 
-                _input.DoInput("+" + potionKeys[nextPotionSlot]);
-                System.Threading.Thread.Sleep(potionDrinkWaitInterval);
+                _input.DoInput("+" + POTION_KEYS[nextPotionSlot]);
+                System.Threading.Thread.Sleep(POTION_DRINK_WAIT_INTERVAL);
             }
         }
 

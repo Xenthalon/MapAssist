@@ -10,7 +10,7 @@ namespace MapAssist.Automation
 {
     public enum RunType { KillTarget, ClearArea, Explore };
 
-    class RunProfile
+    public class RunProfile
     {
         public string Name { get; set; }
         public Area[] AreaPath { get; set; }

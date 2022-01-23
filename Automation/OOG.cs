@@ -1,10 +1,7 @@
 ﻿using GameOverlay.Drawing;
 using MapAssist.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
@@ -12,18 +9,25 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly int WINDOW_X = 0;
-        private static readonly int WINDOW_Y = 0;
-        private static readonly int WINDOW_WIDTH = 1920;
-        private static readonly int WINDOW_HEIGHT = 1080;
+        private int LONG_SLEEP;
+        private int WINDOW_X;
+        private int WINDOW_Y;
+        private int WINDOW_WIDTH;
+        private int WINDOW_HEIGHT;
 
         private static Random random = new Random();
 
         private Input _input;
         private Rectangle _window;
 
-        public OOG(Input input)
+        public OOG(BotConfiguration config, Input input)
         {
+            WINDOW_X = config.Settings.WindowX;
+            WINDOW_Y = config.Settings.WindowY;
+            WINDOW_WIDTH = config.Settings.WindowWidth;
+            WINDOW_HEIGHT = config.Settings.WindowHeight;
+            LONG_SLEEP = config.Settings.LongSleep;
+
             _input = input;
         }
 
@@ -36,18 +40,18 @@ namespace MapAssist.Automation
         {
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.66), (int)(_window.Height * 0.065)));
 
-            System.Threading.Thread.Sleep(1500);
+            System.Threading.Thread.Sleep(3 * LONG_SLEEP);
 
             var gamename = RandomString(random.Next(12, 16));
             var password = RandomString(random.Next(5, 8));
 
             _input.DoInput(gamename + "{TAB}");
 
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(LONG_SLEEP);
 
             _input.DoInput(password);
 
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(LONG_SLEEP);
 
             _input.DoInput("{ENTER}");
         }
@@ -63,7 +67,7 @@ namespace MapAssist.Automation
             const int SWP_SHOWWINDOW = 0x0040;
 
             WindowsExternal.SetWindowPos(windowHandle, IntPtr.Zero, WINDOW_X, WINDOW_Y, WINDOW_WIDTH, WINDOW_HEIGHT, SWP_SHOWWINDOW);
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
         private static string RandomString(int length)

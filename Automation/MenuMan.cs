@@ -13,10 +13,11 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly int SHORT_SLEEP = 100;
-        private static readonly int LONG_SLEEP = 300;
         private static readonly HashSet<Waypoint> _waypoints = new HashSet<Waypoint>();
-        private static readonly string InventoryKey = "i";
+
+        private int SHORT_SLEEP;
+        private int LONG_SLEEP;
+        private string KEY_INVENTORY;
 
         private Input _input;
         private int _act = 0;
@@ -25,8 +26,12 @@ namespace MapAssist.Automation
         private Point _vendorAnchor;
         private Rectangle _window;
 
-        public MenuMan(Input input)
+        public MenuMan(BotConfiguration config, Input input)
         {
+            SHORT_SLEEP = config.Settings.ShortSleep;
+            LONG_SLEEP = config.Settings.LongSleep;
+            KEY_INVENTORY = config.Character.KeyInventory;
+
             InitializeWaypoints();
 
             _input = input;
@@ -311,7 +316,7 @@ namespace MapAssist.Automation
 
             for (var i = 0; i < 3; i++)
             {
-                _input.DoInput(InventoryKey);
+                _input.DoInput(KEY_INVENTORY);
 
                 System.Threading.Thread.Sleep(LONG_SLEEP);
 

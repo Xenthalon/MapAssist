@@ -23,6 +23,7 @@ namespace MapAssist
         private Chicken _chicken;
         private Combat _combat;
         private Input _input;
+        private Inventory _inventory;
         private MenuMan _menuMan;
         private Movement _movement;
         private Orchestrator _orchestrator;
@@ -30,19 +31,20 @@ namespace MapAssist
         private PickIt _pickit;
         private TownManager _townManager;
 
-        public Automaton()
+        public Automaton(BotConfiguration config)
         {
+            _inventory = new Inventory(config);
             _input = new Input();
-            _pathing = new Pathing();
-            _buffBoy = new BuffBoy(_input);
-            _menuMan = new MenuMan(_input);
-            _movement = new Movement(_input, _menuMan, _pathing);
-            _combat = new Combat(_input, _movement, _pathing);
-            _chicken = new Chicken(_combat, _input, _menuMan, _movement);
-            _pickit = new PickIt(_movement, _input);
-            _townManager = new TownManager(_input, _menuMan, _movement);
+            _pathing = new Pathing(config);
+            _buffBoy = new BuffBoy(config, _input);
+            _menuMan = new MenuMan(config, _input);
+            _movement = new Movement(config, _input, _menuMan, _pathing);
+            _combat = new Combat(config, _input, _movement, _pathing);
+            _chicken = new Chicken(config, _combat, _input, _inventory, _menuMan, _movement);
+            _pickit = new PickIt(config, _input, _inventory, _movement);
+            _townManager = new TownManager(config, _input, _menuMan, _movement);
 
-            _orchestrator = new Orchestrator(_buffBoy, _chicken, _combat, _input, _movement, _menuMan, _pathing, _pickit, _townManager);
+            _orchestrator = new Orchestrator(config, _buffBoy, _chicken, _combat, _input, _inventory, _movement, _menuMan, _pathing, _pickit, _townManager);
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, AreaData areaData, Rectangle windowRect)
@@ -50,7 +52,7 @@ namespace MapAssist
             _currentGameData = gameData;
             _pointsOfInterests = pointsOfInterest;
 
-            Inventory.Update(_currentGameData.PlayerUnit, _currentGameData.Items);
+            _inventory.Update(gameData);
             _input.Update(gameData, windowRect);
             _pathing.Update(gameData, areaData);
             _buffBoy.Update(gameData);

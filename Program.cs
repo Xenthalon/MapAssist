@@ -27,6 +27,10 @@ using System.Diagnostics;
 using NLog;
 using MapAssist.Helpers;
 using MapAssist.Types;
+using MapAssist.Automation;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace MapAssist
 {
@@ -38,6 +42,7 @@ namespace MapAssist
         private static string messageBoxTitle = $"{appName} v1.0.0";
         private static Mutex mutex = null;
 
+        private static BotConfiguration botConfig;
         private static ConfigEditor configEditor;
         private static NotifyIcon trayIcon;
         private static Overlay overlay;
@@ -49,7 +54,7 @@ namespace MapAssist
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] arguments)
         {
             try
             {
@@ -67,6 +72,16 @@ namespace MapAssist
                     var isGemActive = rand.NextDouble() < 0.05;
 
                     MessageBox.Show("An instance of " + appName + " is already running." + (isGemActive ? " Better go catch it!" : ""), messageBoxTitle, MessageBoxButtons.OK);
+                    return;
+                }
+
+                if (arguments.Length > 0)
+                {
+                    botConfig = LoadBotConfig(arguments[0]);
+                }
+                else
+                {
+                    MessageBox.Show("No bot config parameter supplied!");
                     return;
                 }
 
@@ -168,7 +183,7 @@ namespace MapAssist
 
         public static void RunOverlay(object sender, DoWorkEventArgs e)
         {
-            using (overlay = new Overlay())
+            using (overlay = new Overlay(botConfig))
             {
                 overlay.Run();
             }
@@ -268,6 +283,32 @@ namespace MapAssist
             }
 
             return configurationOk;
+        }
+
+        public class UnderscorePropertyNamesContractResolver : DefaultContractResolver
+        {
+            public UnderscorePropertyNamesContractResolver()
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy();
+            }
+        }
+
+        private static BotConfiguration LoadBotConfig(string filename)
+        {
+            var _snakeSettings = new JsonSerializerSettings()
+            {
+                ContractResolver = new UnderscorePropertyNamesContractResolver()
+            };
+
+            BotConfiguration config = null;
+
+            using (var r = new StreamReader(filename))
+            {
+                var json = r.ReadToEnd();
+                config = JsonConvert.DeserializeObject<BotConfiguration>(json, _snakeSettings);
+            }
+
+            return config;
         }
 
         private static bool LoadLoggingConfiguration()

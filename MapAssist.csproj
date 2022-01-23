@@ -89,6 +89,9 @@
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>XenBot-TwoOh</AssemblyName>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -110,6 +113,7 @@
     <Compile Include="API\BotStateModel.cs" />
     <Compile Include="API\CustomNancyBootstrapper.cs" />
     <Compile Include="API\IBotStateModel.cs" />
+    <Compile Include="Automation\BotConfiguration.cs" />
     <Compile Include="Automation\BuffBoy.cs" />
     <Compile Include="Automation\Combat.cs" />
     <Compile Include="Automation\CombatSkill.cs" />
@@ -227,6 +231,9 @@
       <DependentUpon>AddAreaForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Fonts\exocetblizzardot-medium.otf" />
+    <None Include="Artha.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="IdentifyFilter.yaml" />
     <EmbeddedResource Include="Fonts\formal436bt-regular.otf" />
     <None Include="Resources\Icon1.ico" />

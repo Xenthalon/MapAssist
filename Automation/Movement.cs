@@ -15,9 +15,10 @@ namespace MapAssist.Automation
         private static readonly int MAX_RETRIES = 3;
 
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly int _areaChangeSafetyLimit = 3;
-        private static readonly string FORCE_MOVE_KEY = ".";
-        private static readonly string TELEPORT_KEY = "w";
+
+        private int AREA_CHANGE_VERIFICATION_LIMIT;
+        private string FORCE_MOVE_KEY;
+        private string TELEPORT_KEY;
 
         private BackgroundWorker _movementWorker;
         private Input _input;
@@ -37,8 +38,12 @@ namespace MapAssist.Automation
 
         public bool Busy => _moving;
 
-        public Movement(Input input, MenuMan menuMan, Pathing pathing)
+        public Movement(BotConfiguration config, Input input, MenuMan menuMan, Pathing pathing)
         {
+            AREA_CHANGE_VERIFICATION_LIMIT = config.Settings.AreaChangeVerificationAttempts;
+            FORCE_MOVE_KEY = config.Character.KeyForceMove;
+            TELEPORT_KEY = config.Character.KeyTeleport;
+
             _input = input;
             _menuMan = menuMan;
             _pathing = pathing;
@@ -62,11 +67,11 @@ namespace MapAssist.Automation
 
                 if (_possiblyNewArea == _gameData.Area)
                 {
-                    _log.Debug($"counting {_possiblyNewAreaCounter + 1}/{_areaChangeSafetyLimit}");
+                    _log.Debug($"counting {_possiblyNewAreaCounter + 1}/{AREA_CHANGE_VERIFICATION_LIMIT}");
                     _possiblyNewAreaCounter += 1;
                 }
 
-                if (_possiblyNewAreaCounter >= _areaChangeSafetyLimit)
+                if (_possiblyNewAreaCounter >= AREA_CHANGE_VERIFICATION_LIMIT)
                 {
                     _log.Debug("Area changed to " + _gameData.Area + ", resetting Movement.");
                     _currentArea = _gameData.Area;

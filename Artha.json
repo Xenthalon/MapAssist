@@ -1,0 +1,92 @@
+{
+  "run_profiles": [
+	{ "name": "Mephisto", "type": "KillTarget", "area_path": [ "DuranceOfHateLevel2", "DuranceOfHateLevel3" ], "kill_spot": { "x": 17565, "y": 8070 }, "monster_type": "Mephisto" },
+	{ "name": "Ancient Tunnels", "type": "Explore", "area_path": [ "LostCity", "AncientTunnels" ] },
+	{ "name": "Andariel", "type": "ClearArea", "area_path": [ "CatacombsLevel2", "CatacombsLevel3", "CatacombsLevel4" ], "kill_spot": { "x": 22547, "y": 9550 } },
+	{ "name": "Pindleskin", "type": "ClearArea", "area_path": [ "Harrogath", "NihlathaksTemple" ], "kill_spot": { "x": 10058, "y": 13234 }, "reposition": false }
+  ],
+  "character": {
+	"skills": [
+		{ "name": "Glacial Spike", "damage_type": "COLD", "max_range": 20, "cooldown": 250, "key": "+{LMB}", "is_ranged": true, "is_main_skill": true },
+		{ "name": "Blizzard", "damage_type": "COLD", "max_range": 20, "cooldown": 1900, "key": "{RMB}", "is_ranged": true, "is_aoe": true },
+		{ "name": "Fireball", "damage_type": "FIRE", "max_range": 20, "cooldown": 250, "key": "a", "is_ranged": true },
+		{ "name": "Static", "damage_type": "LIGHTNING", "max_range": 8, "cooldown": 350, "key": "s", "is_ranged": true, "is_static": true },
+		{ "name": "Telekinesis", "max_range": 22, "cooldown": 300, "key": "e", "is_ranged": true, "is_telekinesis": true }
+	],
+	"buff_skills": [
+		{ "name": "Frozen Armor", "cooldown": 500, "key": "q", "buff_state": "STATE_FROZENARMOR" },
+		{ "name": "Battle Orders", "cooldown": 500, "key": "d", "buff_state": "STATE_BATTLEORDERS" },
+		{ "name": "Battle Command", "cooldown": 500, "key": "r", "buff_state": "STATE_BATTLECOMMAND" }
+	],
+	"has_teleport": true,
+	"key_teleport": "w",
+	/* does the character have call to arms */
+	"use_cta": true,
+	"key_weapon_switch": "x",
+	"keys_potion": [ "1", "2", "3", "4" ],
+	/* use potion below this life % */
+	"potion_life_percent": 35.0,
+	/* use potion on merc below this life % */
+	"potion_merc_life_percent": 15.0,
+	/* wait this time between drinks */
+	"potion_wait_interval": 500,
+	/* repair if item falls below this */
+	"repair_percent": 30.0,
+	/* open chests in range, untested without telekinesis */
+	"open_chests": true,
+	"gamble_gold_start": 2000000,
+	"gamble_gold_stop": 150000,
+	/* can only be Ring or Amulet */
+	"gamble_item": "Ring",
+	"key_inventory": "i",
+	/* 0s will not be touched, 1s are open and can be stashed */
+	"inventory": [
+		[ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+		[ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+		[ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+		[ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+	],
+	"key_town_portal": "f",
+	"key_force_move": "."
+  },
+  "settings": {
+	/* quit game after this time (7min) */
+	"max_game_length": 420000,
+	/* how often should things be reattempted (clicking npcs, waypoint menus, pathing etc) */
+	"max_retries": 3,
+	/* only search enemies in this range with repositioning on */
+	"detection_range": 30,
+	/* combat range */
+	"combat_range": 20,
+	/* open chests in this range if enabled */
+	"chest_range": 20,
+	/* IMPORTANT try to keep enemies at this range (7 okay for ranged, lower to 0 for melee) */
+	"too_close_range": 7,
+	/* do not reposition for this many seconds */
+	"escape_cooldown": 3000,
+	/* ignore enemy if it didn't take damage after this many attacks */
+	"max_attack_attempts": 10,
+	"short_sleep": 100,
+	"long_sleep": 300,
+	"game_change_verification_attempts": 75,
+	"area_change_verification_attempts": 5,
+	/* only for dev things */
+	"autostart": true,
+	/* window will be moved and resized to these settings each game */
+	"window_x": 0,
+	"window_y": 0,
+	"window_width": 1920,
+	"window_height": 1080,
+	"web_api_url": "localhost:8080",
+	"pathing": {
+		/* don't touch anything here */
+		"stink_sample_size": 50,
+		"stink_range": 30,
+		"stink_maximum": 500,
+		"stink_max_saturation": 0.98,
+		"range_invalid": 10000,
+		"range_tp": 20,
+		"range_block": 2
+	}
+  }
+}

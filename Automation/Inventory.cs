@@ -12,41 +12,45 @@ namespace MapAssist.Automation
     class Inventory
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly double REPAIR_THRESHOLD = 0.3;
-        private static readonly int GAMBLE_START_AT = 2000000;
 
-        private static bool _needsRepair = false;
-        private static int _freeSpace = 0;
-        private static int _gold = 0;
+        private readonly double REPAIR_THRESHOLD;
+        private readonly int GAMBLE_START_AT;
+        private int[][] InventoryOpen;
 
-        public static int[][] InventoryOpen = new int[][] {
-            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-            new int[] { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }
-        };
+        private bool _needsRepair = false;
+        private int _freeSpace = 0;
+        private int _gold = 0;
 
-        public static int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
-        public static int TPScrolls = 20;
-        public static int Gold => _gold;
-        public static int Freespace => _freeSpace;
-        public static UnitAny IDScroll = new UnitAny(IntPtr.Zero);
-        public static bool NeedsRepair => _needsRepair;
-        public static bool NeedsGamble => Gold > GAMBLE_START_AT;
+        public int[] BeltSlotsOpen = new int[] { 4, 4, 4, 4 };
+        public int TPScrolls = 20;
+        public int Gold => _gold;
+        public int Freespace => _freeSpace;
+        public UnitAny IDScroll = new UnitAny(IntPtr.Zero);
+        public bool NeedsRepair => _needsRepair;
+        public bool NeedsGamble => Gold > GAMBLE_START_AT;
 
-        public static IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
-        public static IEnumerable<UnitAny> ItemsToIdentify = new HashSet<UnitAny>();
-        public static IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
-        public static IEnumerable<UnitAny> ItemsToBelt = new HashSet<UnitAny>();
+        public IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
+        public IEnumerable<UnitAny> ItemsToIdentify = new HashSet<UnitAny>();
+        public IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
+        public IEnumerable<UnitAny> ItemsToBelt = new HashSet<UnitAny>();
 
-        public static bool AnyItemsToStash => ItemsToStash.Count() > 0;
-        public static bool AnyItemsToIdentify => ItemsToIdentify.Count() > 0;
-        public static bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
-        public static bool AnyItemsToBelt => ItemsToBelt.Count() > 0;
+        public bool AnyItemsToStash => ItemsToStash.Count() > 0;
+        public bool AnyItemsToIdentify => ItemsToIdentify.Count() > 0;
+        public bool AnyItemsToTrash => ItemsToTrash.Count() > 0;
+        public bool AnyItemsToBelt => ItemsToBelt.Count() > 0;
 
-        public static void Update(UnitAny playerUnit, HashSet<UnitAny> items)
+        public Inventory(BotConfiguration config)
         {
+            REPAIR_THRESHOLD = config.Character.RepairPercent / 100;
+            GAMBLE_START_AT = config.Character.GambleGoldStart;
+            InventoryOpen = config.Character.Inventory;
+        }
+
+        public void Update(GameData gameData)
+        {
+            var playerUnit = gameData.PlayerUnit;
             var playerUnitId = playerUnit.UnitId;
+            var items = gameData.Items;
 
             var equippedItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc != BodyLoc.NONE);
 
@@ -135,7 +139,7 @@ namespace MapAssist.Automation
             //}
         }
 
-        public static int GetNextPotionSlotToUse()
+        public int GetNextPotionSlotToUse()
         {
             var result = -1;
 
@@ -151,19 +155,19 @@ namespace MapAssist.Automation
             return result;
         }
 
-        public static bool IsBeltFull()
+        public bool IsBeltFull()
         {
             return BeltSlotsOpen[0] == 0 && BeltSlotsOpen[1] == 0 && BeltSlotsOpen[2] == 0 && BeltSlotsOpen[3] == 0;
         }
 
-        public static int GetItemTotalSize(UnitAny item)
+        public int GetItemTotalSize(UnitAny item)
         {
             var size = GetItemSize(item);
 
             return size.height * size.width;
         }
 
-        private static (int width, int height) GetItemSize(UnitAny item)
+        private (int width, int height) GetItemSize(UnitAny item)
         {
             var itemName = Items.ItemName(item.TxtFileNo);
 

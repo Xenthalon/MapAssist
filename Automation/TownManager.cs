@@ -39,9 +39,10 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
+        private int MAX_RETRIES;
+
         private static HashSet<NPC> _npcs = new HashSet<NPC>();
         private static int _retryLoopCount = 30;
-        private static int _retrys = 5;
 
         private Input _input;
         private MenuMan _menuMan;
@@ -55,7 +56,6 @@ namespace MapAssist.Automation
         private Types.UnitAny _activeNpc;
         private Area _area;
         private MenuData _menus;
-        private Point _playerPosition;
         private HashSet<Types.UnitAny> _closeNpcs;
         private HashSet<Types.UnitAny> _closeObjects;
 
@@ -63,8 +63,10 @@ namespace MapAssist.Automation
         public TownState State => _state;
         public Types.UnitAny ActiveNPC => _activeNpc;
 
-        public TownManager(Input input, MenuMan menuMan, Movement movement)
+        public TownManager(BotConfiguration config, Input input, MenuMan menuMan, Movement movement)
         {
+            MAX_RETRIES = config.Settings.MaxRetries;
+
             _input = input;
             _menuMan = menuMan;
             _movement = movement;
@@ -154,7 +156,6 @@ namespace MapAssist.Automation
                 _act = (int)gameData.PlayerUnit.Act.ActId + 1;
                 _area = gameData.Area;
                 _menus = gameData.MenuOpen;
-                _playerPosition = gameData.PlayerPosition;
                 _closeNpcs = gameData.NPCs;
                 _closeObjects = gameData.Objects;
 
@@ -265,7 +266,7 @@ namespace MapAssist.Automation
                     loopCount = 0;
                 }
 
-                if (retrys >= _retrys)
+                if (retrys >= MAX_RETRIES)
                 {
                     _log.Error("Something went wrong interacting with " + target.Name + "! Quitting game!");
                     Reset();
@@ -373,7 +374,7 @@ namespace MapAssist.Automation
 
             while (_worker.IsBusy)
             {
-                if (counter > _retrys)
+                if (counter > MAX_RETRIES)
                     break;
 
                 System.Threading.Thread.Sleep(1000);

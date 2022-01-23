@@ -13,13 +13,14 @@ namespace MapAssist.Automation
     class Orchestrator
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static readonly short MAX_RETRIES = 3;
-        private static readonly string GAMBLE_ITEM = "Ring";
-        private static readonly int GAMBLE_STOP_AT = 150000;
+        private short MAX_RETRIES;
+        private string GAMBLE_ITEM;
+        private int GAMBLE_STOP_AT;
+        private int GAME_CHANGE_SAFETY_LIMIT;
+        private bool AUTO_START;
+        public string KEY_PORTAL;
 
-        private static List<RunProfile> _runProfiles = new List<RunProfile>();
-        private static readonly int _gameChangeSafetyLimit = 75;
-        private static readonly bool _autostart = true;
+        private static List<RunProfile> RUN_PROFILES = new List<RunProfile>();
 
         private BackgroundWorker _worker;
         private BackgroundWorker _explorer;
@@ -28,6 +29,7 @@ namespace MapAssist.Automation
         private Chicken _chicken;
         private Combat _combat;
         private Input _input;
+        private Inventory _inventory;
         private MenuMan _menuMan;
         private Movement _movement;
         private Pathing _pathing;
@@ -47,23 +49,33 @@ namespace MapAssist.Automation
         private List<Point> _exploreSpots = new List<Point>();
         private bool _exploring = false;
 
-        public string PortalKey = "f";
-
         public Orchestrator(
+            BotConfiguration config,
             BuffBoy buffboy,
             Chicken chicken,
             Combat combat,
             Input input,
+            Inventory inventory,
             Movement movement,
             MenuMan menuMan,
             Pathing pathing,
             PickIt pickIt,
             TownManager townManager)
         {
+            MAX_RETRIES = (short)config.Settings.MaxRetries;
+            GAMBLE_ITEM = config.Character.GambleItem;
+            GAMBLE_STOP_AT = config.Character.GambleGoldStop;
+            GAME_CHANGE_SAFETY_LIMIT = config.Settings.GameChangeVerificationAttempts;
+            AUTO_START = config.Settings.Autostart;
+            KEY_PORTAL = config.Character.KeyTownPortal;
+
+            RUN_PROFILES.AddRange(config.RunProfiles);
+
             _buffboy = buffboy;
             _chicken = chicken;
             _combat = combat;
             _input = input;
+            _inventory = inventory;
             _menuMan = menuMan;
             _movement = movement;
             _pathing = pathing;
@@ -77,11 +89,6 @@ namespace MapAssist.Automation
             _explorer = new BackgroundWorker();
             _explorer.DoWork += new DoWorkEventHandler(DoExplorationStep);
             _explorer.WorkerSupportsCancellation = true;
-
-            _runProfiles.Add(new RunProfile { Name = "Mephisto", Type = RunType.KillTarget, AreaPath = new Area[] { Area.DuranceOfHateLevel2, Area.DuranceOfHateLevel3 }, KillSpot = new Point(17565, 8070), MonsterType = Npc.Mephisto });
-            _runProfiles.Add(new RunProfile { Name = "Ancient Tunnels", Type = RunType.Explore, AreaPath = new Area[] { Area.LostCity, Area.AncientTunnels } });
-            _runProfiles.Add(new RunProfile { Name = "Andariel", Type = RunType.ClearArea, AreaPath = new Area[] { Area.CatacombsLevel2, Area.CatacombsLevel3, Area.CatacombsLevel4 }, KillSpot = new Point(22547, 9550) });
-            _runProfiles.Add(new RunProfile { Name = "Pindleskin", Type = RunType.ClearArea, AreaPath = new Area[] { Area.Harrogath, Area.NihlathaksTemple }, KillSpot = new Point(10058, 13234), Reposition = false });
         }
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
@@ -100,11 +107,11 @@ namespace MapAssist.Automation
 
                 if (_possiblyNewGameSeed == _gameData.MapSeed)
                 {
-                    _log.Debug($"counting {_possiblyNewGameCounter + 1}/{_gameChangeSafetyLimit}");
+                    _log.Debug($"counting {_possiblyNewGameCounter + 1}/{GAME_CHANGE_SAFETY_LIMIT}");
                     _possiblyNewGameCounter += 1;
                 }
 
-                if (_possiblyNewGameCounter >= _gameChangeSafetyLimit)
+                if (_possiblyNewGameCounter >= GAME_CHANGE_SAFETY_LIMIT)
                 {
                     _log.Info("Entered new game " + _gameData.MapSeed + ", resetting everything.");
 
@@ -112,7 +119,7 @@ namespace MapAssist.Automation
 
                     _currentGameSeed = _gameData.MapSeed;
 
-                    if (_autostart)
+                    if (AUTO_START)
                     {
                         Task.Factory.StartNew(() =>
                         {
@@ -174,7 +181,7 @@ namespace MapAssist.Automation
 
         private void Orchestrate(object sender, DoWorkEventArgs e)
         {
-            if (_activeProfileIndex == _runProfiles.Count() - 1)
+            if (_activeProfileIndex == RUN_PROFILES.Count() - 1)
             {
                 _log.Error("Exhausted all profiles, done!");
                 _goBotGo = false;
@@ -192,7 +199,7 @@ namespace MapAssist.Automation
 
             _activeProfileIndex = _activeProfileIndex + 1;
 
-            RunProfile activeProfile = _runProfiles[_activeProfileIndex];
+            RunProfile activeProfile = RUN_PROFILES[_activeProfileIndex];
 
             _log.Info("Let's do " + activeProfile.Name);
 
@@ -205,7 +212,7 @@ namespace MapAssist.Automation
                 // !! PANIKK
                 _log.Info("Stash is full or something went wrong, shutting down.");
                 _goBotGo = false;
-                _activeProfileIndex = _runProfiles.Count() - 1;
+                _activeProfileIndex = RUN_PROFILES.Count() - 1;
                 return;
             }
 
@@ -438,7 +445,7 @@ namespace MapAssist.Automation
                 return;
             }
 
-            if (_activeProfileIndex == _runProfiles.Count() - 1)
+            if (_activeProfileIndex == RUN_PROFILES.Count() - 1)
             {
                 _log.Info("Finished run!");
                 _goBotGo = false;
@@ -604,7 +611,7 @@ namespace MapAssist.Automation
 
         private void GoTrade()
         {
-            if (Inventory.AnyItemsToIdentify || Inventory.AnyItemsToTrash || Inventory.TPScrolls < 5)
+            if (_inventory.AnyItemsToIdentify || _inventory.AnyItemsToTrash || _inventory.TPScrolls < 5)
             {
                 _townManager.OpenTradeMenu();
 
@@ -618,7 +625,7 @@ namespace MapAssist.Automation
 
                 _menuMan.SelectVendorTab(3); // sometimes tab is not set to misc
 
-                foreach (var item in Inventory.ItemsToTrash)
+                foreach (var item in _inventory.ItemsToTrash)
                 {
                     _log.Info($"Selling {item.ItemData.ItemQuality} {Items.ItemName(item.TxtFileNo)}.");
                     _menuMan.SellItemAt(item.X, item.Y);
@@ -626,7 +633,7 @@ namespace MapAssist.Automation
 
                 var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
 
-                foreach (var item in Inventory.ItemsToIdentify)
+                foreach (var item in _inventory.ItemsToIdentify)
                 {
                     var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
@@ -639,21 +646,21 @@ namespace MapAssist.Automation
                             _menuMan.VendorBuyOne(idsc.X, idsc.Y);
                             retries += 1;
                         }
-                        while (!Inventory.IDScroll.IsValidPointer() && retries <= MAX_RETRIES);
+                        while (!_inventory.IDScroll.IsValidPointer() && retries <= MAX_RETRIES);
 
-                        if (Inventory.IDScroll.IsValidPointer())
+                        if (_inventory.IDScroll.IsValidPointer())
                         {
-                            _menuMan.RightClickInventoryItem(Inventory.IDScroll.X, Inventory.IDScroll.Y);
+                            _menuMan.RightClickInventoryItem(_inventory.IDScroll.X, _inventory.IDScroll.Y);
                             _menuMan.LeftClickInventoryItem(item.X, item.Y);
 
-                            var identifiedItem = Inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
+                            var identifiedItem = _inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
                                 (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
                             while (!identifiedItem.IsValidPointer())
                             {
                                 System.Threading.Thread.Sleep(100);
 
-                                identifiedItem = Inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
+                                identifiedItem = _inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
                                     (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
                             }
 
@@ -675,7 +682,7 @@ namespace MapAssist.Automation
                     }
                 }
 
-                if (Inventory.TPScrolls < 15)
+                if (_inventory.TPScrolls < 15)
                 {
                     var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
 
@@ -695,11 +702,11 @@ namespace MapAssist.Automation
 
         public void GoGamble()
         {
-            if (Inventory.NeedsGamble)
+            if (_inventory.NeedsGamble)
             {
                 _log.Info("GAMBLE GAMBLE GAMBLE!");
 
-                while (Inventory.Gold > GAMBLE_STOP_AT)
+                while (_inventory.Gold > GAMBLE_STOP_AT)
                 {
                     _townManager.OpenGambleMenu();
 
@@ -717,9 +724,9 @@ namespace MapAssist.Automation
 
                     if (gambleItem.IsValidPointer())
                     {
-                        while (Inventory.Gold > GAMBLE_STOP_AT && Inventory.Freespace >= Inventory.GetItemTotalSize(gambleItem))
+                        while (_inventory.Gold > GAMBLE_STOP_AT && _inventory.Freespace >= _inventory.GetItemTotalSize(gambleItem))
                         {
-                            _log.Info($"Buying one more {GAMBLE_ITEM}, free {Inventory.Freespace}, gold {Inventory.Gold}");
+                            _log.Info($"Buying one more {GAMBLE_ITEM}, free {_inventory.Freespace}, gold {_inventory.Gold}");
                             _menuMan.VendorBuyOne(gambleItem.X, gambleItem.Y);
                         }
                     }
@@ -739,7 +746,7 @@ namespace MapAssist.Automation
                     }
                     while (_townManager.State != TownState.TRADE_MENU);
 
-                    foreach (var item in Inventory.ItemsToStash)
+                    foreach (var item in _inventory.ItemsToStash)
                     {
                         if (!Identification.IdentificationFilter.IsKeeper(item))
                         {
@@ -757,7 +764,7 @@ namespace MapAssist.Automation
         {
             var success = true;
 
-            if (Inventory.AnyItemsToStash)
+            if (_inventory.AnyItemsToStash)
             {
                 _townManager.OpenStashMenu();
 
@@ -767,7 +774,7 @@ namespace MapAssist.Automation
                 }
                 while (_townManager.State != TownState.STASH_MENU);
 
-                foreach (var item in Inventory.ItemsToStash)
+                foreach (var item in _inventory.ItemsToStash)
                 {
                     _log.Info("Stashing " + Items.ItemName(item.TxtFileNo));
                     _menuMan.StashItemAt(item.X, item.Y);
@@ -775,7 +782,7 @@ namespace MapAssist.Automation
 
                 _menuMan.DepositGold();
 
-                if (Inventory.AnyItemsToStash)
+                if (_inventory.AnyItemsToStash)
                 {
                     _log.Error("Something is really wrong, stop everything!");
                     success = false;
@@ -797,7 +804,7 @@ namespace MapAssist.Automation
 
         private void GoRepair()
         {
-            if (Inventory.NeedsRepair)
+            if (_inventory.NeedsRepair)
             {
                 _townManager.Repair();
 
@@ -867,13 +874,13 @@ namespace MapAssist.Automation
 
         private void BeltAnyPotions()
         {
-            if (Inventory.AnyItemsToBelt && !Inventory.IsBeltFull())
+            if (_inventory.AnyItemsToBelt && !_inventory.IsBeltFull())
             {
-                _log.Info($"Putting {Inventory.ItemsToBelt.Count()} potions into belt.");
+                _log.Info($"Putting {_inventory.ItemsToBelt.Count()} potions into belt.");
 
                 _menuMan.OpenInventory();
 
-                foreach (var potion in Inventory.ItemsToBelt)
+                foreach (var potion in _inventory.ItemsToBelt)
                 {
                     _menuMan.PutItemIntoBelt(potion.X, potion.Y);
                 }
@@ -894,7 +901,7 @@ namespace MapAssist.Automation
 
             do
             {
-                _input.DoInputAtWorldPosition(PortalKey, _gameData.PlayerPosition);
+                _input.DoInputAtWorldPosition(KEY_PORTAL, _gameData.PlayerPosition);
                 System.Threading.Thread.Sleep(1500);
                 portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
                 retryCount += 1;

@@ -14,12 +14,13 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly int MAX_RETRY_COUNT = 3;
+        private int MAX_RETRY_COUNT;
 
         private static double _pickRange = 5;
 
         private BackgroundWorker _worker;
         private Input _input;
+        private Inventory _inventory;
         private Movement _movement;
 
         private IEnumerable<UnitAny> _items;
@@ -31,14 +32,17 @@ namespace MapAssist.Automation
         public bool Full => _full;
         public bool HasWork => _items.Any(x => x.IsDropped() &&
                                             (LootFilter.Filter(x).Item1 ||
-                                            (!Inventory.IsBeltFull() && (
+                                            (!_inventory.IsBeltFull() && (
                                                 Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
                                                 Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"
                                             ))));
 
-        public PickIt(Movement movement, Input input)
+        public PickIt(BotConfiguration config, Input input, Inventory inventory, Movement movement)
         {
+            MAX_RETRY_COUNT = config.Settings.MaxRetries;
+
             _input = input;
+            _inventory = inventory;
             _movement = movement;
 
             _worker = new BackgroundWorker();
@@ -84,7 +88,7 @@ namespace MapAssist.Automation
 
         private void PickThings(object sender, DoWorkEventArgs e)
         {
-            var pickPotions = !Inventory.IsBeltFull();
+            var pickPotions = !_inventory.IsBeltFull();
 
             var itemsToPick = _items.Where(x => x.IsDropped() &&
                                                 (LootFilter.Filter(x).Item1 ||

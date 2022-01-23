@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
-    class CombatSkill
+    public class CombatSkill
     {
         public string Name { get; set; }
         public string Key { get; set; }
