@@ -1,4 +1,5 @@
 ﻿using GameOverlay.Drawing;
+using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
 using System;
@@ -30,6 +31,7 @@ namespace MapAssist.Automation
         private Combat _combat;
         private Input _input;
         private Inventory _inventory;
+        private MapApi _mapApi;
         private MenuMan _menuMan;
         private Movement _movement;
         private Pathing _pathing;
@@ -91,7 +93,7 @@ namespace MapAssist.Automation
             _explorer.WorkerSupportsCancellation = true;
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
+        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, MapApi mapApi)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
             {
@@ -139,6 +141,11 @@ namespace MapAssist.Automation
                 {
                     _explorer.RunWorkerAsync();
                 }
+            }
+
+            if (mapApi != null)
+            {
+                _mapApi = mapApi;
             }
         }
 
@@ -189,7 +196,11 @@ namespace MapAssist.Automation
                 return;
             }
 
-            if (!_townManager.IsInTown)
+            _activeProfileIndex = _activeProfileIndex + 1;
+
+            RunProfile activeProfile = RUN_PROFILES[_activeProfileIndex];
+
+            if (!_townManager.IsInTown && _currentArea != activeProfile.AreaPath[0].Area)
             {
                 _log.Error("Every run needs to start in town, something is borked!");
                 _goBotGo = false;
@@ -197,39 +208,38 @@ namespace MapAssist.Automation
                 return;
             }
 
-            _activeProfileIndex = _activeProfileIndex + 1;
-
-            RunProfile activeProfile = RUN_PROFILES[_activeProfileIndex];
-
             _log.Info("Let's do " + activeProfile.Name);
 
-            RecoverCorpse();
-            BeltAnyPotions();
-            var stashed = DoChores();
-
-            if (!stashed)
+            if (_townManager.IsInTown)
             {
-                // !! PANIKK
-                _log.Info("Stash is full or something went wrong, shutting down.");
-                _goBotGo = false;
-                _activeProfileIndex = RUN_PROFILES.Count() - 1;
-                return;
+                RecoverCorpse();
+                BeltAnyPotions();
+                var stashed = DoChores();
+
+                if (!stashed)
+                {
+                    // !! PANIKK
+                    _log.Info("Stash is full or something went wrong, shutting down.");
+                    _goBotGo = false;
+                    _activeProfileIndex = RUN_PROFILES.Count() - 1;
+                    return;
+                }
             }
 
-            foreach (Area area in activeProfile.AreaPath)
+            foreach (RunArea runArea in activeProfile.AreaPath)
             {
                 if (_goBotGo == false)
                 {
-                    _log.Info("Aborting run after Area change to " + area);
+                    _log.Info("Aborting run after Area change to " + runArea.Area);
                     return;
                 }
 
-                if (_currentArea == area)
+                if (_currentArea == runArea.Area)
                     continue;
 
-                if (_townManager.IsInTown && _menuMan.IsWaypointArea(area))
+                if (_townManager.IsInTown && _menuMan.IsWaypointArea(runArea.Area))
                 {
-                    var isActChange = _menuMan.IsActChange(area);
+                    var isActChange = _menuMan.IsActChange(runArea.Area);
 
                     _townManager.OpenWaypointMenu();
 
@@ -245,7 +255,7 @@ namespace MapAssist.Automation
                     }
                     while (_townManager.State != TownState.WP_MENU);
 
-                    _menuMan.TakeWaypoint(area);
+                    _menuMan.TakeWaypoint(runArea.Area);
 
                     // wait for load
                     if (isActChange)
@@ -264,9 +274,11 @@ namespace MapAssist.Automation
                         BuffMe();
                     }
 
+                    _log.Info("looking for " + runArea.Area);
+
                     Point? interactPoint = null;
 
-                    if (area == Area.NihlathaksTemple)
+                    if (runArea.Area == Area.NihlathaksTemple)
                     {
                         MoveTo(new Point(5124, 5119));
 
@@ -284,7 +296,7 @@ namespace MapAssist.Automation
 
                         while (target == null && count < MAX_RETRIES)
                         {
-                            target = _pointsOfInterest.Where(x => x.NextArea == area).FirstOrDefault();
+                            target = _pointsOfInterest.Where(x => x.NextArea == runArea.Area).FirstOrDefault();
 
                             if (target != null)
                             {
@@ -297,7 +309,7 @@ namespace MapAssist.Automation
 
                         if (target == null)
                         {
-                            _log.Error("Couldn't find PointOfInterest for " + area.Name() + "! Help!");
+                            _log.Error("Couldn't find PointOfInterest for " + runArea.Area.Name() + "! Help!");
                             TakePortalHome();
                             return;
                         }
@@ -306,7 +318,9 @@ namespace MapAssist.Automation
 
                         try
                         {
+                            _log.Info("Moving to " + ((Point)interactPoint).X + "/" + ((Point)interactPoint).Y + " from " + _gameData.PlayerPosition.X + "/" + _gameData.PlayerPosition.Y + " Distance " + Automaton.GetDistance((Point)interactPoint, _gameData.PlayerPosition));
                             MoveTo((Point)interactPoint);
+                            _log.Info("Distance now: " + Automaton.GetDistance(_gameData.PlayerPosition, (Point)interactPoint));
                         }
                         catch (NoPathFoundException)
                         {
@@ -317,11 +331,40 @@ namespace MapAssist.Automation
 
                     if (_goBotGo == false)
                     {
-                        _log.Info("Aborting run before changing to next area from " + area);
+                        _log.Info("Aborting run before changing to next area from " + runArea.Area);
                         return;
                     }
 
-                    var changedArea = ChangeArea(area, (Point)interactPoint, area == Area.NihlathaksTemple);
+                    var changedArea = false;
+
+                    if (AreaExtensions.RequiresStitching(runArea.Area))
+                    {
+                        // means it's connected
+                        var areaData = _mapApi.GetMapData(runArea.Area);
+
+                        var behind = _movement.GetPointBehind(_gameData.PlayerPosition, (Point)interactPoint, 8);
+
+                        if (!areaData.IncludesPoint(behind))
+                        {
+                            _log.Info("point " + behind.X + "/" + behind.Y + " wasn't good, switching");
+
+                            behind = _movement.GetPointBehind((Point)interactPoint, _gameData.PlayerPosition, 8);
+                        }
+
+                        _log.Info(runArea.Area + " is connected, got point " + behind.X + "/" + behind.Y);
+
+                        _movement.Teleport(behind);
+
+                        System.Threading.Thread.Sleep(500);
+
+                        changedArea = _gameData.Area == runArea.Area;
+                    }
+                    else
+                    {
+                        // otherwise it's a level exit
+                        _log.Info(runArea.Area + " trying to click it");
+                        changedArea = ChangeArea(runArea.Area, (Point)interactPoint, runArea.Area == Area.NihlathaksTemple);
+                    }
 
                     if (_goBotGo == false)
                     {
@@ -333,17 +376,40 @@ namespace MapAssist.Automation
                     {
                         if (_townManager.IsInTown)
                         {
-                            _log.Info("Failed to change area from " + area + ", quitting game.");
+                            _log.Info("Failed to change area from " + runArea.Area + ", quitting game.");
                             _goBotGo = false;
                             _menuMan.ExitGame();
                             return;
                         }
                         else
                         {
-                            _log.Info("failed to change area from " + area + ", returning to town.");
+                            _log.Info("failed to change area from " + runArea.Area + ", returning to town.");
                             TakePortalHome();
                             return;
                         }
+                    }
+
+                    if (activeProfile.Type == RunType.Explore && runArea.Kill != KillType.Nothing)
+                    {
+                        _log.Info("Gonna kill some things in " + runArea.Area);
+                        _combat.OnlyBosses = runArea.Kill == KillType.Bosses;
+                        _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
+                        _exploring = true;
+
+                        do
+                        {
+                            System.Threading.Thread.Sleep(500);
+
+                            if (_goBotGo == false)
+                            {
+                                _log.Info("Aborting run while exploring " + activeProfile.Name);
+                                _exploring = false;
+                                return;
+                            }
+                        }
+                        while (_exploring);
+
+                        _exploreSpots = new List<Point>();
                     }
                 }
             }
@@ -363,6 +429,22 @@ namespace MapAssist.Automation
             {
                 _log.Info("Moving to KillSpot " + activeProfile.KillSpot);
                 MoveTo(activeProfile.KillSpot);
+            }
+
+            if (activeProfile.GoSuperchest && _pointsOfInterest.Any(x => x.Type == PoiType.SuperChest))
+            {
+                var location = _pointsOfInterest.Where(x => x.Type == PoiType.SuperChest).First().Position;
+
+                _log.Info("Moving to Superchest " + location);
+                MoveTo(location);
+            }
+
+            if (activeProfile.Target != null && activeProfile.Target.Length > 0 && _pointsOfInterest.Any(x => x.Label == activeProfile.Target))
+            {
+                var location = _pointsOfInterest.Where(x => x.Label == activeProfile.Target).First().Position;
+
+                _log.Info("Moving to Point of Interest " + activeProfile.Target);
+                MoveTo(location);
             }
 
             if (activeProfile.Type == RunType.KillTarget)
@@ -395,24 +477,6 @@ namespace MapAssist.Automation
             else if (activeProfile.Type == RunType.ClearArea)
             {
                 _combat.ClearArea(_gameData.PlayerPosition, activeProfile.Reposition);
-            }
-            else if (activeProfile.Type == RunType.Explore)
-            {
-                _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
-                _exploring = true;
-
-                do
-                {
-                    System.Threading.Thread.Sleep(500);
-
-                    if (_goBotGo == false)
-                    {
-                        _log.Info("Aborting run while exploring " + activeProfile.Name);
-                        _exploring = false;
-                        return;
-                    }
-                }
-                while (_exploring);
             }
 
             do
@@ -453,7 +517,11 @@ namespace MapAssist.Automation
             }
             else
             {
-                TakePortalHome();
+                // this is for eldritch + shenk, don't take tp if already there
+                if (RUN_PROFILES[_activeProfileIndex + 1].AreaPath[0].Area != _currentArea)
+                {
+                    TakePortalHome();
+                }
             }
         }
 

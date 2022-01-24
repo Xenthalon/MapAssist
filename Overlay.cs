@@ -83,7 +83,7 @@ namespace MapAssist
             {
                 lock (_lock)
                 {
-                    var (gameData, areaData, pointsOfInterest, changed) = _gameDataReader.Get();
+                    var (gameData, areaData, pointsOfInterest, mapApi, changed) = _gameDataReader.Get();
                     _gameData = gameData;
                     _areaData = areaData;
                     _pointsOfInterests = pointsOfInterest;
@@ -99,7 +99,7 @@ namespace MapAssist
                     {
                         UpdateLocation();
 
-                        _automation.Update(_gameData, _pointsOfInterests, _areaData, WindowRect());
+                        _automation.Update(_gameData, _pointsOfInterests, _areaData, mapApi, WindowRect());
 
                         var errorLoadingAreaData = _compositor._areaData == null;
 

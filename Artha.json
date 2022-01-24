@@ -1,10 +1,56 @@
 {
-  "run_profiles": [
-	{ "name": "Mephisto", "type": "KillTarget", "area_path": [ "DuranceOfHateLevel2", "DuranceOfHateLevel3" ], "kill_spot": { "x": 17565, "y": 8070 }, "monster_type": "Mephisto" },
-	{ "name": "Ancient Tunnels", "type": "Explore", "area_path": [ "LostCity", "AncientTunnels" ] },
-	{ "name": "Andariel", "type": "ClearArea", "area_path": [ "CatacombsLevel2", "CatacombsLevel3", "CatacombsLevel4" ], "kill_spot": { "x": 22547, "y": 9550 } },
-	{ "name": "Pindleskin", "type": "ClearArea", "area_path": [ "Harrogath", "NihlathaksTemple" ], "kill_spot": { "x": 10058, "y": 13234 }, "reposition": false }
-  ],
+	"run_profiles": [
+		{
+			"name": "Mephisto",
+			"type": "KillTarget",
+			"area_path": [
+				{ "Area": "DuranceOfHateLevel2" },
+				{ "Area": "DuranceOfHateLevel3" }
+			],
+			"kill_spot": {
+				"x": 17565,
+				"y": 8070
+			},
+			"monster_type": "Mephisto"
+		},
+		{
+			"name": "Ancient Tunnels",
+			"type": "Explore",
+			"area_path": [
+				{ "Area": "LostCity" },
+				{
+					"Area": "AncientTunnels",
+					"Kill": "Bosses"
+				}
+			]
+		},
+		{
+			"name": "Andariel",
+			"type": "ClearArea",
+			"area_path": [
+				{ "Area": "CatacombsLevel2" },
+				{ "Area": "CatacombsLevel3" },
+				{ "Area": "CatacombsLevel4" }
+			],
+			"kill_spot": {
+				"x": 22547,
+				"y": 9550
+			}
+		},
+		{
+			"name": "Pindleskin",
+			"type": "ClearArea",
+			"area_path": [
+				{ "Area": "Harrogath" },
+				{ "Area": "NihlathaksTemple" }
+			],
+			"kill_spot": {
+				"x": 10058,
+				"y": 13234
+			},
+			"reposition": false
+		}
+	],
   "character": {
 	"skills": [
 		{ "name": "Glacial Spike", "damage_type": "COLD", "max_range": 20, "cooldown": 250, "key": "+{LMB}", "is_ranged": true, "is_main_skill": true },

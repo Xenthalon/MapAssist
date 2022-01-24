@@ -21,6 +21,7 @@ namespace MapAssist.Automation
         public bool IsAoe { get; set; } = false;
         public bool IsBuff { get; set; } = false;
         public bool IsTelekinesis { get; set; } = false;
+        public bool IsAura { get; set; } = false;
         public State BuffState { get; set; }
     }
 }

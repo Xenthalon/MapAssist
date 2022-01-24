@@ -97,24 +97,34 @@ namespace MapAssist.Automation
                 return;
             }
 
-            var circleSpots = new List<Point>();
+            Point nicestSpot;
 
-            for (var range = minRange; range <= maxRange; range++)
+            if (minRange == 0)
             {
-                circleSpots.AddRange(GetCirclePoints(target, range));
-            }
-
-            var nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
-                                        .OrderByDescending(x => Automaton.GetDistance(x, target)).Take(36)          // get 36 points furthest away from the enemy
-                                        .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x)).Take(10)  // get 10 points closest to us
-                                        // this should get us the point with enemies the furthest away from it
-                                        .OrderByDescending(x => _gameData.Monsters.Count() > 0 ? Automaton.GetDistance(x, _gameData.Monsters.OrderBy(m => Automaton.GetDistance(m.Position, x)).First().Position) : 0)
-                                        .FirstOrDefault();
-
-            if (nicestSpot == null || (nicestSpot.X == 0 && nicestSpot.Y == 0))
-            {
-                _log.Info("Couldn't find cool location, getting personal.");
+                // assume melee
                 nicestSpot = target;
+            }
+            else
+            {
+                var circleSpots = new List<Point>();
+
+                for (var range = minRange; range <= maxRange; range++)
+                {
+                    circleSpots.AddRange(GetCirclePoints(target, range));
+                }
+
+                nicestSpot = circleSpots.Where(x => _pathing.HasLineOfSight(target, x) && _pathing.IsWalkable(x))
+                                            .OrderByDescending(x => Automaton.GetDistance(x, target)).Take(36)          // get 36 points furthest away from the enemy
+                                            .OrderBy(x => Automaton.GetDistance(_gameData.PlayerPosition, x)).Take(10)  // get 10 points closest to us
+                                                                                                                        // this should get us the point with enemies the furthest away from it
+                                            .OrderByDescending(x => _gameData.Monsters.Count() > 0 ? Automaton.GetDistance(x, _gameData.Monsters.OrderBy(m => Automaton.GetDistance(m.Position, x)).First().Position) : 0)
+                                            .FirstOrDefault();
+
+                if (nicestSpot == null || (nicestSpot.X == 0 && nicestSpot.Y == 0))
+                {
+                    _log.Info("Couldn't find cool location, getting personal.");
+                    nicestSpot = target;
+                }
             }
 
             if (usePathing)
@@ -191,6 +201,8 @@ namespace MapAssist.Automation
                 {
                     retries += 1;
                     _path = _pathing.GetPathToLocation(_gameData.MapSeed, _gameData.Difficulty, true, _gameData.PlayerPosition, worldPosition);
+
+                    _log.Info("Got path with " + _path.Count + " steps.");
 
                     if (_path.Count == 0)
                     {
@@ -415,6 +427,30 @@ namespace MapAssist.Automation
             }
 
             return pointList;
+        }
+
+        public Point GetPointBehind(Point start, Point through, int distance)
+        {
+            // from https://stackoverflow.com/questions/21249739/how-to-calculate-the-points-between-two-given-points-and-given-distance
+
+            if (start.X == through.X && start.Y == through.Y)
+            {
+                through.X += 1;
+                through.Y += 1;
+            }
+
+            var diff_X = through.X - start.X;
+            var diff_Y = through.Y - start.Y;
+
+            var behind = new Point(through.X, through.Y);
+
+            while (Automaton.GetDistance(through, behind) < distance)
+            {
+                behind.X += diff_X;
+                behind.Y += diff_Y;
+            }
+
+            return behind;
         }
 
         private bool IsNear(Point p1, Point p2)

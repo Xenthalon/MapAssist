@@ -39,8 +39,11 @@ namespace MapAssist.Automation
         private int _targetLastHealth = int.MaxValue;
         private long _lastEscapeAttempt = 0;
 
-        public bool IsSafe => !Busy && !_combatWorker.IsBusy && !_monsters.Any(x => !_blacklist.Contains(x.UnitId) &&
-                Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
+        public bool OnlyBosses { get; set; } = false;
+
+        public bool IsSafe => !Busy && !_combatWorker.IsBusy &&
+                            !_monsters.Where(x => !OnlyBosses || IsBoss(x)).Any(x => !_blacklist.Contains(x.UnitId) &&
+                            Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
         public bool Busy => _fighting;
 
         public Combat(BotConfiguration config, Input input, Movement movement, Pathing pathing)
@@ -86,7 +89,8 @@ namespace MapAssist.Automation
         public void ClearArea(Point location, bool reposition = true)
         {
             if (!_fighting && !_combatWorker.IsBusy &&
-                _monsters.Any(x => !_blacklist.Contains(x.UnitId) &&
+                _monsters.Where(x => !OnlyBosses || IsBoss(x))
+                        .Any(x => !_blacklist.Contains(x.UnitId) &&
                         ((reposition && Automaton.GetDistance(location, x.Position) <= DETECTION_RANGE) ||
                         (!reposition && Automaton.GetDistance(location, x.Position) <= COMBAT_RANGE))))
             {
@@ -188,13 +192,14 @@ namespace MapAssist.Automation
             _targetLastHealth = int.MaxValue;
             _target = new UnitAny(IntPtr.Zero);
             _combatWorker.CancelAsync();
+            OnlyBosses = false;
         }
 
         private void Fight(object sender, DoWorkEventArgs e)
         {
             if (_areaToClear != null && !_target.IsValidPointer())
             {
-                var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                var monstersInArea = _monsters.Where(x => (!OnlyBosses || IsBoss(x)) && !_blacklist.Contains(x.UnitId) &&
                         ((_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= DETECTION_RANGE) ||
                         (!_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= COMBAT_RANGE)));
 
@@ -259,9 +264,10 @@ namespace MapAssist.Automation
                             System.Threading.Thread.Sleep(200);
                         }
                     }
-                    else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
                     {
-                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+                        // ranged combat
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
                         
                         if (_reposition &&
                             Automaton.GetDistance(_target.Position, _playerPosition) < TOO_CLOSE_RANGE &&
@@ -276,7 +282,18 @@ namespace MapAssist.Automation
 
                         if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
                         {
-                            AttackWith(skillToUse, castLocation);
+                            Attack(skillToUse, castLocation);
+                            _attackAttempts += 1;
+                        }
+                    }
+                    else if (COMBAT_SKILLS.Any(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    {
+                        // melee combat
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+
+                        if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
+                        {
+                            AttackFor(1000, skillToUse, castLocation);
                             _attackAttempts += 1;
                         }
                     }
@@ -291,19 +308,31 @@ namespace MapAssist.Automation
             }
         }
 
-        private void AttackWith(CombatSkill skill, Point worldPosition)
+        private void AttackFor(int milliseconds, CombatSkill skill, Point worldPosition)
         {
+            var end = Now + milliseconds;
+
+            while (Now < end)
+            {
+                Attack(skill, worldPosition);
+            }
+        }
+
+        private void Attack(CombatSkill skill, Point worldPosition)
+        {
+            _log.Info("Attack start");
             if (_reposition &&
                 (Automaton.GetDistance(worldPosition, _playerPosition) > skill.MaxRange ||
-                !_pathing.HasLineOfSight(_playerPosition, worldPosition)))
+                ((skill.IsAoe || skill.IsRanged) && !_pathing.HasLineOfSight(_playerPosition, worldPosition))))
             {
                 _log.Info("Want to use " + skill.Name + ", lets get closer.");
                 GetInLOSRange(worldPosition, TOO_CLOSE_RANGE, skill.MaxRange);
             }
 
             _input.DoInputAtWorldPosition(skill.Key, worldPosition);
+            _log.Info("Attack end");
             skill.LastUsage = Now;
-            System.Threading.Thread.Sleep(200);
+            System.Threading.Thread.Sleep(100);
         }
 
         private void GetInLOSRange(Point target, short minRange, short maxRange)
@@ -359,6 +388,16 @@ namespace MapAssist.Automation
             }
 
             return victim;
+        }
+
+        private bool IsBoss(UnitAny monster)
+        {
+            return (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||
+                   (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique ||
+                   (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Champion) == Structs.MonsterTypeFlags.Champion ||
+                   (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Ghostly) == Structs.MonsterTypeFlags.Ghostly ||
+                   (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Minion) == Structs.MonsterTypeFlags.Minion ||
+                   (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Possessed) == Structs.MonsterTypeFlags.Possessed;
         }
 
         private long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();

@@ -15,7 +15,7 @@ namespace MapAssist.Helpers
         private List<PointOfInterest> _pointsOfInterest;
         private MapApi _mapApi;
 
-        public (GameData, AreaData, List<PointOfInterest>, bool) Get()
+        public (GameData, AreaData, List<PointOfInterest>, MapApi, bool) Get()
         {
             var gameData = GameMemory.GetGameData();
             var changed = false;
@@ -69,7 +69,7 @@ namespace MapAssist.Helpers
                 }
             }
 
-            return (gameData, _areaData, _pointsOfInterest, changed);
+            return (gameData, _areaData, _pointsOfInterest, _mapApi, changed);
         }
     }
 }
