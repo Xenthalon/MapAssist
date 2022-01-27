@@ -18,6 +18,7 @@ namespace MapAssist.Automation
         public RunType Type { get; set; }
         public Point KillSpot { get; set; }
         public string Target { get; set; }
+        public string MonsterName { get; set; } = "";
         public Npc MonsterType { get; set; } = Npc.NpcNotApplicable;
         public bool Reposition { get; set; } = true;
         public bool GoSuperchest { get; set; } = false;
@@ -29,6 +30,8 @@ namespace MapAssist.Automation
     {
         public Area Area { get; set; }
         public KillType Kill { get; set; } = KillType.Nothing;
+        public int GroupSize { get; set; } = 0;
+        public int CombatRange { get; set; } = -1;
 
     }
 }

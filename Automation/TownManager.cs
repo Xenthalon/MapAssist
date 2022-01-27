@@ -228,11 +228,11 @@ namespace MapAssist.Automation
 
             var clickTarget = FindClickTarget(target.TxtFileId);
 
-            if (!clickTarget.IsValidPointer())
+            if (!clickTarget.IsValidPointer() && _task != TownTask.NONE)
             {
                 _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
-                Reset();
                 _menuMan.ExitGame();
+                Reset();
                 return;
             }
             else
@@ -253,7 +253,7 @@ namespace MapAssist.Automation
                 {
                     clickTarget = FindClickTarget(target.TxtFileId);
 
-                    if (!clickTarget.IsValidPointer())
+                    if (!clickTarget.IsValidPointer() && _task != TownTask.NONE)
                     {
                         _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
                         Reset();
@@ -271,6 +271,11 @@ namespace MapAssist.Automation
                     _log.Error("Something went wrong interacting with " + target.Name + "! Quitting game!");
                     Reset();
                     _menuMan.ExitGame();
+                    return;
+                }
+
+                if (_task == TownTask.NONE)
+                {
                     return;
                 }
             }

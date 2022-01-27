@@ -237,6 +237,9 @@
     <None Include="IdentifyFilter.yaml" />
     <EmbeddedResource Include="Fonts\formal436bt-regular.otf" />
     <None Include="Resources\Icon1.ico" />
+    <None Include="Wofl.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

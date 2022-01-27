@@ -13,14 +13,16 @@ namespace MapAssist.Automation
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        private short DETECTION_RANGE = 30;
-        private short COMBAT_RANGE = 20;
-        private short TOO_CLOSE_RANGE = 7;
-        private short MAX_ATTACK_ATTEMPTS = 10;
-        private int ESCAPE_COOLDOWN = 3000;
-        private bool OPEN_CHESTS = true;
-        private bool HAS_TELEPORT = true;
-        private short CHEST_RANGE = 20;
+        private short DETECTION_RANGE_DEFAULT;
+        private short DETECTION_RANGE;
+        private short COMBAT_RANGE_DEFAULT;
+        private short COMBAT_RANGE;
+        private short TOO_CLOSE_RANGE;
+        private short MAX_ATTACK_ATTEMPTS;
+        private int ESCAPE_COOLDOWN;
+        private bool OPEN_CHESTS;
+        private bool HAS_TELEPORT;
+        private short CHEST_RANGE;
         private List<CombatSkill> COMBAT_SKILLS = new List<CombatSkill>();
 
         private BackgroundWorker _combatWorker;
@@ -39,17 +41,28 @@ namespace MapAssist.Automation
         private int _targetLastHealth = int.MaxValue;
         private long _lastEscapeAttempt = 0;
 
-        public bool OnlyBosses { get; set; } = false;
+        public bool HuntBosses { get; set; } = false;
+        public int GroupSize { get; set; } = 1;
 
         public bool IsSafe => !Busy && !_combatWorker.IsBusy &&
-                            !_monsters.Where(x => !OnlyBosses || IsBoss(x)).Any(x => !_blacklist.Contains(x.UnitId) &&
-                            Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE);
+                            ((HuntBosses && !_monsters.Any(x => IsBoss(x) &&
+                                                                !_blacklist.Contains(x.UnitId) &&
+                                                                Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE) &&
+                                            _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                                                 Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)
+                                                     .Count() < GroupSize) ||
+                             (!HuntBosses && _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                                                 Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)
+                                                     .Count() < GroupSize));
+        // maybe we can trim the second condition
         public bool Busy => _fighting;
 
         public Combat(BotConfiguration config, Input input, Movement movement, Pathing pathing)
         {
             COMBAT_RANGE = (short)config.Settings.CombatRange;
+            COMBAT_RANGE_DEFAULT = (short)config.Settings.CombatRange;
             DETECTION_RANGE = (short)config.Settings.DetectionRange;
+            DETECTION_RANGE_DEFAULT = (short)config.Settings.DetectionRange;
             TOO_CLOSE_RANGE = (short)config.Settings.TooCloseRange;
             MAX_ATTACK_ATTEMPTS = (short)config.Settings.MaxAttackAttempts;
             ESCAPE_COOLDOWN = config.Settings.EscapeCooldown;
@@ -70,18 +83,50 @@ namespace MapAssist.Automation
             _target = new UnitAny(IntPtr.Zero);
         }
 
-        public void Kill(string name)
+        public void Kill(string name, bool clearArea = false, bool reposition = true)
         {
+            foreach (var monster in _monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique))
+            {
+                var internalName = Types.NPC.SuperUniques.Where(y => y.Value == monster.MonsterStats.Name).First().Key;
+                _log.Info("Type: " + internalName);
+                var localizedName = NpcExtensions.LocalizedName(internalName);
+                _log.Info("Resolved: " + localizedName);
 
+                if (localizedName.Contains(name))
+                {
+                    _log.Info("Found " + name + ": " + monster.UnitId);
+
+                    if (!_fighting && !_combatWorker.IsBusy)
+                    {
+                        _target = monster;
+
+                        if (clearArea)
+                        {
+                            _areaToClear = monster.Position;
+                        }
+
+                        _fighting = true;
+                        _reposition = reposition;
+                        _combatWorker.RunWorkerAsync();
+                    }
+                }
+            }
         }
 
-        public void Kill(uint unitTxtFileNo)
+        public void Kill(uint unitTxtFileNo, bool clearArea = false, bool reposition = true)
         {
             if (!_fighting && !_combatWorker.IsBusy &&
                 _monsters.Any(x => x.TxtFileNo == unitTxtFileNo))
             {
                 _target = _monsters.Where(x => x.TxtFileNo == unitTxtFileNo).First();
+
+                if (clearArea)
+                {
+                    _areaToClear = _target.Position;
+                }
+
                 _fighting = true;
+                _reposition = reposition;
                 _combatWorker.RunWorkerAsync();
             }
         }
@@ -89,10 +134,14 @@ namespace MapAssist.Automation
         public void ClearArea(Point location, bool reposition = true)
         {
             if (!_fighting && !_combatWorker.IsBusy &&
-                _monsters.Where(x => !OnlyBosses || IsBoss(x))
-                        .Any(x => !_blacklist.Contains(x.UnitId) &&
-                        ((reposition && Automaton.GetDistance(location, x.Position) <= DETECTION_RANGE) ||
-                        (!reposition && Automaton.GetDistance(location, x.Position) <= COMBAT_RANGE))))
+                    ((HuntBosses && _monsters.Any(x => IsBoss(x) &&
+                                                    !_blacklist.Contains(x.UnitId) &&
+                                                    ((reposition && Automaton.GetDistance(_playerPosition, x.Position) <= DETECTION_RANGE) ||
+                                                    (!reposition && Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)))) ||
+                    _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                        ((reposition && Automaton.GetDistance(_playerPosition, x.Position) <= DETECTION_RANGE) ||
+                                        (!reposition && Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)))
+                            .Count() >= GroupSize))
             {
                 _log.Info($"Clearing baddies around {location.X}/{location.Y}.");
                 _areaToClear = location;
@@ -179,6 +228,12 @@ namespace MapAssist.Automation
             }
         }
 
+        public void SetCombatRange(short range)
+        {
+            COMBAT_RANGE = range;
+            DETECTION_RANGE = range;
+        }
+
         public void Reset()
         {
             _fighting = false;
@@ -192,18 +247,21 @@ namespace MapAssist.Automation
             _targetLastHealth = int.MaxValue;
             _target = new UnitAny(IntPtr.Zero);
             _combatWorker.CancelAsync();
-            OnlyBosses = false;
+            HuntBosses = false;
+            GroupSize = 1;
+            COMBAT_RANGE = COMBAT_RANGE_DEFAULT;
+            DETECTION_RANGE = DETECTION_RANGE_DEFAULT;
         }
 
         private void Fight(object sender, DoWorkEventArgs e)
         {
             if (_areaToClear != null && !_target.IsValidPointer())
             {
-                var monstersInArea = _monsters.Where(x => (!OnlyBosses || IsBoss(x)) && !_blacklist.Contains(x.UnitId) &&
+                var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
                         ((_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= DETECTION_RANGE) ||
                         (!_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= COMBAT_RANGE)));
 
-                if (monstersInArea.Count() > 0)
+                if ((HuntBosses && monstersInArea.Any(x => IsBoss(x))) || monstersInArea.Count() >= GroupSize)
                 {
                     _fighting = true;
                     _target = GetNextVictim(monstersInArea);
@@ -294,7 +352,7 @@ namespace MapAssist.Automation
                         if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
                         {
                             AttackFor(1000, skillToUse, castLocation);
-                            _attackAttempts += 1;
+                            _attackAttempts += 3;
                         }
                     }
                 }
@@ -320,7 +378,6 @@ namespace MapAssist.Automation
 
         private void Attack(CombatSkill skill, Point worldPosition)
         {
-            _log.Info("Attack start");
             if (_reposition &&
                 (Automaton.GetDistance(worldPosition, _playerPosition) > skill.MaxRange ||
                 ((skill.IsAoe || skill.IsRanged) && !_pathing.HasLineOfSight(_playerPosition, worldPosition))))
@@ -330,7 +387,6 @@ namespace MapAssist.Automation
             }
 
             _input.DoInputAtWorldPosition(skill.Key, worldPosition);
-            _log.Info("Attack end");
             skill.LastUsage = Now;
             System.Threading.Thread.Sleep(100);
         }

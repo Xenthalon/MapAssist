@@ -151,7 +151,7 @@ namespace MapAssist
                         // emergency oog engage!
                         _log.Info("OOG triggered!");
 
-                        System.Threading.Thread.Sleep(500);
+                        System.Threading.Thread.Sleep(300);
 
                         _automation.Reset();
 

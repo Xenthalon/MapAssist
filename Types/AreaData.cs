@@ -113,8 +113,9 @@ namespace MapAssist.Types
         public bool IncludesPoint(Point point)
         {
             var adjPoint = point.Subtract(Origin);
-            return adjPoint.X > 0 && 
-                adjPoint.Y > 0 && 
+            // i added the = here, we really should add + MapPadding to all our coordinates instead!
+            return adjPoint.X >= 0 && 
+                adjPoint.Y >= 0 && 
                 adjPoint.X < ViewInputRect.Width - MapPadding * 2 && 
                 adjPoint.Y < ViewInputRect.Height - MapPadding * 2;
         }

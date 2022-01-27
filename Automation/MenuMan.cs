@@ -107,7 +107,7 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(SHORT_SLEEP);
             _input.DoInputAtScreenPosition("{RMB}", screenLocation);
-            System.Threading.Thread.Sleep(LONG_SLEEP);
+            System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
         public void VendorBuyMax(int x, int y)
@@ -137,7 +137,7 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(SHORT_SLEEP);
             _input.DoInputAtScreenPosition("{LMB}", screenLocation);
-            System.Threading.Thread.Sleep(LONG_SLEEP);
+            System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
         public void RightClickInventoryItem(int x, int y)
@@ -152,7 +152,7 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(SHORT_SLEEP);
             _input.DoInputAtScreenPosition("{RMB}", screenLocation);
-            System.Threading.Thread.Sleep(LONG_SLEEP);
+            System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
         public void StashItemAt(int x, int y)

@@ -1,0 +1,226 @@
+{
+  "run_profiles": [
+    {
+      "name": "Eldritch",
+      "type": "KillTarget",
+      "area_path": [
+        {
+          "Area": "FrigidHighlands",
+          "combat_range": 15
+        }
+      ],
+      "kill_spot": {
+        "x": 3739,
+        "y": 5078
+      },
+      "monster_name": "Eldritch"
+    },
+    {
+      "name": "Shenk",
+      "type": "KillTarget",
+      "area_path": [
+        {
+          "Area": "FrigidHighlands",
+          "combat_range": 10,
+          "group_size": 5
+        },
+        { "Area": "BloodyFoothills" }
+      ],
+      "kill_spot": {
+        "x": 3902,
+        "y": 5113
+      },
+      "monster_name": "Shenk"
+    },
+    {
+      "name": "Countess",
+      "type": "ClearArea",
+      "area_path": [
+        { "Area": "BlackMarsh" },
+        { "Area": "ForgottenTower" },
+        { "Area": "TowerCellarLevel1" },
+        { "Area": "TowerCellarLevel2" },
+        { "Area": "TowerCellarLevel3" },
+        { "Area": "TowerCellarLevel4" },
+        {
+          "Area": "TowerCellarLevel5",
+          "combat_range": 20,
+          "group_size": 3
+        }
+      ],
+      "go_superchest": true
+    },
+    {
+      "name": "Pits",
+      "type": "Explore",
+      "area_path": [
+        { "Area": "OuterCloister" },
+        { "Area": "MonasteryGate" },
+        { "Area": "TamoeHighland" },
+        {
+          "Area": "PitLevel1",
+          "Kill": "Bosses",
+          "group_size": 5,
+          "combat_range": 20
+        },
+        {
+          "Area": "PitLevel2",
+          "Kill": "Everything"
+        }
+      ]
+    },
+    /* { "name": "Andariel", "type": "ClearArea", "area_path": [ { "Area": "CatacombsLevel2" }, { "Area": "CatacombsLevel3" }, { "Area": "CatacombsLevel4" } ], "kill_spot": { "x": 22547, "y": 9550 } }, */
+    /* { "name": "Summoner", "type": "ClearArea", "area_path": [ { "Area": "ArcaneSanctuary" } ], "target": "The Summoner" }, */
+    {
+      "name": "Travincal",
+      "type": "ClearArea",
+      "area_path": [
+        {
+          "Area": "Travincal",
+          "combat_range": 20
+        }
+      ],
+      "target": "Durance of Hate Level 1 (83)"
+    },
+    /* { "name": "Mephisto", "type": "KillTarget", "area_path": [ { "Area": "DuranceOfHateLevel2" }, { "Area": "DuranceOfHateLevel3" } ], "kill_spot": { "x": 17565, "y": 8070 }, "monster_type": "Mephisto" }, */
+    {
+      "name": "Nihlathak",
+      "type": "ClearArea",
+      "area_path": [
+        { "Area": "HallsOfPain" },
+        {
+          "Area": "HallsOfVaught",
+          "group_size": 5
+        }
+      ],
+      "target": "Nihlathak"
+    }
+  ],
+  "character": {
+    "skills": [
+      {
+        "name": "Blessed Hammer",
+        "damage_type": "MAGIC",
+        "max_range": 3,
+        "cooldown": 100,
+        "key": "+{LMB}",
+        "is_main_skill": true
+      },
+      {
+        "name": "Concentration",
+        "key": "a",
+        "is_aura": true,
+        "is_main_skill": "true",
+        "buff_state": "STATE_CONCENTRATION"
+      },
+      {
+        "name": "Redemption",
+        "key": "d",
+        "is_aura": true,
+        "buff_state": "STATE_REDEMPTION"
+      },
+      {
+        "name": "Cleansing",
+        "key": "s",
+        "is_aura": true,
+        "buff_state": "STATE_CLEANSING"
+      },
+      {
+        "name": "Vigor",
+        "key": "{F3}",
+        "is_aura": true,
+        "buff_state": "STATE_STAMINA"
+      }
+    ],
+    "buff_skills": [
+      {
+        "name": "Holy Shield",
+        "cooldown": 500,
+        "key": "r",
+        "buff_state": "STATE_HOLYSHIELD"
+      },
+      {
+        "name": "Battle Orders",
+        "cooldown": 500,
+        "key": "e",
+        "buff_state": "STATE_BATTLEORDERS"
+      },
+      {
+        "name": "Battle Command",
+        "cooldown": 500,
+        "key": "q",
+        "buff_state": "STATE_BATTLECOMMAND"
+      }
+    ],
+    "has_teleport": true,
+    "key_teleport": "w",
+    /* does the character have call to arms */
+    "use_cta": true,
+    "key_weapon_switch": "x",
+    "keys_potion": [ "1", "2", "3", "4" ],
+    /* use potion below this life % */
+    "potion_life_percent": 35.0,
+    /* use potion on merc below this life % */
+    "potion_merc_life_percent": 15.0,
+    /* wait this time between drinks */
+    "potion_wait_interval": 500,
+    /* repair if item falls below this */
+    "repair_percent": 30.0,
+    /* open chests in range */
+    "open_chests": false,
+    "gamble_gold_start": 2000000,
+    "gamble_gold_stop": 150000,
+    /* can only be Ring or Amulet */
+    "gamble_item": "Ring",
+    "key_inventory": "i",
+    /* 0s will not be touched, 1s are open and can be stashed */
+    "inventory": [
+      [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+      [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+      [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ],
+      [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+    ],
+    "key_town_portal": "f",
+    "key_force_move": "."
+  },
+  "settings": {
+    /* quit game after this time (10min) */
+    "max_game_length": 600000,
+    /* how often should things be reattempted (clicking npcs, waypoint menus, pathing etc) */
+    "max_retries": 3,
+    /* only search enemies in this range with repositioning on */
+    "detection_range": 30,
+    /* combat range */
+    "combat_range": 20,
+    /* open chests in this range if enabled */
+    "chest_range": 20,
+    /* IMPORTANT try to keep enemies at this range (7 okay for ranged, lower to 0 for melee) */
+    "too_close_range": 0,
+    /* do not reposition for this many seconds */
+    "escape_cooldown": 3000,
+    /* ignore enemy if it didn't take damage after this many attacks */
+    "max_attack_attempts": 10,
+    "short_sleep": 100,
+    "long_sleep": 300,
+    "game_change_verification_attempts": 75,
+    "area_change_verification_attempts": 5,
+    /* only for dev things */
+    "autostart": true,
+    /* window will be moved and resized to these settings each game */
+    "window_x": 0,
+    "window_y": 0,
+    "window_width": 1920,
+    "window_height": 1080,
+    "web_api_url": "localhost:8080",
+    "pathing": {
+      /* don't touch anything here */
+      "stink_sample_size": 50,
+      "stink_range": 30,
+      "stink_maximum": 500,
+      "stink_max_saturation": 0.98,
+      "range_invalid": 10000,
+      "range_tp": 20,
+      "range_block": 2
+    }
+  }
+}

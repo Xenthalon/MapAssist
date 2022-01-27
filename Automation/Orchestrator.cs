@@ -250,6 +250,7 @@ namespace MapAssist.Automation
                         if (_goBotGo == false)
                         {
                             _log.Info("Aborting run while waiting for Waypoint Menu.");
+                            _townManager.Reset();
                             return;
                         }
                     }
@@ -389,10 +390,20 @@ namespace MapAssist.Automation
                         }
                     }
 
+                    if (runArea.GroupSize > 0)
+                    {
+                        _combat.GroupSize = runArea.GroupSize;
+                    }
+
+                    if (runArea.CombatRange > -1)
+                    {
+                        _combat.SetCombatRange((short)runArea.CombatRange);
+                    }
+
                     if (activeProfile.Type == RunType.Explore && runArea.Kill != KillType.Nothing)
                     {
                         _log.Info("Gonna kill some things in " + runArea.Area);
-                        _combat.OnlyBosses = runArea.Kill == KillType.Bosses;
+                        _combat.HuntBosses = runArea.Kill == KillType.Bosses;
                         _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
                         _exploring = true;
 
@@ -453,7 +464,7 @@ namespace MapAssist.Automation
                 {
                     _log.Info("Gonna kill " + activeProfile.MonsterType);
 
-                    _combat.Kill((uint) activeProfile.MonsterType);
+                    _combat.Kill((uint) activeProfile.MonsterType, true, activeProfile.Reposition);
 
                     do
                     {
@@ -467,11 +478,25 @@ namespace MapAssist.Automation
                         }
                     }
                     while (_combat.Busy);
+                }
+                else if (!string.IsNullOrEmpty(activeProfile.MonsterName))
+                {
+                    _log.Info("Gonna kill " + activeProfile.MonsterName);
 
-                    _log.Info("We got that sucker, making sure things are safe...");
+                    _combat.Kill(activeProfile.MonsterName, true, activeProfile.Reposition);
 
-                    MoveTo(activeProfile.KillSpot);
-                    _combat.ClearArea(activeProfile.KillSpot);
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+
+                        if (_goBotGo == false)
+                        {
+                            _log.Info("Aborting run while killing " + activeProfile.MonsterType);
+                            _combat.Reset();
+                            return;
+                        }
+                    }
+                    while (_combat.Busy);
                 }
             }
             else if (activeProfile.Type == RunType.ClearArea)
@@ -523,6 +548,8 @@ namespace MapAssist.Automation
                     TakePortalHome();
                 }
             }
+
+            _combat.Reset();
         }
 
         public void ExploreArea()
@@ -582,7 +609,9 @@ namespace MapAssist.Automation
             GoRepair();
             GoTrade();
             GoGamble();
-            return GoStash();
+            var result = GoStash();
+            System.Threading.Thread.Sleep(500); // fixes potential race condition between oog reset after 300 ms
+            return result;
         }
 
         private void PickThings()
@@ -646,6 +675,7 @@ namespace MapAssist.Automation
                         if (success)
                         {
                             _pickit.Reset();
+                            System.Threading.Thread.Sleep(500);
                         }
                         else
                         {
@@ -718,8 +748,23 @@ namespace MapAssist.Automation
 
                         if (_inventory.IDScroll.IsValidPointer())
                         {
+                            var itemX = item.X;
+                            var itemY = item.Y;
+
                             _menuMan.RightClickInventoryItem(_inventory.IDScroll.X, _inventory.IDScroll.Y);
                             _menuMan.LeftClickInventoryItem(item.X, item.Y);
+
+                            if (item.Mode == ItemMode.ONCURSOR)
+                            {
+                                _log.Info("Picked up " + Items.ItemName(item.TxtFileNo) + ", oh dear!");
+
+                                do
+                                {
+                                    _menuMan.LeftClickInventoryItem(itemX, itemY);
+                                    System.Threading.Thread.Sleep(500);
+                                }
+                                while (item.Mode == ItemMode.ONCURSOR);
+                            }
 
                             var identifiedItem = _inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
                                 (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
@@ -821,6 +866,12 @@ namespace MapAssist.Automation
                             _log.Info(item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + " didn't make the cut, selling!");
                             _menuMan.SellItemAt(item.X, item.Y);
                         }
+                    }
+
+                    foreach (var item in _inventory.ItemsToTrash)
+                    {
+                        _log.Info("Selling trash " + item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + ".");
+                        _menuMan.SellItemAt(item.X, item.Y);
                     }
 
                     _menuMan.CloseMenu();
@@ -973,6 +1024,9 @@ namespace MapAssist.Automation
                 System.Threading.Thread.Sleep(1500);
                 portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
                 retryCount += 1;
+
+                if (_goBotGo == false)
+                    return false;
             }
             while (!portal.IsValidPointer() && retryCount <= MAX_RETRIES);
 

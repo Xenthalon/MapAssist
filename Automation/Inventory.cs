@@ -128,6 +128,13 @@ namespace MapAssist.Automation
                 free -= size.width * size.height;
             }
 
+            foreach (var item in ItemsToTrash)
+            {
+                var size = GetItemSize(item);
+
+                free -= size.width * size.height;
+            }
+
             if (free != _freeSpace)
             {
                 _freeSpace = free;
