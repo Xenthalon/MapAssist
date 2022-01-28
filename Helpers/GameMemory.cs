@@ -284,6 +284,8 @@ namespace MapAssist.Helpers
                     if (units.Length > 0) units[0].IsHovered = true;
                 }
 
+                var allItems = GetUnits<UnitItem>(UnitType.Item, false).Where(x => x.UnitId < uint.MaxValue).Select(x => { x.Update(); return x; }).ToArray();
+
                 // Return data
                 _firstMemoryRead = false;
                 _errorThrown = false;
@@ -305,6 +307,7 @@ namespace MapAssist.Helpers
                     Mercs = mercList,
                     Objects = objectList,
                     Items = itemList,
+                    RawItems = allItems,
                     ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                     Session = session,
                     Roster = rosterData,

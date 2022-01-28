@@ -179,6 +179,14 @@ namespace MapAssist
                           (int)(MapAssistConfiguration.Loaded.RenderingConfiguration.InitialSize * 0.05f);
                     }
                 }
+
+                if (keys == new Hotkey("L"))
+                {
+                    if (InGame())
+                    {
+                        InventoryExport.ExportPlayerInventory(_gameData.PlayerUnit, _gameData.RawItems);
+                    }
+                }
             }
         }
 
