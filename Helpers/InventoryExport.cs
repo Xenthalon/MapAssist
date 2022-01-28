@@ -12,7 +12,8 @@ namespace MapAssist.Helpers
 {
     public class InventoryExport
     {
-        private static string itemTemplate = "<tr><td colspan=2></td><td colspan=4 style=\"color: {{color}}\">{{name}}</td></tr>";
+        private static string itemTemplate = "<div class=\"item\"><div class=\"item-name\" style=\"color: {{color}}\">{{name}}</div>{{stats}}</div>";
+        private static string statTemplate = "<div class=\"stat\" style=\"color:#4169E1\">{{text}}</div>";
 
         public static void ExportPlayerInventory(UnitPlayer player, UnitItem[] itemAry)
         {
@@ -25,15 +26,27 @@ namespace MapAssist.Helpers
 
             var equippedItems = items.Where(x => x.ItemData.dwOwnerID == player.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc != BodyLoc.NONE);
 
-            template = template.Replace("{{equipped-items}}", GetItemList(equippedItems));
+            if (equippedItems.Count() > 0)
+            {
+                template = template.Replace("{{show-equipped}}", "show");
+                template = template.Replace("{{equipped-items}}", GetItemList(equippedItems));
+            }
 
             var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == player.UnitId && x.ItemData.InvPage == InvPage.INVENTORY);
 
-            template = template.Replace("{{inventory-items}}", GetItemList(inventoryItems));
+            if (inventoryItems.Count() > 0)
+            {
+                template = template.Replace("{{show-inventory}}", "show");
+                template = template.Replace("{{inventory-items}}", GetItemList(inventoryItems));
+            }
 
             var stashItems = items.Where(x => x.ItemData.dwOwnerID == player.UnitId && x.ItemData.InvPage == InvPage.STASH);
 
-            template = template.Replace("{{stash-items}}", GetItemList(stashItems));
+            if (stashItems.Count() > 0)
+            {
+                template = template.Replace("{{show-stash}}", "show");
+                template = template.Replace("{{stash-items}}", GetItemList(stashItems));
+            }
 
             File.WriteAllText(outputfile, template);
         }
@@ -54,7 +67,68 @@ namespace MapAssist.Helpers
         {
             var itemName = Items.ItemLogDisplayName(item, new Settings.ItemFilter());
 
-            return itemTemplate.Replace("{{color}}", ColorTranslator.ToHtml(item.ItemBaseColor)).Replace("{{name}}", itemName);
+            if (item.ItemData.ItemQuality > ItemQuality.SUPERIOR && item.IsIdentified)
+            {
+                itemName = itemName.Replace("[Identified] ", "");
+            }
+
+            var itemText = itemTemplate.Replace("{{color}}", ColorTranslator.ToHtml(item.ItemBaseColor)).Replace("{{name}}", itemName);
+            var statText = "";
+
+            if (item.ItemData.ItemQuality > ItemQuality.SUPERIOR && !item.IsIdentified)
+            {
+                statText += statTemplate.Replace("{{text}}", "Unidentified").Replace("4169E1", "DD0000");
+
+                if (item.Stats.ContainsKey(Stat.Defense))
+                {
+                    int defense;
+
+                    item.Stats.TryGetValue(Stat.Defense, out defense);
+
+                    statText += statTemplate.Replace("{{text}}", Stat.Defense.ToString() + ": " + defense);
+                }
+            }
+            else
+            {
+                foreach (var stat in item.Stats)
+                {
+                    var name = stat.Key.ToString();
+                    var value = stat.Value;
+
+                    if (stat.Key == Stat.MaxLife || stat.Key == Stat.MaxMana)
+                    {
+                        value = ConvertHexHealthToInt(stat.Value);
+                    }
+
+                    if (stat.Key == Stat.AddClassSkills)
+                    {
+                        var classSkills = Items.GetItemStatAddClassSkills(item, Structs.PlayerClass.Any);
+                        name = classSkills.Item1.ToString();
+                        value = classSkills.Item2;
+                    }
+
+                    if (stat.Key == Stat.AddSkillTab)
+                    {
+                        var skillTree = Items.GetItemStatAddSkillTreeSkills(item, SkillTree.Any);
+                        name = skillTree.Item1.ToString() + " Skills";
+                        value = skillTree.Item2;
+                    }
+
+                    statText += statTemplate.Replace("{{text}}", name + ": " + value);
+                }
+            }
+
+
+            itemText = itemText.Replace("{{stats}}", statText);
+
+            return itemText;
+        }
+
+        private static int ConvertHexHealthToInt(int hexHealth)
+        {
+            var hexValue = hexHealth.ToString("X");
+            hexValue = hexValue.Substring(0, hexValue.Length - 2);
+            return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
         }
 
         private static string ReadResource(string name)
