@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
@@ -20,9 +18,10 @@ namespace MapAssist.Automation
         private short TOO_CLOSE_RANGE;
         private short MAX_ATTACK_ATTEMPTS;
         private int ESCAPE_COOLDOWN;
-        private bool OPEN_CHESTS;
-        private bool HAS_TELEPORT;
+        private bool HAS_TELEPORT = false;
         private short CHEST_RANGE;
+        private int SLEEP_SHORT;
+        private int SLEEP_LONG;
         private List<CombatSkill> COMBAT_SKILLS = new List<CombatSkill>();
 
         private BackgroundWorker _combatWorker;
@@ -30,8 +29,10 @@ namespace MapAssist.Automation
         private Input _input;
         private Movement _movement;
         private Pathing _pathing;
+        private bool _defenseActive = false;
         private bool _reposition = true;
         private Point _playerPosition;
+        private UnitAny _playerUnit;
         private HashSet<UnitAny> _monsters;
         private IEnumerable<UnitAny> _chests;
         private UnitAny _target;
@@ -41,21 +42,27 @@ namespace MapAssist.Automation
         private int _targetLastHealth = int.MaxValue;
         private long _lastEscapeAttempt = 0;
 
-        public bool HuntBosses { get; set; } = false;
+        public bool Busy => _fighting;
         public int GroupSize { get; set; } = 1;
+        public bool HasTeleport => HAS_TELEPORT;
+        public bool HuntBosses { get; set; } = false;
 
         public bool IsSafe => !Busy && !_combatWorker.IsBusy &&
                             ((HuntBosses && !_monsters.Any(x => IsBoss(x) &&
                                                                 !_blacklist.Contains(x.UnitId) &&
                                                                 Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE) &&
                                             _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                                                 (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
                                                                  Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)
                                                      .Count() < GroupSize) ||
                              (!HuntBosses && _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                                                 (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
                                                                  Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)
                                                      .Count() < GroupSize));
         // maybe we can trim the second condition
-        public bool Busy => _fighting;
+        public List<Npc> MonsterFilter = new List<Npc>();
+        public bool OpenChests { get; set; } = false;
+
 
         public Combat(BotConfiguration config, Input input, Movement movement, Pathing pathing)
         {
@@ -67,8 +74,9 @@ namespace MapAssist.Automation
             MAX_ATTACK_ATTEMPTS = (short)config.Settings.MaxAttackAttempts;
             ESCAPE_COOLDOWN = config.Settings.EscapeCooldown;
             CHEST_RANGE = (short)config.Settings.ChestRange;
-            OPEN_CHESTS = config.Character.OpenChests;
             HAS_TELEPORT = config.Character.HasTeleport;
+            SLEEP_SHORT = config.Settings.ShortSleep;
+            SLEEP_LONG = config.Settings.LongSleep;
 
             COMBAT_SKILLS.AddRange(config.Character.Skills);
 
@@ -139,6 +147,7 @@ namespace MapAssist.Automation
                                                     ((reposition && Automaton.GetDistance(_playerPosition, x.Position) <= DETECTION_RANGE) ||
                                                     (!reposition && Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)))) ||
                     _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                                        (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
                                         ((reposition && Automaton.GetDistance(_playerPosition, x.Position) <= DETECTION_RANGE) ||
                                         (!reposition && Automaton.GetDistance(_playerPosition, x.Position) <= COMBAT_RANGE)))
                             .Count() >= GroupSize))
@@ -158,7 +167,7 @@ namespace MapAssist.Automation
 
         public void CheckChests()
         {
-            if (!OPEN_CHESTS)
+            if (!OpenChests)
                 return;
 
             if (IsSafe)
@@ -174,7 +183,10 @@ namespace MapAssist.Automation
 
                 foreach (var chest in _chests.Where(x => Automaton.GetDistance(x.Position, _playerPosition) <= CHEST_RANGE))
                 {
-                    GetInLOSRange(_target.Position, 1, (short)(interactRange - 1));
+                    if (Automaton.GetDistance(chest.Position, _playerPosition) > interactRange)
+                    {
+                        GetInLOSRange(chest.Position, 1, (short)(interactRange));
+                    }
 
                     if (telekinesis != null)
                     {
@@ -185,7 +197,7 @@ namespace MapAssist.Automation
                     else
                     {
                         _input.DoInputAtWorldPosition("{LMB}", chest.Position);
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(SLEEP_LONG * 2);
                     }
 
                     _log.Info("Opened chest " + chest.UnitId + ".");
@@ -197,6 +209,80 @@ namespace MapAssist.Automation
             }
         }
 
+        /// <summary>
+        /// Activates combat aura or things like venom maybe?
+        /// </summary>
+        public void PrepareForCombat()
+        {
+            if (COMBAT_SKILLS.Any(x => x.IsAura && x.IsMainSkill))
+            {
+                var combatAura = COMBAT_SKILLS.Where(x => x.IsAura && x.IsMainSkill).First();
+
+                if (!_playerUnit.StateList.Contains(combatAura.BuffState))
+                {
+                    _input.DoInputAtWorldPosition(combatAura.Key, _playerPosition);
+                    System.Threading.Thread.Sleep(SLEEP_LONG);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Activates town buffs, like Vigor, or assassin movement buffs maybe?
+        /// </summary>
+        public void PrepareForTown()
+        {
+            if (COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_STAMINA))
+            {
+                var vigorAura = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_STAMINA).First();
+
+                if (!_playerUnit.StateList.Contains(vigorAura.BuffState))
+                {
+                    _input.DoInputAtWorldPosition(vigorAura.Key, _playerPosition);
+                    System.Threading.Thread.Sleep(SLEEP_LONG);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Selects a mitigation strategy against a specified element if possible
+        /// </summary>
+        /// <param name="resist"></param>
+        public void DefendAgainst(Resist resist)
+        {
+            CombatSkill mitigationSkill = null;
+
+            if ((resist == Resist.FIRE || resist == Resist.COLD || resist == Resist.LIGHTNING || resist == Resist.POISON) &&
+                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTALL))
+            {
+                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTALL).First();
+            }
+
+            if (resist == Resist.FIRE &&
+                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTFIRE))
+            {
+                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTFIRE).First();
+            }
+
+            if (resist == Resist.COLD &&
+                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTCOLD))
+            {
+                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTCOLD).First();
+            }
+
+            if (resist == Resist.LIGHTNING &&
+                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHT))
+            {
+                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHT).First();
+            }
+
+            if (mitigationSkill != null && !_playerUnit.StateList.Contains(mitigationSkill.BuffState))
+            {
+                _input.DoInputAtWorldPosition(mitigationSkill.Key, _playerPosition);
+                System.Threading.Thread.Sleep(SLEEP_LONG);
+                _defenseActive = true;
+            }
+        }
+
         public void Update(GameData gameData)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
@@ -205,6 +291,7 @@ namespace MapAssist.Automation
                                                 (x.ObjectData.InteractType & ((byte)Chest.InteractFlags.Locked)) == ((byte)Chest.InteractFlags.None)); // only non-locked chests
                 _monsters = gameData.Monsters;
                 _playerPosition = gameData.PlayerPosition;
+                _playerUnit = gameData.PlayerUnit;
 
                 if (_target.IsValidPointer())
                 {
@@ -237,6 +324,7 @@ namespace MapAssist.Automation
         public void Reset()
         {
             _fighting = false;
+            _defenseActive = false;
             _areaToClear = null;
             _reposition = true;
             _lastEscapeAttempt = 0;
@@ -249,6 +337,8 @@ namespace MapAssist.Automation
             _combatWorker.CancelAsync();
             HuntBosses = false;
             GroupSize = 1;
+            OpenChests = false;
+            MonsterFilter = new List<Npc>();
             COMBAT_RANGE = COMBAT_RANGE_DEFAULT;
             DETECTION_RANGE = DETECTION_RANGE_DEFAULT;
         }
@@ -258,12 +348,17 @@ namespace MapAssist.Automation
             if (_areaToClear != null && !_target.IsValidPointer())
             {
                 var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
+                        (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
                         ((_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= DETECTION_RANGE) ||
                         (!_reposition && Automaton.GetDistance((Point)_areaToClear, x.Position) <= COMBAT_RANGE)));
 
                 if ((HuntBosses && monstersInArea.Any(x => IsBoss(x))) || monstersInArea.Count() >= GroupSize)
                 {
                     _fighting = true;
+
+                    if (!_defenseActive)
+                        PrepareForCombat();
+
                     _target = GetNextVictim(monstersInArea);
                 }
                 else
@@ -296,10 +391,10 @@ namespace MapAssist.Automation
                     if (COMBAT_SKILLS.Any(x => x.IsAoe && Now - x.LastUsage > x.Cooldown))
                     {
                         CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
-                        System.Threading.Thread.Sleep(200);
+                        System.Threading.Thread.Sleep(SLEEP_SHORT);
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
-                        System.Threading.Thread.Sleep(200);
+                        System.Threading.Thread.Sleep(SLEEP_SHORT);
                     }
 
                     if ((_target.TxtFileNo == (uint)Npc.Mephisto || _target.TxtFileNo == (uint)Npc.Diablo || _target.TxtFileNo == (uint)Npc.BaalThrone) &&
@@ -319,7 +414,7 @@ namespace MapAssist.Automation
 
                             _input.DoInput(staticSkill.Key);
                             staticSkill.LastUsage = Now;
-                            System.Threading.Thread.Sleep(200);
+                            System.Threading.Thread.Sleep(SLEEP_SHORT);
                         }
                     }
                     else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
@@ -332,10 +427,8 @@ namespace MapAssist.Automation
                             Now - _lastEscapeAttempt > ESCAPE_COOLDOWN)
                         {
                             _log.Info("This is a bit personal, lets get away.");
-                            System.Threading.Thread.Sleep(300);
                             GetInLOSRange(_target.Position, TOO_CLOSE_RANGE, (short)(skillToUse.MaxRange - 1));
                             _lastEscapeAttempt = Now;
-                            System.Threading.Thread.Sleep(300);
                         }
 
                         if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
@@ -388,14 +481,14 @@ namespace MapAssist.Automation
 
             _input.DoInputAtWorldPosition(skill.Key, worldPosition);
             skill.LastUsage = Now;
-            System.Threading.Thread.Sleep(100);
+            System.Threading.Thread.Sleep(SLEEP_SHORT);
         }
 
         private void GetInLOSRange(Point target, short minRange, short maxRange)
         {
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(SLEEP_LONG);
             _movement.GetInLOSRange(target, minRange, maxRange - 1, HAS_TELEPORT);
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(SLEEP_LONG);
         }
 
         private UnitAny GetNextVictim(IEnumerable<UnitAny> monsters)
@@ -406,13 +499,23 @@ namespace MapAssist.Automation
             var victim = new UnitAny(IntPtr.Zero);
 
             var supers = monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||
-                                            (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique);
+                                            (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique ||
+                                            (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Champion) == Structs.MonsterTypeFlags.Champion ||
+                                            (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Ghostly) == Structs.MonsterTypeFlags.Ghostly ||
+                                            (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Possessed) == Structs.MonsterTypeFlags.Possessed);
 
             // get closest super not immune to us with line of sight
             if (supers.Any(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position)))
             {
                 victim = supers.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
                                 .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).First();
+            }
+
+            // get closest priority enemy (Shamans, Defilers, Spawners etc) not immune to us with line of sight
+            if (!victim.IsValidPointer())
+            {
+                victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && PriorityEnemies.Contains((Npc)x.TxtFileNo) && _pathing.HasLineOfSight(_playerPosition, x.Position))
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
             }
 
             // get closest enemy not immune to us with line of sight
@@ -436,6 +539,13 @@ namespace MapAssist.Automation
                                 .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
             }
 
+            // get closest priority enemy (Shamans, Defilers, Spawners etc) not immune to our fallback
+            if (!victim.IsValidPointer())
+            {
+                victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType) && PriorityEnemies.Contains((Npc)x.TxtFileNo))
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            }
+
             // get closest enemy not immune to our fallback
             if (!victim.IsValidPointer() && fallbackSkill != null)
             {
@@ -455,6 +565,31 @@ namespace MapAssist.Automation
                    (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Minion) == Structs.MonsterTypeFlags.Minion ||
                    (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Possessed) == Structs.MonsterTypeFlags.Possessed;
         }
+
+        private List<Npc> PriorityEnemies = new List<Npc> {
+            // shamans
+            Npc.CarverShaman,
+            Npc.CarverShaman2,
+            Npc.DarkShaman,
+            Npc.DarkShaman2,
+            Npc.DevilkinShaman,
+            Npc.DevilkinShaman2,
+            Npc.FallenShaman,
+            Npc.WarpedShaman,
+            // mummy revivers
+            Npc.HollowOne,
+            Npc.Guardian,
+            Npc.Guardian2,
+            Npc.Unraveler,
+            Npc.Unraveler2,
+            Npc.HoradrimAncient,
+            Npc.HoradrimAncient2,
+            Npc.HoradrimAncient3,
+            // maggots, more?
+            Npc.SandMaggot,
+            // those spawner dudes from act 4?
+            // also missing: Nests, Mummy spawners
+        };
 
         private long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
     }

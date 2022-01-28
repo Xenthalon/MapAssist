@@ -23,7 +23,6 @@
         public double PotionMercLifePercent { get; set; }
         public int PotionWaitInterval { get; set; }
         public double RepairPercent { get; set; }
-        public bool OpenChests { get; set; }
         public int GambleGoldStart { get; set; }
         public int GambleGoldStop { get; set; }
         public string GambleItem { get; set; }

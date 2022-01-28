@@ -46,6 +46,7 @@ namespace MapAssist.Automation
         private GameData _gameData;
 
         private int _activeProfileIndex = -1;
+        private IRunProfile _activeSpecialProfile;
         private bool _goBotGo = false;
 
         private List<Point> _exploreSpots = new List<Point>();
@@ -147,6 +148,16 @@ namespace MapAssist.Automation
             {
                 _mapApi = mapApi;
             }
+
+            if (_activeSpecialProfile != null)
+            {
+                _activeSpecialProfile.Update(gameData, pointsOfInterest);
+
+                if (!_goBotGo)
+                {
+                    _activeSpecialProfile.Abort();
+                }
+            }
         }
 
         public void Run()
@@ -176,6 +187,7 @@ namespace MapAssist.Automation
             _possiblyNewGameCounter = 0;
             _exploring = false;
             _exploreSpots = new List<Point>();
+            _activeSpecialProfile = null;
 
             _buffboy.Reset();
             _chicken.Reset();
@@ -214,6 +226,7 @@ namespace MapAssist.Automation
             {
                 RecoverCorpse();
                 BeltAnyPotions();
+                _combat.PrepareForTown();
                 var stashed = DoChores();
 
                 if (!stashed)
@@ -224,6 +237,11 @@ namespace MapAssist.Automation
                     _activeProfileIndex = RUN_PROFILES.Count() - 1;
                     return;
                 }
+            }
+
+            if (activeProfile.MonsterFilter.Count > 0)
+            {
+                _combat.MonsterFilter = activeProfile.MonsterFilter;
             }
 
             foreach (RunArea runArea in activeProfile.AreaPath)
@@ -273,6 +291,7 @@ namespace MapAssist.Automation
                     if (!_townManager.IsInTown)
                     {
                         BuffMe();
+                        _combat.PrepareForCombat(); // maybe select defense aura for movement?
                     }
 
                     _log.Info("looking for " + runArea.Area);
@@ -400,6 +419,8 @@ namespace MapAssist.Automation
                         _combat.SetCombatRange((short)runArea.CombatRange);
                     }
 
+                    _combat.OpenChests = runArea.OpenChests;
+
                     if (activeProfile.Type == RunType.Explore && runArea.Kill != KillType.Nothing)
                     {
                         _log.Info("Gonna kill some things in " + runArea.Area);
@@ -428,6 +449,7 @@ namespace MapAssist.Automation
             if (!_townManager.IsInTown)
             {
                 BuffMe();
+                _combat.PrepareForCombat();
             }
 
             if (_goBotGo == false)
@@ -502,6 +524,20 @@ namespace MapAssist.Automation
             else if (activeProfile.Type == RunType.ClearArea)
             {
                 _combat.ClearArea(_gameData.PlayerPosition, activeProfile.Reposition);
+            }
+            else if (activeProfile.Type == RunType.Travincal)
+            {
+                _activeSpecialProfile = new Profiles.Travincal(_buffboy, _combat, _movement, _pickit);
+                System.Threading.Thread.Sleep(500); // give update time to insert data
+                _activeSpecialProfile.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
+
+                _activeSpecialProfile = null;
             }
 
             do

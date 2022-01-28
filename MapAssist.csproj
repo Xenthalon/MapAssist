@@ -90,7 +90,7 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyName>XenBot-TwoOh</AssemblyName>
+    <AssemblyName>XenBot-TwoOne</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -121,6 +121,7 @@
     <Compile Include="Automation\Identification\IdentifyParser.cs" />
     <Compile Include="Automation\Input.cs" />
     <Compile Include="Automation\InputOperations.cs" />
+    <Compile Include="Automation\Profiles\IRunProfile.cs" />
     <Compile Include="Automation\MenuMan.cs" />
     <Compile Include="Automation\Movement.cs" />
     <Compile Include="Automation\Navigation\StinkySpot.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Automation\Orchestrator.cs" />
     <Compile Include="Automation\Pathing.cs" />
     <Compile Include="Automation\PickIt.cs" />
+    <Compile Include="Automation\Profiles\Travincal.cs" />
     <Compile Include="Automation\RunProfile.cs" />
     <Compile Include="Automation\Identification\StatFilter.cs" />
     <Compile Include="Automation\TownManager.cs" />
