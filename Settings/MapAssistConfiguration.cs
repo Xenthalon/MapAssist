@@ -216,6 +216,9 @@ public class HotkeyConfiguration
 
     [YamlMember(Alias = "ZoomOutKey", ApplyNamingConventions = false)]
     public string ZoomOutKey { get; set; }
+
+    [YamlMember(Alias = "ExportItemsKey", ApplyNamingConventions = false)]
+    public string ExportItemsKey { get; set; }
 }
 
 public class GameInfoConfiguration

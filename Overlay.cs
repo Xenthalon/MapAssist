@@ -180,7 +180,7 @@ namespace MapAssist
                     }
                 }
 
-                if (keys == new Hotkey("L"))
+                if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ExportItemsKey))
                 {
                     if (InGame())
                     {
