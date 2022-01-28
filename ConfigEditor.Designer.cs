@@ -92,10 +92,12 @@
             this.txtZoomInKey = new System.Windows.Forms.TextBox();
             this.txtAreaLevelKey = new System.Windows.Forms.TextBox();
             this.txtToggleMapKey = new System.Windows.Forms.TextBox();
+            this.txtExportItemsKey = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabDrawing = new System.Windows.Forms.TabControl();
             this.tabIcon = new System.Windows.Forms.TabPage();
@@ -771,9 +773,9 @@
             // 
             this.grpPresets.Controls.Add(this.lblMapLinesMode);
             this.grpPresets.Controls.Add(this.cboMapLinesMode);
-            this.grpPresets.Location = new System.Drawing.Point(11, 255);
+            this.grpPresets.Location = new System.Drawing.Point(11, 263);
             this.grpPresets.Name = "grpPresets";
-            this.grpPresets.Size = new System.Drawing.Size(300, 59);
+            this.grpPresets.Size = new System.Drawing.Size(300, 51);
             this.grpPresets.TabIndex = 24;
             this.grpPresets.TabStop = false;
             this.grpPresets.Text = "Presets";
@@ -806,7 +808,7 @@
             this.groupBox3.Controls.Add(this.lblBuffSize);
             this.groupBox3.Controls.Add(this.cboBuffPosition);
             this.groupBox3.Controls.Add(this.buffSize);
-            this.groupBox3.Location = new System.Drawing.Point(11, 154);
+            this.groupBox3.Location = new System.Drawing.Point(11, 166);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(300, 91);
             this.groupBox3.TabIndex = 23;
@@ -873,13 +875,15 @@
             this.grpHotkeys.Controls.Add(this.txtZoomInKey);
             this.grpHotkeys.Controls.Add(this.txtAreaLevelKey);
             this.grpHotkeys.Controls.Add(this.txtToggleMapKey);
+            this.grpHotkeys.Controls.Add(this.txtExportItemsKey);
             this.grpHotkeys.Controls.Add(this.label15);
             this.grpHotkeys.Controls.Add(this.label14);
             this.grpHotkeys.Controls.Add(this.label13);
             this.grpHotkeys.Controls.Add(this.label12);
+            this.grpHotkeys.Controls.Add(this.label22);
             this.grpHotkeys.Location = new System.Drawing.Point(11, 9);
             this.grpHotkeys.Name = "grpHotkeys";
-            this.grpHotkeys.Size = new System.Drawing.Size(300, 135);
+            this.grpHotkeys.Size = new System.Drawing.Size(300, 155);
             this.grpHotkeys.TabIndex = 8;
             this.grpHotkeys.TabStop = false;
             this.grpHotkeys.Text = "Hotkeys";
@@ -920,6 +924,15 @@
             this.txtToggleMapKey.TabIndex = 12;
             this.txtToggleMapKey.TextChanged += new System.EventHandler(this.txtToggleMapKey_TextChanged);
             // 
+            // txtExportItemsKey
+            // 
+            this.txtExportItemsKey.Location = new System.Drawing.Point(143, 129);
+            this.txtExportItemsKey.MaxLength = 1;
+            this.txtExportItemsKey.Name = "txtExportItemsKey";
+            this.txtExportItemsKey.Size = new System.Drawing.Size(94, 20);
+            this.txtExportItemsKey.TabIndex = 16;
+            this.txtExportItemsKey.TextChanged += new System.EventHandler(this.txtExportItemsKey_TextChanged);
+            // 
             // label15
             // 
             this.label15.AutoSize = true;
@@ -955,6 +968,15 @@
             this.label12.Size = new System.Drawing.Size(85, 13);
             this.label12.TabIndex = 8;
             this.label12.Text = "Toggle Map Key";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(6, 132);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(86, 13);
+            this.label22.TabIndex = 17;
+            this.label22.Text = "Export Items Key";
             // 
             // tabPage2
             // 
@@ -1840,9 +1862,11 @@
         private System.Windows.Forms.TextBox txtZoomInKey;
         private System.Windows.Forms.TextBox txtAreaLevelKey;
         private System.Windows.Forms.TextBox txtToggleMapKey;
+        private System.Windows.Forms.TextBox txtExportItemsKey;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label22;
     }
 }

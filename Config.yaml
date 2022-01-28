@@ -4,6 +4,7 @@ HotkeyConfiguration:
   AreaLevelKey: '['
   ZoomInKey: Num +
   ZoomOutKey: Num -
+  ExportItemsKey: L
 HiddenAreas:
 - Rogue Encampment
 - Lut Gholein
