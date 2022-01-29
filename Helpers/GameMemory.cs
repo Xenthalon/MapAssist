@@ -228,7 +228,7 @@ namespace MapAssist.Helpers
                     if (item.UnitId == uint.MaxValue) continue;
 
                     item.IsPlayerOwned = _playerCubeOwnerID[_currentProcessId] != uint.MaxValue &&
-                        item.ItemData.dwOwnerID == _playerCubeOwnerID[_currentProcessId];
+                        item.ItemData.dwOwnerID == _playerCubeOwnerID[_currentProcessId] && !item.IsInSocket;
 
                     if (item.IsInStore)
                     {
