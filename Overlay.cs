@@ -184,7 +184,7 @@ namespace MapAssist
                 {
                     if (InGame())
                     {
-                        InventoryExport.ExportPlayerInventory(_gameData.PlayerUnit, _gameData.RawItems);
+                        ItemExport.ExportPlayerInventory(_gameData.PlayerUnit, _gameData.AllItems);
                     }
                 }
             }

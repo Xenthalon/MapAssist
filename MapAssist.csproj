@@ -130,7 +130,7 @@
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
     <Compile Include="Helpers\Hotkey.cs" />
-    <Compile Include="Helpers\InventoryExport.cs" />
+    <Compile Include="Helpers\ItemExport.cs" />
     <Compile Include="Helpers\Localization.cs" />
     <Compile Include="Helpers\LootFilter.cs" />
     <Compile Include="Helpers\ProcessContext.cs" />

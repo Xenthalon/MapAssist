@@ -223,7 +223,7 @@
             this.groupBox5.Controls.Add(this.label11);
             this.groupBox5.Location = new System.Drawing.Point(11, 256);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(300, 57);
+            this.groupBox5.Size = new System.Drawing.Size(300, 58);
             this.groupBox5.TabIndex = 25;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Translation";
@@ -489,7 +489,7 @@
             this.groupBox1.Controls.Add(this.chkToggleViaPanels);
             this.groupBox1.Location = new System.Drawing.Point(11, 9);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(300, 310);
+            this.groupBox1.Size = new System.Drawing.Size(300, 305);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Rendering";
@@ -497,7 +497,7 @@
             // chkMonsterHealthBar
             // 
             this.chkMonsterHealthBar.AutoSize = true;
-            this.chkMonsterHealthBar.Location = new System.Drawing.Point(10, 183);
+            this.chkMonsterHealthBar.Location = new System.Drawing.Point(10, 179);
             this.chkMonsterHealthBar.Name = "chkMonsterHealthBar";
             this.chkMonsterHealthBar.Size = new System.Drawing.Size(143, 17);
             this.chkMonsterHealthBar.TabIndex = 26;
@@ -510,7 +510,7 @@
             this.btnClearBorderColor.FlatAppearance.BorderSize = 0;
             this.btnClearBorderColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearBorderColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearBorderColor.Location = new System.Drawing.Point(232, 279);
+            this.btnClearBorderColor.Location = new System.Drawing.Point(232, 273);
             this.btnClearBorderColor.Name = "btnClearBorderColor";
             this.btnClearBorderColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearBorderColor.TabIndex = 23;
@@ -523,7 +523,7 @@
             this.btnClearWalkableColor.FlatAppearance.BorderSize = 0;
             this.btnClearWalkableColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearWalkableColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearWalkableColor.Location = new System.Drawing.Point(102, 279);
+            this.btnClearWalkableColor.Location = new System.Drawing.Point(102, 273);
             this.btnClearWalkableColor.Name = "btnClearWalkableColor";
             this.btnClearWalkableColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearWalkableColor.TabIndex = 22;
@@ -534,7 +534,7 @@
             // chkStickToLastGameWindow
             // 
             this.chkStickToLastGameWindow.AutoSize = true;
-            this.chkStickToLastGameWindow.Location = new System.Drawing.Point(10, 252);
+            this.chkStickToLastGameWindow.Location = new System.Drawing.Point(10, 248);
             this.chkStickToLastGameWindow.Name = "chkStickToLastGameWindow";
             this.chkStickToLastGameWindow.Size = new System.Drawing.Size(222, 17);
             this.chkStickToLastGameWindow.TabIndex = 25;
@@ -545,7 +545,7 @@
             // btnBorderColor
             // 
             this.btnBorderColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnBorderColor.Location = new System.Drawing.Point(140, 279);
+            this.btnBorderColor.Location = new System.Drawing.Point(140, 273);
             this.btnBorderColor.Name = "btnBorderColor";
             this.btnBorderColor.Size = new System.Drawing.Size(91, 23);
             this.btnBorderColor.TabIndex = 23;
@@ -556,7 +556,7 @@
             // btnWalkableColor
             // 
             this.btnWalkableColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnWalkableColor.Location = new System.Drawing.Point(10, 279);
+            this.btnWalkableColor.Location = new System.Drawing.Point(10, 273);
             this.btnWalkableColor.Name = "btnWalkableColor";
             this.btnWalkableColor.Size = new System.Drawing.Size(91, 23);
             this.btnWalkableColor.TabIndex = 22;
@@ -567,7 +567,7 @@
             // chkOverlayMode
             // 
             this.chkOverlayMode.AutoSize = true;
-            this.chkOverlayMode.Location = new System.Drawing.Point(10, 160);
+            this.chkOverlayMode.Location = new System.Drawing.Point(10, 156);
             this.chkOverlayMode.Name = "chkOverlayMode";
             this.chkOverlayMode.Size = new System.Drawing.Size(92, 17);
             this.chkOverlayMode.TabIndex = 5;
@@ -578,7 +578,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(123, 161);
+            this.label2.Location = new System.Drawing.Point(123, 157);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(44, 13);
             this.label2.TabIndex = 7;
@@ -589,7 +589,7 @@
             this.cboPosition.AllowDrop = true;
             this.cboPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboPosition.FormattingEnabled = true;
-            this.cboPosition.Location = new System.Drawing.Point(176, 156);
+            this.cboPosition.Location = new System.Drawing.Point(176, 152);
             this.cboPosition.Name = "cboPosition";
             this.cboPosition.Size = new System.Drawing.Size(107, 21);
             this.cboPosition.TabIndex = 6;
@@ -600,7 +600,7 @@
             this.mapZoom.AutoSize = false;
             this.mapZoom.BackColor = System.Drawing.Color.White;
             this.mapZoom.LargeChange = 1;
-            this.mapZoom.Location = new System.Drawing.Point(79, 121);
+            this.mapZoom.Location = new System.Drawing.Point(79, 118);
             this.mapZoom.Maximum = 25;
             this.mapZoom.Minimum = 1;
             this.mapZoom.Name = "mapZoom";
@@ -615,7 +615,7 @@
             this.mapSize.AutoSize = false;
             this.mapSize.BackColor = System.Drawing.Color.White;
             this.mapSize.LargeChange = 1;
-            this.mapSize.Location = new System.Drawing.Point(79, 87);
+            this.mapSize.Location = new System.Drawing.Point(79, 85);
             this.mapSize.Maximum = 16;
             this.mapSize.Name = "mapSize";
             this.mapSize.Size = new System.Drawing.Size(170, 27);
@@ -628,7 +628,7 @@
             // 
             this.lblMapZoomValue.AutoSize = true;
             this.lblMapZoomValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblMapZoomValue.Location = new System.Drawing.Point(252, 124);
+            this.lblMapZoomValue.Location = new System.Drawing.Point(252, 121);
             this.lblMapZoomValue.Name = "lblMapZoomValue";
             this.lblMapZoomValue.Size = new System.Drawing.Size(31, 13);
             this.lblMapZoomValue.TabIndex = 21;
@@ -639,7 +639,7 @@
             // 
             this.lblZoom.AutoSize = true;
             this.lblZoom.BackColor = System.Drawing.Color.Transparent;
-            this.lblZoom.Location = new System.Drawing.Point(7, 124);
+            this.lblZoom.Location = new System.Drawing.Point(7, 121);
             this.lblZoom.Name = "lblZoom";
             this.lblZoom.Size = new System.Drawing.Size(63, 13);
             this.lblZoom.TabIndex = 14;
@@ -649,7 +649,7 @@
             // 
             this.lblMapSizeValue.AutoSize = true;
             this.lblMapSizeValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblMapSizeValue.Location = new System.Drawing.Point(252, 90);
+            this.lblMapSizeValue.Location = new System.Drawing.Point(252, 88);
             this.lblMapSizeValue.Name = "lblMapSizeValue";
             this.lblMapSizeValue.Size = new System.Drawing.Size(31, 13);
             this.lblMapSizeValue.TabIndex = 20;
@@ -661,7 +661,7 @@
             this.iconOpacity.AutoSize = false;
             this.iconOpacity.BackColor = System.Drawing.Color.White;
             this.iconOpacity.LargeChange = 1;
-            this.iconOpacity.Location = new System.Drawing.Point(79, 53);
+            this.iconOpacity.Location = new System.Drawing.Point(79, 52);
             this.iconOpacity.Maximum = 20;
             this.iconOpacity.Name = "iconOpacity";
             this.iconOpacity.Size = new System.Drawing.Size(170, 27);
@@ -673,7 +673,7 @@
             // 
             this.lblMapSize.AutoSize = true;
             this.lblMapSize.BackColor = System.Drawing.Color.Transparent;
-            this.lblMapSize.Location = new System.Drawing.Point(7, 90);
+            this.lblMapSize.Location = new System.Drawing.Point(7, 88);
             this.lblMapSize.Name = "lblMapSize";
             this.lblMapSize.Size = new System.Drawing.Size(51, 13);
             this.lblMapSize.TabIndex = 11;
@@ -683,7 +683,7 @@
             // 
             this.lblIconOpacityValue.AutoSize = true;
             this.lblIconOpacityValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconOpacityValue.Location = new System.Drawing.Point(252, 56);
+            this.lblIconOpacityValue.Location = new System.Drawing.Point(252, 55);
             this.lblIconOpacityValue.Name = "lblIconOpacityValue";
             this.lblIconOpacityValue.Size = new System.Drawing.Size(31, 13);
             this.lblIconOpacityValue.TabIndex = 5;
@@ -727,7 +727,7 @@
             // chkToggleViaMap
             // 
             this.chkToggleViaMap.AutoSize = true;
-            this.chkToggleViaMap.Location = new System.Drawing.Point(10, 206);
+            this.chkToggleViaMap.Location = new System.Drawing.Point(10, 202);
             this.chkToggleViaMap.Name = "chkToggleViaMap";
             this.chkToggleViaMap.Size = new System.Drawing.Size(172, 17);
             this.chkToggleViaMap.TabIndex = 8;
@@ -739,7 +739,7 @@
             // 
             this.lblIconOpacity.AutoSize = true;
             this.lblIconOpacity.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconOpacity.Location = new System.Drawing.Point(6, 56);
+            this.lblIconOpacity.Location = new System.Drawing.Point(6, 55);
             this.lblIconOpacity.Name = "lblIconOpacity";
             this.lblIconOpacity.Size = new System.Drawing.Size(67, 13);
             this.lblIconOpacity.TabIndex = 4;
@@ -748,7 +748,7 @@
             // chkToggleViaPanels
             // 
             this.chkToggleViaPanels.AutoSize = true;
-            this.chkToggleViaPanels.Location = new System.Drawing.Point(10, 229);
+            this.chkToggleViaPanels.Location = new System.Drawing.Point(10, 225);
             this.chkToggleViaPanels.Name = "chkToggleViaPanels";
             this.chkToggleViaPanels.Size = new System.Drawing.Size(196, 17);
             this.chkToggleViaPanels.TabIndex = 9;
@@ -783,7 +783,7 @@
             // lblMapLinesMode
             // 
             this.lblMapLinesMode.AutoSize = true;
-            this.lblMapLinesMode.Location = new System.Drawing.Point(6, 25);
+            this.lblMapLinesMode.Location = new System.Drawing.Point(6, 24);
             this.lblMapLinesMode.Name = "lblMapLinesMode";
             this.lblMapLinesMode.Size = new System.Drawing.Size(86, 13);
             this.lblMapLinesMode.TabIndex = 21;
@@ -795,7 +795,7 @@
             this.cboMapLinesMode.AllowDrop = true;
             this.cboMapLinesMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboMapLinesMode.FormattingEnabled = true;
-            this.cboMapLinesMode.Location = new System.Drawing.Point(117, 22);
+            this.cboMapLinesMode.Location = new System.Drawing.Point(117, 21);
             this.cboMapLinesMode.Name = "cboMapLinesMode";
             this.cboMapLinesMode.Size = new System.Drawing.Size(124, 21);
             this.cboMapLinesMode.TabIndex = 20;
@@ -808,9 +808,9 @@
             this.groupBox3.Controls.Add(this.lblBuffSize);
             this.groupBox3.Controls.Add(this.cboBuffPosition);
             this.groupBox3.Controls.Add(this.buffSize);
-            this.groupBox3.Location = new System.Drawing.Point(11, 166);
+            this.groupBox3.Location = new System.Drawing.Point(11, 174);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(300, 91);
+            this.groupBox3.Size = new System.Drawing.Size(300, 83);
             this.groupBox3.TabIndex = 23;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Buffs";
@@ -829,7 +829,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 60);
+            this.label5.Location = new System.Drawing.Point(6, 55);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(44, 13);
             this.label5.TabIndex = 19;
@@ -839,7 +839,7 @@
             // 
             this.lblBuffSize.AutoSize = true;
             this.lblBuffSize.BackColor = System.Drawing.Color.Transparent;
-            this.lblBuffSize.Location = new System.Drawing.Point(7, 21);
+            this.lblBuffSize.Location = new System.Drawing.Point(6, 21);
             this.lblBuffSize.Name = "lblBuffSize";
             this.lblBuffSize.Size = new System.Drawing.Size(51, 13);
             this.lblBuffSize.TabIndex = 16;
@@ -850,7 +850,7 @@
             this.cboBuffPosition.AllowDrop = true;
             this.cboBuffPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboBuffPosition.FormattingEnabled = true;
-            this.cboBuffPosition.Location = new System.Drawing.Point(117, 57);
+            this.cboBuffPosition.Location = new System.Drawing.Point(117, 52);
             this.cboBuffPosition.Name = "cboBuffPosition";
             this.cboBuffPosition.Size = new System.Drawing.Size(124, 21);
             this.cboBuffPosition.TabIndex = 18;
@@ -861,7 +861,7 @@
             this.buffSize.AutoSize = false;
             this.buffSize.BackColor = System.Drawing.Color.White;
             this.buffSize.LargeChange = 1;
-            this.buffSize.Location = new System.Drawing.Point(79, 19);
+            this.buffSize.Location = new System.Drawing.Point(79, 18);
             this.buffSize.Maximum = 20;
             this.buffSize.Name = "buffSize";
             this.buffSize.Size = new System.Drawing.Size(170, 27);
@@ -883,7 +883,7 @@
             this.grpHotkeys.Controls.Add(this.label22);
             this.grpHotkeys.Location = new System.Drawing.Point(11, 9);
             this.grpHotkeys.Name = "grpHotkeys";
-            this.grpHotkeys.Size = new System.Drawing.Size(300, 155);
+            this.grpHotkeys.Size = new System.Drawing.Size(300, 159);
             this.grpHotkeys.TabIndex = 8;
             this.grpHotkeys.TabStop = false;
             this.grpHotkeys.Text = "Hotkeys";
@@ -1030,7 +1030,7 @@
             // 
             this.btnIconColor.BackColor = System.Drawing.Color.Transparent;
             this.btnIconColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIconColor.Location = new System.Drawing.Point(11, 7);
+            this.btnIconColor.Location = new System.Drawing.Point(11, 11);
             this.btnIconColor.Name = "btnIconColor";
             this.btnIconColor.Size = new System.Drawing.Size(75, 23);
             this.btnIconColor.TabIndex = 10;
@@ -1042,7 +1042,7 @@
             // 
             this.btnIconOutlineColor.BackColor = System.Drawing.Color.Transparent;
             this.btnIconOutlineColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnIconOutlineColor.Location = new System.Drawing.Point(142, 7);
+            this.btnIconOutlineColor.Location = new System.Drawing.Point(142, 11);
             this.btnIconOutlineColor.Name = "btnIconOutlineColor";
             this.btnIconOutlineColor.Size = new System.Drawing.Size(85, 23);
             this.btnIconOutlineColor.TabIndex = 18;
@@ -1055,7 +1055,7 @@
             this.btnClearOutlineColor.FlatAppearance.BorderSize = 0;
             this.btnClearOutlineColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearOutlineColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearOutlineColor.Location = new System.Drawing.Point(227, 7);
+            this.btnClearOutlineColor.Location = new System.Drawing.Point(227, 11);
             this.btnClearOutlineColor.Name = "btnClearOutlineColor";
             this.btnClearOutlineColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearOutlineColor.TabIndex = 26;
@@ -1068,7 +1068,7 @@
             this.btnClearFillColor.FlatAppearance.BorderSize = 0;
             this.btnClearFillColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearFillColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearFillColor.Location = new System.Drawing.Point(86, 7);
+            this.btnClearFillColor.Location = new System.Drawing.Point(86, 11);
             this.btnClearFillColor.Name = "btnClearFillColor";
             this.btnClearFillColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearFillColor.TabIndex = 25;
@@ -1210,7 +1210,7 @@
             this.btnClearLabelColor.FlatAppearance.BorderSize = 0;
             this.btnClearLabelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearLabelColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearLabelColor.Location = new System.Drawing.Point(86, 7);
+            this.btnClearLabelColor.Location = new System.Drawing.Point(86, 11);
             this.btnClearLabelColor.Name = "btnClearLabelColor";
             this.btnClearLabelColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearLabelColor.TabIndex = 26;
@@ -1233,7 +1233,7 @@
             // 
             this.btnLabelColor.BackColor = System.Drawing.Color.Transparent;
             this.btnLabelColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLabelColor.Location = new System.Drawing.Point(11, 7);
+            this.btnLabelColor.Location = new System.Drawing.Point(11, 11);
             this.btnLabelColor.Name = "btnLabelColor";
             this.btnLabelColor.Size = new System.Drawing.Size(75, 23);
             this.btnLabelColor.TabIndex = 16;
@@ -1263,7 +1263,7 @@
             this.btnClearLineColor.FlatAppearance.BorderSize = 0;
             this.btnClearLineColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearLineColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearLineColor.Location = new System.Drawing.Point(86, 7);
+            this.btnClearLineColor.Location = new System.Drawing.Point(86, 11);
             this.btnClearLineColor.Name = "btnClearLineColor";
             this.btnClearLineColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearLineColor.TabIndex = 28;
@@ -1345,7 +1345,7 @@
             // 
             this.btnLineColor.BackColor = System.Drawing.Color.Transparent;
             this.btnLineColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLineColor.Location = new System.Drawing.Point(11, 7);
+            this.btnLineColor.Location = new System.Drawing.Point(11, 11);
             this.btnLineColor.Name = "btnLineColor";
             this.btnLineColor.Size = new System.Drawing.Size(75, 23);
             this.btnLineColor.TabIndex = 18;
@@ -1405,7 +1405,7 @@
             // chkItemLogVendorItems
             // 
             this.chkItemLogVendorItems.AutoSize = true;
-            this.chkItemLogVendorItems.Location = new System.Drawing.Point(14, 62);
+            this.chkItemLogVendorItems.Location = new System.Drawing.Point(14, 60);
             this.chkItemLogVendorItems.Name = "chkItemLogVendorItems";
             this.chkItemLogVendorItems.Size = new System.Drawing.Size(122, 17);
             this.chkItemLogVendorItems.TabIndex = 40;
@@ -1416,7 +1416,7 @@
             // chkItemLogItemsOnIdentify
             // 
             this.chkItemLogItemsOnIdentify.AutoSize = true;
-            this.chkItemLogItemsOnIdentify.Location = new System.Drawing.Point(14, 39);
+            this.chkItemLogItemsOnIdentify.Location = new System.Drawing.Point(14, 37);
             this.chkItemLogItemsOnIdentify.Name = "chkItemLogItemsOnIdentify";
             this.chkItemLogItemsOnIdentify.Size = new System.Drawing.Size(139, 17);
             this.chkItemLogItemsOnIdentify.TabIndex = 39;
@@ -1428,7 +1428,7 @@
             // 
             this.cboItemLogPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboItemLogPosition.FormattingEnabled = true;
-            this.cboItemLogPosition.Location = new System.Drawing.Point(225, 14);
+            this.cboItemLogPosition.Location = new System.Drawing.Point(225, 12);
             this.cboItemLogPosition.Name = "cboItemLogPosition";
             this.cboItemLogPosition.Size = new System.Drawing.Size(87, 21);
             this.cboItemLogPosition.TabIndex = 38;
@@ -1437,7 +1437,7 @@
             // lblItemLogPosition
             // 
             this.lblItemLogPosition.AutoSize = true;
-            this.lblItemLogPosition.Location = new System.Drawing.Point(174, 17);
+            this.lblItemLogPosition.Location = new System.Drawing.Point(174, 15);
             this.lblItemLogPosition.Name = "lblItemLogPosition";
             this.lblItemLogPosition.Size = new System.Drawing.Size(44, 13);
             this.lblItemLogPosition.TabIndex = 37;
@@ -1620,7 +1620,7 @@
             // chkItemLogEnabled
             // 
             this.chkItemLogEnabled.AutoSize = true;
-            this.chkItemLogEnabled.Location = new System.Drawing.Point(14, 16);
+            this.chkItemLogEnabled.Location = new System.Drawing.Point(14, 14);
             this.chkItemLogEnabled.Name = "chkItemLogEnabled";
             this.chkItemLogEnabled.Size = new System.Drawing.Size(65, 17);
             this.chkItemLogEnabled.TabIndex = 0;
