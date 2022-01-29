@@ -58,7 +58,7 @@ namespace MapAssist.Settings
 
     public class ItemFilter
     {
-        public object this[Stat stat]
+        public object this[Stats.Stat stat]
         {
             get { return GetType().GetProperty(stat.ToString()).GetValue(this, null); }
             set { GetType().GetProperty(stat.ToString()).SetValue(this, value, null); }
