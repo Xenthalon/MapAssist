@@ -215,7 +215,7 @@ namespace MapAssist.Helpers
                         item.IsCached = false;
                     }
 
-                    var enableInventoryFilterCheck = item.IsIdentified && item.IsPlayerOwned && !item.IsInSocket;
+                    var enableInventoryFilterCheck = item.IsIdentified && item.IsPlayerOwned && item.ItemMode != ItemMode.SOCKETED;
 
                     item.Update();
 
