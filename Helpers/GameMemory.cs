@@ -199,9 +199,12 @@ namespace MapAssist.Helpers
                 var objectList = rawObjectUnits.Where(x => x != null && x.UnitType == UnitType.Object && x.UnitId < uint.MaxValue).ToArray();
 
                 // Items
+                var allItemsUnupdated = new List<UnitItem>();
                 var rawItemUnits = new List<UnitItem>();
                 foreach (var item in GetUnits<UnitItem>(UnitType.Item, true).Where(x => x.UnitId < uint.MaxValue).ToArray())
                 {
+                    allItemsUnupdated.Add(item);
+
                     if (Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId)) continue;
 
                     if (_playerMapChanged[_currentProcessId] && item.IsAnyPlayerHolding && item.Item != Item.HoradricCube && !Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
@@ -293,8 +296,6 @@ namespace MapAssist.Helpers
                     if (units.Length > 0) units[0].IsHovered = true;
                 }
 
-                var allItems = GetUnits<UnitItem>(UnitType.Item, false).Where(x => x.UnitId < uint.MaxValue).Select(x => { x.Update(); return x; }).ToArray();
-
                 // Return data
                 _firstMemoryRead = false;
                 _errorThrown = false;
@@ -316,7 +317,7 @@ namespace MapAssist.Helpers
                     Mercs = mercList,
                     Objects = objectList,
                     Items = itemList,
-                    RawItems = allItems,
+                    AllItems = allItemsUnupdated.ToArray(),
                     ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                     Session = session,
                     Roster = rosterData,

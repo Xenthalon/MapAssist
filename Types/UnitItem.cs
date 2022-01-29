@@ -98,7 +98,7 @@ namespace MapAssist.Types
                 return ItemModeMapped.Unknown; // Items that appeared in the trade window before will appear here
             }
         }
-        
+
         public override string HashString => Item + "/" + Position.X + "/" + Position.Y;
     }
 }

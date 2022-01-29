@@ -37,8 +37,8 @@ namespace MapAssist.Types
         public float X => IsMovable ? Path.DynamicX : (float)Path.StaticX;
         public float Y => IsMovable ? Path.DynamicY : (float)Path.StaticY;
         public StatListStruct StatsStruct { get; private set; }
-        public Dictionary<Stat, Dictionary<ushort, int>> StatLayers { get; private set; }
-        public Dictionary<Stat, int> Stats { get; private set; }
+        public Dictionary<Stats.Stat, Dictionary<ushort, int>> StatLayers { get; private set; }
+        public Dictionary<Stats.Stat, int> Stats { get; private set; }
         protected uint[] StateFlags { get; set; }
         public DateTime FoundTime { get; set; } = DateTime.Now;
         public bool IsHovered { get; set; } = false;
@@ -87,8 +87,8 @@ namespace MapAssist.Types
 
                         if (Struct.pStatsListEx != IntPtr.Zero)
                         {
-                            var stats = new Dictionary<Stat, int>();
-                            var statLayers = new Dictionary<Stat, Dictionary<ushort, int>>();
+                            var stats = new Dictionary<Stats.Stat, int>();
+                            var statLayers = new Dictionary<Stats.Stat, Dictionary<ushort, int>>();
 
                             StatsStruct = processContext.Read<StatListStruct>(Struct.pStatsListEx);
                             StateFlags = StatsStruct.StateFlags;
@@ -133,7 +133,7 @@ namespace MapAssist.Types
 
         public bool IsPlayer => Struct.UnitType == UnitType.Player && Struct.pAct != IntPtr.Zero;
 
-        public bool IsPlayerOwned => IsMerc && Stats.ContainsKey(Stat.Strength); // This is ugly, but seems to work.
+        public bool IsPlayerOwned => IsMerc && Stats.ContainsKey(Types.Stats.Stat.Strength); // This is ugly, but seems to work.
 
         public bool IsMonster
         {
