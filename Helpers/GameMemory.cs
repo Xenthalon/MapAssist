@@ -215,7 +215,7 @@ namespace MapAssist.Helpers
                         item.IsCached = false;
                     }
 
-                    var enableInventoryFilterCheck = item.IsIdentified && item.IsPlayerOwned;
+                    var enableInventoryFilterCheck = item.IsIdentified && item.IsPlayerOwned && !item.IsInSocket;
 
                     item.Update();
 
@@ -228,7 +228,7 @@ namespace MapAssist.Helpers
                     if (item.UnitId == uint.MaxValue) continue;
 
                     item.IsPlayerOwned = _playerCubeOwnerID[_currentProcessId] != uint.MaxValue &&
-                        item.ItemData.dwOwnerID == _playerCubeOwnerID[_currentProcessId] && !item.IsInSocket;
+                        item.ItemData.dwOwnerID == _playerCubeOwnerID[_currentProcessId];
 
                     if (item.IsInStore)
                     {
