@@ -77,7 +77,7 @@ namespace MapAssist.Types
         }
 
         private static bool CheckInventoryItem(UnitItem item, int processId) =>
-            item.IsIdentified && item.IsPlayerOwned && item.ItemMode != ItemMode.SOCKETED &&
+            item.IsIdentified && item.IsPlayerOwned &&
             !InventoryItemUnitIdsToSkip[processId].Contains(item.UnitId);
 
         private static bool CheckDroppedItem(UnitItem item, int processId) =>
