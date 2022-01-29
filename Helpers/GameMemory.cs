@@ -357,10 +357,10 @@ namespace MapAssist.Helpers
                     {
                         UseCachedUnit(seenUnit1);
                     }
-                    else if (saveToCache && cache.TryGetValue(unit.HashString, out var seenUnit2) && seenUnit2 is T && !allUnits.ContainsKey(((T)seenUnit2).UnitId))
-                    {
-                        UseCachedUnit(seenUnit2);
-                    }
+                    //else if (saveToCache && cache.TryGetValue(unit.HashString, out var seenUnit2) && seenUnit2 is T && !allUnits.ContainsKey(((T)seenUnit2).UnitId))
+                    //{
+                    //    UseCachedUnit(seenUnit2);
+                    //}
                     else if (unit.IsValidUnit && !allUnits.ContainsKey(unit.UnitId))
                     {
                         allUnits[unit.UnitId] = unit;
