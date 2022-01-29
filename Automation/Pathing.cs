@@ -49,7 +49,7 @@ namespace MapAssist.Automation
 
         private Grid Grid;
         private AreaData _areaData;
-        private IEnumerable<UnitAny> _chests;
+        private IEnumerable<UnitObject> _chests;
         private GameData _gameData;
 
         // Stuff for stinkyness exploration
@@ -81,9 +81,9 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData, AreaData areaData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
-                _chests = gameData.Objects.Where(x => x.IsChest());
+                _chests = gameData.Objects.Where(x => x.IsChest);
                 _gameData = gameData;
             }
 

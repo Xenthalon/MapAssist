@@ -65,7 +65,7 @@ namespace MapAssist.Settings
         public GameInfoConfiguration GameInfo { get; set; }
 
         [YamlMember(Alias = "D2Path", ApplyNamingConventions = false)]
-        public string D2Path { get; set; }
+        public string D2LoDPath { get; set; }
 
         [YamlMember(Alias = "LanguageCode", ApplyNamingConventions = false)]
         public Locale LanguageCode { get; set; }
@@ -198,6 +198,9 @@ public class RenderingConfiguration
 
     [YamlMember(Alias = "BuffSize", ApplyNamingConventions = false)]
     public double BuffSize { get; set; }
+
+    [YamlMember(Alias = "LinesMode", ApplyNamingConventions = false)]
+    public MapLinesMode LinesMode { get; set; }
 }
 
 public class HotkeyConfiguration
@@ -265,6 +268,12 @@ public class ItemLogConfiguration
     
     [YamlMember(Alias = "IdentifyFileName", ApplyNamingConventions = false)]
     public string IdentifyFileName { get; set; }
+
+    [YamlMember(Alias = "CheckVendorItems", ApplyNamingConventions = false)]
+    public bool CheckVendorItems { get; set; }
+
+    [YamlMember(Alias = "CheckItemOnIdentify", ApplyNamingConventions = false)]
+    public bool CheckItemOnIdentify { get; set; }
 
     [YamlMember(Alias = "PlaySoundOnDrop", ApplyNamingConventions = false)]
     public bool PlaySoundOnDrop { get; set; }

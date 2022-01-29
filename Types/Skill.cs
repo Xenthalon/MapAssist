@@ -442,10 +442,12 @@ namespace MapAssist.Types
         UnHolyBoltEx,
         ShamanFireEx,
         ImpFireMissileEx,
-        FixedSiegeBeastStomp
+        FixedSiegeBeastStomp,
+
+        Any = short.MaxValue
     };
 
-    public enum ClassTabs
+    public enum SkillTree
     {
         AmazonBowAndCrossbow = 0,
         AmazonPassiveAndMagic = 1,
@@ -468,6 +470,8 @@ namespace MapAssist.Types
         AssassinTraps = 48,
         AssassinShadowDisciplines = 49,
         AssassinMartialArts = 50,
+
+        Any = 0xFFFF
     }
 
     public class SkillPoints
@@ -480,16 +484,67 @@ namespace MapAssist.Types
 
     public static class SkillExtensions
     {
-        public static string Name(this ClassTabs classTab)
+        public static Dictionary<PlayerClass, SkillTree[]> ClassToSkillTreeDict = new Dictionary<PlayerClass, SkillTree[]>()
+        {
+            [PlayerClass.Amazon] = new SkillTree[] { SkillTree.AmazonBowAndCrossbow, SkillTree.AmazonPassiveAndMagic, SkillTree.AmazonJavelinAndSpear },
+            [PlayerClass.Sorceress] = new SkillTree[] { SkillTree.SorceressFire, SkillTree.SorceressCold, SkillTree.SorceressLightning },
+            [PlayerClass.Necromancer] = new SkillTree[] { SkillTree.NecromancerCurses, SkillTree.NecromancerPoisonAndBone, SkillTree.NecromancerSummoning },
+            [PlayerClass.Paladin] = new SkillTree[] { SkillTree.PaladinCombatSkills, SkillTree.PaladinOffensiveAuras, SkillTree.PaladinDefensiveAuras },
+            [PlayerClass.Barbarian] = new SkillTree[] { SkillTree.BarbarianCombatSkills, SkillTree.BarbarianMasteries, SkillTree.BarbarianWarcries },
+            [PlayerClass.Druid] = new SkillTree[] { SkillTree.DruidSummoning, SkillTree.DruidShapeShifting, SkillTree.DruidElemental },
+            [PlayerClass.Assassin] = new SkillTree[] { SkillTree.AssassinTraps, SkillTree.AssassinShadowDisciplines, SkillTree.AssassinMartialArts }
+        };
+
+        public static Dictionary<SkillTree, Skill[]> SkillTreeToSkillDict = new Dictionary<SkillTree, Skill[]>()
+        {
+            [SkillTree.AmazonBowAndCrossbow] = new Skill[] { Skill.MagicArrow, Skill.FireArrow, Skill.ColdArrow, Skill.MultipleShot, Skill.ExplodingArrow, Skill.IceArrow, Skill.GuidedArrow, Skill.ImmolationArrow, Skill.Strafe, Skill.FreezingArrow },
+            [SkillTree.AmazonPassiveAndMagic] = new Skill[] { Skill.InnerSight, Skill.Dodge, Skill.CriticalStrike, Skill.SlowMissiles, Skill.Avoid, Skill.Penetrate, Skill.Decoy, Skill.Evade, Skill.Valkyrie, Skill.Pierce },
+            [SkillTree.AmazonJavelinAndSpear] = new Skill[] { Skill.Jab, Skill.PowerStrike, Skill.PoisonJavelin, Skill.Impale, Skill.LightningBolt, Skill.ChargedStrike, Skill.PlagueJavelin, Skill.Fend, Skill.LightningStrike, Skill.LightningFury },
+            [SkillTree.SorceressFire] = new Skill[] { Skill.FireBolt, Skill.Warmth, Skill.Inferno, Skill.Blaze, Skill.FireBall, Skill.FireWall, Skill.Enchant, Skill.Meteor, Skill.FireMastery, Skill.Hydra },
+            [SkillTree.SorceressLightning] = new Skill[] { Skill.ChargedBolt, Skill.Telekinesis, Skill.StaticField, Skill.Lightning, Skill.Nova, Skill.ChainLightning, Skill.Teleport, Skill.ThunderStorm, Skill.EnergyShield, Skill.LightningMastery },
+            [SkillTree.SorceressCold] = new Skill[] { Skill.IceBolt, Skill.FrozenArmor, Skill.FrostNova, Skill.IceBlast, Skill.ShiverArmor, Skill.GlacialSpike, Skill.Blizzard, Skill.ChillingArmor, Skill.FrozenOrb, Skill.ColdMastery },
+            [SkillTree.NecromancerCurses] = new Skill[] { Skill.AmplifyDamage, Skill.DimVision, Skill.Weaken, Skill.IronMaiden, Skill.Terror, Skill.Confuse, Skill.LifeTap, Skill.Attract, Skill.Decrepify, Skill.LowerResist },
+            [SkillTree.NecromancerPoisonAndBone] = new Skill[] { Skill.Teeth, Skill.BoneArmor, Skill.PoisonDagger, Skill.CorpseExplosion, Skill.BoneWall, Skill.PoisonExplosion, Skill.BoneSpear, Skill.BonePrison, Skill.PoisonNova, Skill.BoneSpirit },
+            [SkillTree.NecromancerSummoning] = new Skill[] { Skill.RaiseSkeleton, Skill.SkeletonMastery, Skill.ClayGolem, Skill.GolemMastery, Skill.RaiseSkeletalMage, Skill.BloodGolem, Skill.SummonResist, Skill.IronGolem, Skill.FireGolem, Skill.Revive },
+            [SkillTree.PaladinCombatSkills] = new Skill[] { Skill.Sacrifice, Skill.HolyBolt, Skill.Smite, Skill.Zeal, Skill.Charge, Skill.Vengeance, Skill.BlessedHammer, Skill.Conversion, Skill.HolyShield, Skill.FistOfTheHeavens },
+            [SkillTree.PaladinOffensiveAuras] = new Skill[] { Skill.Might, Skill.HolyFire, Skill.Thorns, Skill.BlessedAim, Skill.Concentration, Skill.HolyFreeze, Skill.HolyShock, Skill.Sanctuary, Skill.Fanaticism, Skill.Conviction },
+            [SkillTree.PaladinDefensiveAuras] = new Skill[] { Skill.Prayer, Skill.ResistFire, Skill.ResistCold, Skill.ResistLightning, Skill.Defiance, Skill.Cleansing, Skill.Vigor, Skill.Meditation, Skill.Redemption, Skill.Salvation },
+            [SkillTree.BarbarianCombatSkills] = new Skill[] { Skill.Bash, Skill.DoubleSwing, Skill.Leap, Skill.DoubleThrow, Skill.Stun, Skill.LeapAttack, Skill.Concentrate, Skill.Frenzy, Skill.Whirlwind, Skill.Berserk },
+            [SkillTree.BarbarianMasteries] = new Skill[] { Skill.SwordMastery, Skill.AxeMastery, Skill.MaceMastery, Skill.PolearmMastery, Skill.ThrowingMastery, Skill.SpearMastery, Skill.IncreasedStamina, Skill.IronSkin, Skill.IncreasedSpeed, Skill.NaturalResistance },
+            [SkillTree.BarbarianWarcries] = new Skill[] { Skill.Howl, Skill.FindPotion, Skill.Shout, Skill.Taunt, Skill.BattleCry, Skill.FindItem, Skill.BattleOrders, Skill.GrimWard, Skill.WarCry, Skill.BattleCommand },
+            [SkillTree.DruidSummoning] = new Skill[] { Skill.Raven, Skill.PoisonCreeper, Skill.OakSage, Skill.SummonSpiritWolf, Skill.CarrionVine, Skill.HeartOfWolverine, Skill.SummonDireWolf, Skill.SolarCreeper, Skill.SpiritOfBarbs, Skill.SummonGrizzly },
+            [SkillTree.DruidShapeShifting] = new Skill[] { Skill.Werewolf, Skill.Lycanthropy, Skill.Werebear, Skill.Maul, Skill.FeralRage, Skill.FireClaws, Skill.Rabies, Skill.ShockWave, Skill.Hunger, Skill.Fury },
+            [SkillTree.DruidElemental] = new Skill[] { Skill.Firestorm, Skill.MoltenBoulder, Skill.ArcticBlast, Skill.CycloneArmor, Skill.Fissure, Skill.Twister, Skill.Volcano, Skill.Tornado, Skill.Hurricane, Skill.Armageddon },
+            [SkillTree.AssassinTraps] = new Skill[] { Skill.FireBlast, Skill.ShockWeb, Skill.BladeSentinel, Skill.ChargedBoltSentry, Skill.WakeOfFire, Skill.BladeFury, Skill.LightningSentry, Skill.WakeOfInferno, Skill.DeathSentry, Skill.BladeShield },
+            [SkillTree.AssassinShadowDisciplines] = new Skill[] { Skill.ClawMastery, Skill.PsychicHammer, Skill.BurstOfSpeed, Skill.CloakOfShadows, Skill.WeaponBlock, Skill.Fade, Skill.ShadowWarrior, Skill.MindBlast, Skill.Venom, Skill.ShadowMaster },
+            [SkillTree.AssassinMartialArts] = new Skill[] { Skill.TigerStrike, Skill.DragonTalon, Skill.FistsOfFire, Skill.DragonClaw, Skill.CobraStrike, Skill.ClawsOfThunder, Skill.BladesOfIce, Skill.DragonTail, Skill.DragonFlight, Skill.PhoenixStrike }
+        };
+
+        public static string Name(this SkillTree skillTree)
         {
             TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
-            return string.Concat(classTab.ToString().Select((x, j) => j > 0 && char.IsUpper(x) ? " " + x.ToString() : x.ToString()));
+            return string.Concat(skillTree.ToString().Select((x, j) => j > 0 && char.IsUpper(x) ? " " + x.ToString() : x.ToString()));
         }
 
         public static string Name(this Skill skill)
         {
             TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
             return string.Concat(skill.ToString().Select((x, j) => j > 0 && char.IsUpper(x) ? " " + x.ToString() : x.ToString()));
+        }
+
+        public static PlayerClass GetPlayerClass(this SkillTree skillTree)
+        {
+            return ClassToSkillTreeDict.Where(x => x.Value.Contains(skillTree)).Select(x => x.Key).FirstOrDefault();
+        }
+
+        public static SkillTree GetSkillTree(this Skill skill)
+        {
+            return SkillTreeToSkillDict.Where(x => x.Value.Contains(skill)).Select(x => x.Key).FirstOrDefault();
+        }
+
+        public static PlayerClass GetPlayerClass(this Skill skill)
+        {
+            return skill.GetSkillTree().GetPlayerClass();
         }
     }
 }

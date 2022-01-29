@@ -25,6 +25,7 @@ RenderingConfiguration:
   ZoomLevel: 1
   BuffPosition: Bottom
   BuffSize: 1
+  LinesMode: All
 MapConfiguration:
   SuperUniqueMonster:
     IconOutlineColor: Yellow
@@ -201,7 +202,8 @@ ItemLog:
   Position: TopLeft
   FilterFileName: ItemFilter.yaml
   IdentifyFileName: IdentifyFilter.yaml
-  ## PlaySoundOnDrop - Play drop sound
+  CheckVendorItems: true
+  CheckItemOnIdentify: true
   PlaySoundOnDrop: true
   SoundFile: ''
   SoundVolume: 100

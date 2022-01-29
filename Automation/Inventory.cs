@@ -25,14 +25,14 @@ namespace MapAssist.Automation
         public int TPScrolls = 20;
         public int Gold => _gold;
         public int Freespace => _freeSpace;
-        public UnitAny IDScroll = new UnitAny(IntPtr.Zero);
+        public UnitAny IDScroll = new UnitItem(IntPtr.Zero);
         public bool NeedsRepair => _needsRepair;
         public bool NeedsGamble => Gold > GAMBLE_START_AT;
 
-        public IEnumerable<UnitAny> ItemsToStash = new HashSet<UnitAny>();
-        public IEnumerable<UnitAny> ItemsToIdentify = new HashSet<UnitAny>();
-        public IEnumerable<UnitAny> ItemsToTrash = new HashSet<UnitAny>();
-        public IEnumerable<UnitAny> ItemsToBelt = new HashSet<UnitAny>();
+        public IEnumerable<UnitItem> ItemsToStash = new HashSet<UnitItem>();
+        public IEnumerable<UnitItem> ItemsToIdentify = new HashSet<UnitItem>();
+        public IEnumerable<UnitItem> ItemsToTrash = new HashSet<UnitItem>();
+        public IEnumerable<UnitItem> ItemsToBelt = new HashSet<UnitItem>();
 
         public bool AnyItemsToStash => ItemsToStash.Count() > 0;
         public bool AnyItemsToIdentify => ItemsToIdentify.Count() > 0;
@@ -50,7 +50,7 @@ namespace MapAssist.Automation
         {
             var playerUnit = gameData.PlayerUnit;
             var playerUnitId = playerUnit.UnitId;
-            var items = gameData.Items;
+            var items = gameData.AllItems;
 
             var equippedItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc != BodyLoc.NONE);
 
@@ -92,19 +92,19 @@ namespace MapAssist.Automation
             var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
 
             ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x).Item1);
-            ItemsToIdentify = ItemsToStash.Where(x => (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) != ItemFlags.IFLAG_IDENTIFIED && IdentificationFilter.HasEntry(x));
+            ItemsToIdentify = ItemsToStash.Where(x => !x.IsIdentified && IdentificationFilter.HasEntry(x));
             ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x).Item1);
             ItemsToBelt = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && 
-                (Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" || Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"));
+                (x.ItemBaseName == "Full Rejuvenation Potion" || x.ItemBaseName == "Rejuvenation Potion"));
 
-            var tpTome = inventoryItems.Where(x => x.TxtFileNo == 518).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            var tpTome = inventoryItems.Where(x => x.TxtFileNo == 518).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
-            if (tpTome.IsValidUnit())
+            if (tpTome.IsValidUnit)
             {
                 tpTome.Stats.TryGetValue(Stat.Quantity, out TPScrolls);
             }
 
-            IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+            IDScroll = inventoryItems.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
             playerUnit.Stats.TryGetValue(Stat.StashGold, out _gold);
 
@@ -167,16 +167,16 @@ namespace MapAssist.Automation
             return BeltSlotsOpen[0] == 0 && BeltSlotsOpen[1] == 0 && BeltSlotsOpen[2] == 0 && BeltSlotsOpen[3] == 0;
         }
 
-        public int GetItemTotalSize(UnitAny item)
+        public int GetItemTotalSize(UnitItem item)
         {
             var size = GetItemSize(item);
 
             return size.height * size.width;
         }
 
-        private (int width, int height) GetItemSize(UnitAny item)
+        private (int width, int height) GetItemSize(UnitItem item)
         {
-            var itemName = Items.ItemName(item.TxtFileNo);
+            var itemName = item.ItemBaseName;
 
             if (itemName == "Ring")
             {

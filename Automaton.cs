@@ -84,39 +84,39 @@ namespace MapAssist
             _log.Info("Units:");
             var rosterData = new Roster(GameManager.RosterDataOffset);
 
-            for (var i = 0; i < 12; i++)
-            {
-                var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
-                var unitType = (UnitType)i;
-                foreach (var pUnitAny in unitHashTable.UnitTable)
-                {
-                    var unitAny = new UnitAny(pUnitAny);
-                    while (unitAny.IsValidUnit())
-                    {
-                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.TxtFileNo} {unitAny.Name} {unitAny.Position}");
+            //for (var i = 0; i < 12; i++)
+            //{
+            //    var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
+            //    var unitType = (UnitType)i;
+            //    foreach (var pUnitAny in unitHashTable.UnitTable)
+            //    {
+            //        var unitAny = new UnitAny(pUnitAny);
+            //        while (unitAny.IsValidUnit())
+            //        {
+            //            _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.TxtFileNo} {unitAny.Name} {unitAny.Position}");
 
-                        unitAny = unitAny.ListNext(rosterData);
-                    }
-                }
-            }
+            //            unitAny = unitAny.ListNext(rosterData);
+            //        }
+            //    }
+            //}
 
             _log.Info("Belt items:");
-            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))
+            foreach (UnitItem item in _currentGameData.AllItems.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))
             {
                 // belt is nodePos 2/2 ... or InvPage NULL, BodyLoc NULL
-                _log.Info($"{Items.ItemName(item.TxtFileNo)} {(item.X % 4) + 1}/{item.X / 4}");
+                _log.Info($"{item.ItemBaseName} {(item.X % 4) + 1}/{item.X / 4}");
             }
 
             _log.Info("Inventory items:");
-            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.INVENTORY))
+            foreach (UnitItem item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.INVENTORY))
             {
-                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y}");
+                _log.Info($"{item.ItemBaseName} at {item.X}/{item.Y}");
             }
 
             _log.Info("Other items:");
-            foreach (UnitAny item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID != _currentGameData.PlayerUnit.UnitId))
+            foreach (UnitItem item in _currentGameData.Items.Where(x => x.ItemData.dwOwnerID != _currentGameData.PlayerUnit.UnitId))
             {
-                _log.Info($"{Items.ItemName(item.TxtFileNo)} at {item.X}/{item.Y} Owner {item.ItemData.dwOwnerID}");
+                _log.Info($"{item.ItemBaseName} at {item.X}/{item.Y} Owner {item.ItemData.dwOwnerID}");
             }
         }
 

@@ -23,18 +23,18 @@ namespace MapAssist.Automation
         private Inventory _inventory;
         private Movement _movement;
 
-        private IEnumerable<UnitAny> _items;
+        private IEnumerable<UnitItem> _items;
         private Point _playerPosition;
         private bool _working = false;
         private bool _full = false;
 
         public bool Busy => _working;
         public bool Full => _full;
-        public bool HasWork => _items.Any(x => x.IsDropped() &&
+        public bool HasWork => _items.Any(x => x.IsDropped &&
                                             (LootFilter.Filter(x).Item1 ||
                                             (!_inventory.IsBeltFull() && (
-                                                Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
-                                                Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"
+                                                x.ItemBaseName == "Full Rejuvenation Potion" ||
+                                                x.ItemBaseName == "Rejuvenation Potion"
                                             ))));
 
         public PickIt(BotConfiguration config, Input input, Inventory inventory, Movement movement)
@@ -52,9 +52,9 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
-                _items = gameData.Items;
+                _items = gameData.AllItems;
                 _playerPosition = gameData.PlayerPosition;
 
                 if (_working && !_worker.IsBusy)
@@ -90,11 +90,11 @@ namespace MapAssist.Automation
         {
             var pickPotions = !_inventory.IsBeltFull();
 
-            var itemsToPick = _items.Where(x => x.IsDropped() &&
+            var itemsToPick = _items.Where(x => x.IsDropped &&
                                                 (LootFilter.Filter(x).Item1 ||
                                                 (pickPotions && (
-                                                    Items.ItemName(x.TxtFileNo) == "Full Rejuvenation Potion" ||
-                                                    Items.ItemName(x.TxtFileNo) == "Rejuvenation Potion"
+                                                    x.ItemBaseName == "Full Rejuvenation Potion" ||
+                                                    x.ItemBaseName == "Rejuvenation Potion"
                                                 ))))
                                     .OrderBy(x => Automaton.GetDistance(x.Position, _playerPosition));
 
@@ -104,7 +104,7 @@ namespace MapAssist.Automation
 
                 var item = itemsToPick.First();
 
-                _log.Info($"Picking up {Items.ItemName(item.TxtFileNo)}.");
+                _log.Info($"Picking up {item.ItemBaseName}.");
 
                 var itemId = item.UnitId;
                 var picked = false;
@@ -129,9 +129,9 @@ namespace MapAssist.Automation
                     _input.DoInputAtWorldPosition("{LMB}", item.Position);
                     System.Threading.Thread.Sleep(1000);
 
-                    var refreshedItem = _items.Where(x => x.UnitId == itemId).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    var refreshedItem = _items.Where(x => x.UnitId == itemId).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
-                    if (refreshedItem.IsValidPointer() && ((ItemMode)refreshedItem.Mode == ItemMode.STORED || (ItemMode)refreshedItem.Mode == ItemMode.INBELT))
+                    if (refreshedItem.IsValidPointer && (refreshedItem.ItemModeMapped == ItemModeMapped.Inventory || refreshedItem.ItemModeMapped == ItemModeMapped.Belt))
                     {
                         _log.Info("Got it!");
                         picked = true;

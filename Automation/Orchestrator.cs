@@ -96,7 +96,7 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, MapApi mapApi)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _gameData = gameData;
                 _currentArea = gameData.Area;
@@ -302,9 +302,9 @@ namespace MapAssist.Automation
                     {
                         MoveTo(new Point(5124, 5119));
 
-                        var nihlaPortal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.PermanentTownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                        var nihlaPortal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.PermanentTownPortal).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
 
-                        if (nihlaPortal.IsValidPointer())
+                        if (nihlaPortal.IsValidPointer)
                         {
                             interactPoint = nihlaPortal.Position;
                         }
@@ -697,9 +697,9 @@ namespace MapAssist.Automation
                     while (_townManager.State != TownState.PORTAL_SPOT);
 
                     var portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal &&
-                                                              (Area)Enum.ToObject(typeof(Area), x.ObjectData.InteractType) == currentArea).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                                              (Area)Enum.ToObject(typeof(Area), x.ObjectData.InteractType) == currentArea).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
 
-                    if (portal.IsValidPointer())
+                    if (portal.IsValidPointer)
                     {
                         if (Automaton.GetDistance(_gameData.PlayerPosition, portal.Position) > 10)
                         {
@@ -761,7 +761,7 @@ namespace MapAssist.Automation
 
                 foreach (var item in _inventory.ItemsToTrash)
                 {
-                    _log.Info($"Selling {item.ItemData.ItemQuality} {Items.ItemName(item.TxtFileNo)}.");
+                    _log.Info($"Selling {item.ItemData.ItemQuality} {item.ItemBaseName}.");
                     _menuMan.SellItemAt(item.X, item.Y);
                 }
 
@@ -769,9 +769,9 @@ namespace MapAssist.Automation
 
                 foreach (var item in _inventory.ItemsToIdentify)
                 {
-                    var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
-                    if (idsc.IsValidPointer())
+                    if (idsc.IsValidPointer)
                     {
                         var retries = 0;
 
@@ -780,9 +780,9 @@ namespace MapAssist.Automation
                             _menuMan.VendorBuyOne(idsc.X, idsc.Y);
                             retries += 1;
                         }
-                        while (!_inventory.IDScroll.IsValidPointer() && retries <= MAX_RETRIES);
+                        while (!_inventory.IDScroll.IsValidPointer && retries <= MAX_RETRIES);
 
-                        if (_inventory.IDScroll.IsValidPointer())
+                        if (_inventory.IDScroll.IsValidPointer)
                         {
                             var itemX = item.X;
                             var itemY = item.Y;
@@ -790,32 +790,29 @@ namespace MapAssist.Automation
                             _menuMan.RightClickInventoryItem(_inventory.IDScroll.X, _inventory.IDScroll.Y);
                             _menuMan.LeftClickInventoryItem(item.X, item.Y);
 
-                            if (item.Mode == ItemMode.ONCURSOR)
+                            if (item.ItemMode == ItemMode.ONCURSOR)
                             {
-                                _log.Info("Picked up " + Items.ItemName(item.TxtFileNo) + ", oh dear!");
+                                _log.Info("Picked up " + item.ItemBaseName + ", oh dear!");
 
                                 do
                                 {
                                     _menuMan.LeftClickInventoryItem(itemX, itemY);
                                     System.Threading.Thread.Sleep(500);
                                 }
-                                while (item.Mode == ItemMode.ONCURSOR);
+                                while (item.ItemMode == ItemMode.ONCURSOR);
                             }
 
-                            var identifiedItem = _inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
-                                (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                            var identifiedItem = item.Update();
 
-                            while (!identifiedItem.IsValidPointer())
+                            while (!identifiedItem.IsIdentified)
                             {
                                 System.Threading.Thread.Sleep(100);
-
-                                identifiedItem = _inventory.ItemsToStash.Where(x => x.UnitId == item.UnitId &&
-                                    (x.ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                identifiedItem = identifiedItem.Update();
                             }
 
                             if (!Identification.IdentificationFilter.IsKeeper(identifiedItem))
                             {
-                                _log.Info(item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + " didn't make the cut, selling!");
+                                _log.Info(item.ItemData.ItemQuality + " " + item.ItemBaseName + " didn't make the cut, selling!");
                                 _menuMan.SellItemAt(item.X, item.Y);
                             }
                         }
@@ -833,9 +830,9 @@ namespace MapAssist.Automation
 
                 if (_inventory.TPScrolls < 15)
                 {
-                    var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
-                    if (tp.IsValidPointer())
+                    if (tp.IsValidPointer)
                     {
                         _menuMan.VendorBuyMax(tp.X, tp.Y);
                     }
@@ -869,9 +866,9 @@ namespace MapAssist.Automation
 
                     var npcInventory = _townManager.ActiveNPC.GetNpcInventory();
 
-                    var gambleItem = npcInventory.Where(x => Items.ItemName(x.TxtFileNo) == GAMBLE_ITEM).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    var gambleItem = npcInventory.Where(x => x.ItemBaseName == GAMBLE_ITEM).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
-                    if (gambleItem.IsValidPointer())
+                    if (gambleItem.IsValidPointer)
                     {
                         while (_inventory.Gold > GAMBLE_STOP_AT && _inventory.Freespace >= _inventory.GetItemTotalSize(gambleItem))
                         {
@@ -899,14 +896,14 @@ namespace MapAssist.Automation
                     {
                         if (!Identification.IdentificationFilter.IsKeeper(item))
                         {
-                            _log.Info(item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + " didn't make the cut, selling!");
+                            _log.Info(item.ItemData.ItemQuality + " " + item.ItemBaseName + " didn't make the cut, selling!");
                             _menuMan.SellItemAt(item.X, item.Y);
                         }
                     }
 
                     foreach (var item in _inventory.ItemsToTrash)
                     {
-                        _log.Info("Selling trash " + item.ItemData.ItemQuality + " " + Items.ItemName(item.TxtFileNo) + ".");
+                        _log.Info("Selling trash " + item.ItemData.ItemQuality + " " + item.ItemBaseName + ".");
                         _menuMan.SellItemAt(item.X, item.Y);
                     }
 
@@ -931,7 +928,7 @@ namespace MapAssist.Automation
 
                 foreach (var item in _inventory.ItemsToStash)
                 {
-                    _log.Info("Stashing " + Items.ItemName(item.TxtFileNo));
+                    _log.Info("Stashing " + item.ItemBaseName);
                     _menuMan.StashItemAt(item.X, item.Y);
                 }
 
@@ -1052,21 +1049,21 @@ namespace MapAssist.Automation
 
             _log.Info("Taking portal home!");
 
-            var portal = new UnitAny(IntPtr.Zero);
+            var portal = new UnitObject(IntPtr.Zero);
 
             do
             {
                 _input.DoInputAtWorldPosition(KEY_PORTAL, _gameData.PlayerPosition);
                 System.Threading.Thread.Sleep(1500);
-                portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
                 retryCount += 1;
 
                 if (_goBotGo == false)
                     return false;
             }
-            while (!portal.IsValidPointer() && retryCount <= MAX_RETRIES);
+            while (!portal.IsValidPointer && retryCount <= MAX_RETRIES);
 
-            if (portal.IsValidPointer())
+            if (portal.IsValidPointer)
             {
                 var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
 

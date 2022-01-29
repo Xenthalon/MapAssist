@@ -12,21 +12,21 @@ namespace MapAssist.Automation.Identification
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
-        public static bool HasEntry(UnitAny unitAny)
+        public static bool HasEntry(UnitItem item)
         {
-            var baseName = Items.ItemName(unitAny.TxtFileNo);
-            var itemQuality = unitAny.ItemData.ItemQuality;
-            var isEth = (unitAny.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
+            var baseName = item.ItemBaseName;
+            var itemQuality = item.ItemData.ItemQuality;
+            var isEth = (item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
 
             return Filter(baseName, itemQuality, isEth);
         }
 
-        public static bool IsKeeper(UnitAny unitAny)
+        public static bool IsKeeper(UnitItem item)
         {
-            var baseName = Items.ItemName(unitAny.TxtFileNo);
-            var itemQuality = unitAny.ItemData.ItemQuality;
-            var isEth = (unitAny.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
-            var stats = unitAny.Stats;
+            var baseName = item.ItemBaseName;
+            var itemQuality = item.ItemData.ItemQuality;
+            var isEth = (item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
+            var stats = item.Stats;
 
             return FilterDeep(baseName, itemQuality, isEth, stats);
         }

@@ -81,7 +81,7 @@ namespace MapAssist.Helpers
                 throw new Exception("Unable to start map server. Check Anti Virus settings.");
             }
 
-            var path = FindD2();
+            var path = FindD2LoD();
 
             if (trailingSlash == 0 || trailingSlashTry == 0) // Remove trailing slash
             {
@@ -107,47 +107,47 @@ namespace MapAssist.Helpers
             return startupLength == 0;
         }
 
-        private static string FindD2()
+        private static string FindD2LoD()
         {
-            var providedPath = MapAssistConfiguration.Loaded.D2Path;
+            var providedPath = MapAssistConfiguration.Loaded.D2LoDPath;
             if (!string.IsNullOrEmpty(providedPath))
             {
                 if (Path.HasExtension(providedPath))
                 {
                     var config1 = new ConfigEditor();
-                    MessageBox.Show("Provided D2 path is not set to a directory." + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
+                    MessageBox.Show("Provided D2 LoD path is not set to a directory." + Environment.NewLine + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
                     config1.ShowDialog();
                     return null;
                 }
 
-                if (IsValidD2Path(providedPath))
+                if (IsValidD2LoDPath(providedPath))
                 {
-                    _log.Info("User provided D2 path is valid");
+                    _log.Info("User provided D2 LoD path is valid");
                     return providedPath;
                 }
 
                 var config = new ConfigEditor();
-                _log.Info("User provided D2 path is invalid");
-                MessageBox.Show("Provided D2 path is not the correct version." + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
+                _log.Info("User provided D2 LoD path is invalid");
+                MessageBox.Show("Provided D2 LoD path is not the correct version." + Environment.NewLine + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
                 config.ShowDialog();
                 return null;
             }
 
             var installPath = Registry.GetValue("HKEY_CURRENT_USER\\SOFTWARE\\Blizzard Entertainment\\Diablo II", "InstallPath", "INVALID") as string;
-            if (installPath == "INVALID" || !IsValidD2Path(installPath))
+            if (installPath == "INVALID" || !IsValidD2LoDPath(installPath))
             {
-                _log.Info("Registry-provided D2 path not found or invalid");
-                MessageBox.Show("Unable to automatically locate D2 installation." + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
+                _log.Info("Registry-provided D2 LoD path not found or invalid");
+                MessageBox.Show("Unable to automatically locate D2 LoD installation." + Environment.NewLine + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
                 var config = new ConfigEditor();
                 config.ShowDialog();
                 return null;
             }
 
-            _log.Info("Registry-provided D2 path is valid");
+            _log.Info("Registry-provided D2 LoD path is valid");
             return installPath;
         }
 
-        private static bool IsValidD2Path(string path)
+        private static bool IsValidD2LoDPath(string path)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace MapAssist.Helpers
                         var allowedChecksum = kvp.Value;
                         if (fileChecksum == allowedChecksum)
                         {
-                            _log.Info("Valid D2 version identified by Game.exe - v" + kvp.Key);
+                            _log.Info("Valid D2 LoD version identified by Game.exe - v" + kvp.Key);
                             return true;
                         }
                     }
@@ -175,7 +175,7 @@ namespace MapAssist.Helpers
                             var allowedChecksum = kvp.Value;
                             if (fileChecksum == allowedChecksum)
                             {
-                                _log.Info("Valid D2 version identified by Storm.dll - v" + kvp.Key);
+                                _log.Info("Valid D2 LoD version identified by Storm.dll - v" + kvp.Key);
                                 return true;
                             }
                         }

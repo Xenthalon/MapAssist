@@ -39,7 +39,7 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData, Rectangle window)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _act = (int)gameData.PlayerUnit.Act.ActId + 1;
             }

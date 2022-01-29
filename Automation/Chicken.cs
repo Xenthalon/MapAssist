@@ -60,7 +60,7 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit() && gameData.PlayerUnit.Stats != null)
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit && gameData.PlayerUnit.Stats != null)
             {
                 if (_gamestart == 0)
                 {
@@ -83,9 +83,9 @@ namespace MapAssist.Automation
 
                 _amDead = (playerHealth <= 0) && gameData.PlayerUnit.IsCorpse;
 
-                UnitAny merc = gameData.Mercs.Where(x => x.IsMerc() && x.IsPlayerOwned()).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                UnitMonster merc = gameData.Mercs.Where(x => x.IsMerc && x.IsPlayerOwned).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
 
-                if (merc.IsValidPointer() && merc.IsValidUnit() &&
+                if (merc.IsValidPointer && merc.IsValidUnit &&
                     merc.Stats.ContainsKey(Stat.Life))
                 {
                     merc.Stats.TryGetValue(Stat.Life, out mercHealth);

@@ -55,7 +55,7 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _gameData = gameData;
 

@@ -58,7 +58,7 @@ namespace MapAssist.Automation.Profiles
                 _pointsOfInterests = pointsOfInterest;
             }
 
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _currentArea = gameData.Area;
                 _playerPosition = gameData.PlayerPosition;

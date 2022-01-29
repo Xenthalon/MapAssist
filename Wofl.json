@@ -3,38 +3,42 @@
     {
       "name": "Eldritch",
       "type": "KillTarget",
+      "monster_name": "Eldritch",
+      "monster_filter": [ "MinionExp" ],
       "area_path": [
         {
           "Area": "FrigidHighlands",
-          "combat_range": 15
+          "combat_range": 7,
+          "group_size": 3
         }
       ],
       "kill_spot": {
         "x": 3739,
         "y": 5078
-      },
-      "monster_name": "Eldritch"
+      }
     },
     {
       "name": "Shenk",
       "type": "KillTarget",
+      "monster_name": "Shenk",
       "area_path": [
+        { "Area": "FrigidHighlands" },
         {
-          "Area": "FrigidHighlands",
-          "combat_range": 10,
+          "Area": "BloodyFoothills",
+          "combat_range": 8,
           "group_size": 5
-        },
-        { "Area": "BloodyFoothills" }
+        }
       ],
       "kill_spot": {
         "x": 3902,
         "y": 5113
-      },
-      "monster_name": "Shenk"
+      }
     },
+    /* { "name": "Mausoleum", "type": "Explore", "area_path": [ { "Area": "ColdPlains" }, { "Area": "BurialGrounds" }, { "Area": "Mausoleum", "Kill": "Bosses", "group_size": 5, "combat_range": 10 } ] }, */
     {
       "name": "Countess",
-      "type": "ClearArea",
+      "type": "KillTarget",
+      "monster_name": "Countess",
       "area_path": [
         { "Area": "BlackMarsh" },
         { "Area": "ForgottenTower" },
@@ -44,8 +48,8 @@
         { "Area": "TowerCellarLevel4" },
         {
           "Area": "TowerCellarLevel5",
-          "combat_range": 20,
-          "group_size": 3
+          "combat_range": 10,
+          "group_size": 4
         }
       ],
       "go_superchest": true
@@ -61,36 +65,36 @@
           "Area": "PitLevel1",
           "Kill": "Bosses",
           "group_size": 5,
-          "combat_range": 20
+          "combat_range": 20,
+          "open_chests": true
         },
         {
           "Area": "PitLevel2",
-          "Kill": "Everything"
+          "Kill": "Bosses",
+          "group_size": 3,
+          "combat_range": 30,
+          "open_chests": true
         }
       ]
     },
-    /* { "name": "Andariel", "type": "ClearArea", "area_path": [ { "Area": "CatacombsLevel2" }, { "Area": "CatacombsLevel3" }, { "Area": "CatacombsLevel4" } ], "kill_spot": { "x": 22547, "y": 9550 } }, */
-    /* { "name": "Summoner", "type": "ClearArea", "area_path": [ { "Area": "ArcaneSanctuary" } ], "target": "The Summoner" }, */
+    /* { "name": "Andariel", "type": "KillTarget", "monster_type": "Andariel", "area_path": [ { "Area": "CatacombsLevel2" }, { "Area": "CatacombsLevel3" }, { "Area": "CatacombsLevel4", "combat_range": 10, "group_size": 3 } ], "kill_spot": { "x": 22547, "y": 9550 } }, */
+    /* { "name": "Summoner", "type": "KillTarget", "monster_type": "Summoner", "area_path": [ { "Area": "ArcaneSanctuary", "combat_range": 15 } ], "target": "The Summoner" }, */
     {
       "name": "Travincal",
-      "type": "ClearArea",
-      "area_path": [
-        {
-          "Area": "Travincal",
-          "combat_range": 20
-        }
-      ],
-      "target": "Durance of Hate Level 1 (83)"
+      "type": "Travincal",
+      "area_path": [ { "Area": "Travincal" } ]
     },
-    /* { "name": "Mephisto", "type": "KillTarget", "area_path": [ { "Area": "DuranceOfHateLevel2" }, { "Area": "DuranceOfHateLevel3" } ], "kill_spot": { "x": 17565, "y": 8070 }, "monster_type": "Mephisto" }, */
+    /* { "name": "Mephisto", "type": "KillTarget", "monster_type": "Mephisto", "area_path": [ { "Area": "DuranceOfHateLevel2" }, { "Area": "DuranceOfHateLevel3" } ], "kill_spot": { "x": 17565, "y": 8070 } }, */
     {
       "name": "Nihlathak",
-      "type": "ClearArea",
+      "type": "KillTarget",
+      "monster_name": "Nihlathak",
       "area_path": [
         { "Area": "HallsOfPain" },
         {
           "Area": "HallsOfVaught",
-          "group_size": 5
+          "group_size": 5,
+          "combat_range": 15
         }
       ],
       "target": "Nihlathak"
@@ -130,6 +134,12 @@
         "key": "{F3}",
         "is_aura": true,
         "buff_state": "STATE_STAMINA"
+      },
+      {
+        "name": "Salvation",
+        "key": "{F2}",
+        "is_aura": true,
+        "buff_state": "STATE_RESISTALL"
       }
     ],
     "buff_skills": [
@@ -166,8 +176,6 @@
     "potion_wait_interval": 500,
     /* repair if item falls below this */
     "repair_percent": 30.0,
-    /* open chests in range */
-    "open_chests": false,
     "gamble_gold_start": 2000000,
     "gamble_gold_stop": 150000,
     /* can only be Ring or Amulet */
@@ -214,7 +222,7 @@
     "web_api_url": "localhost:8080",
     "pathing": {
       /* don't touch anything here */
-      "stink_sample_size": 50,
+      "stink_sample_size": 25,
       "stink_range": 30,
       "stink_maximum": 500,
       "stink_max_saturation": 0.98,

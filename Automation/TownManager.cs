@@ -53,15 +53,15 @@ namespace MapAssist.Automation
 
         private int _act;
         private bool _act1Initialized = false;
-        private Types.UnitAny _activeNpc;
+        private UnitMonster _activeNpc;
         private Area _area;
         private MenuData _menus;
-        private HashSet<Types.UnitAny> _closeNpcs;
-        private HashSet<Types.UnitAny> _closeObjects;
+        private UnitMonster[] _closeNpcs;
+        private UnitObject[] _closeObjects;
 
         public bool IsInTown => _area == Area.RogueEncampment || _area == Area.LutGholein || _area == Area.KurastDocks || _area == Area.ThePandemoniumFortress || _area == Area.Harrogath;
         public TownState State => _state;
-        public Types.UnitAny ActiveNPC => _activeNpc;
+        public UnitMonster ActiveNPC => _activeNpc;
 
         public TownManager(BotConfiguration config, Input input, MenuMan menuMan, Movement movement)
         {
@@ -151,7 +151,7 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData, AreaData areaData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _act = (int)gameData.PlayerUnit.Act.ActId + 1;
                 _area = gameData.Area;
@@ -228,7 +228,7 @@ namespace MapAssist.Automation
 
             var clickTarget = FindClickTarget(target.TxtFileId);
 
-            if (!clickTarget.IsValidPointer() && _task != TownTask.NONE)
+            if (!clickTarget.IsValidPointer && _task != TownTask.NONE)
             {
                 _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
                 _menuMan.ExitGame();
@@ -253,7 +253,7 @@ namespace MapAssist.Automation
                 {
                     clickTarget = FindClickTarget(target.TxtFileId);
 
-                    if (!clickTarget.IsValidPointer() && _task != TownTask.NONE)
+                    if (!clickTarget.IsValidPointer && _task != TownTask.NONE)
                     {
                         _log.Error("Couldn't find " + target.Name + ", stuck! Quitting game!");
                         Reset();
@@ -313,7 +313,7 @@ namespace MapAssist.Automation
 
                     System.Threading.Thread.Sleep(500);
 
-                    _activeNpc = clickTarget;
+                    _activeNpc = (UnitMonster)clickTarget;
                     _state = TownState.TRADE_MENU;
                     break;
                 case TownTask.OPEN_GAMBLE_MENU:
@@ -325,7 +325,7 @@ namespace MapAssist.Automation
 
                     System.Threading.Thread.Sleep(500);
 
-                    _activeNpc = clickTarget;
+                    _activeNpc = (UnitMonster)clickTarget;
                     _state = TownState.GAMBLE_MENU;
                     break;
                 case TownTask.OPEN_GAMBLE_TRADE:
@@ -337,7 +337,7 @@ namespace MapAssist.Automation
 
                     System.Threading.Thread.Sleep(500);
 
-                    _activeNpc = clickTarget;
+                    _activeNpc = (UnitMonster)clickTarget;
                     _state = TownState.TRADE_MENU;
                     break;
                 case TownTask.OPEN_STASH_MENU:
@@ -353,15 +353,15 @@ namespace MapAssist.Automation
 
         private Types.UnitAny FindClickTarget(int txtFileId)
         {
-            var clickTarget = new Types.UnitAny(IntPtr.Zero);
+            Types.UnitAny clickTarget = new UnitMonster(IntPtr.Zero);
 
             if (_task == TownTask.OPEN_WAYPOINT_MENU || _task == TownTask.OPEN_STASH_MENU)
             {
-                clickTarget = _closeObjects.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
+                clickTarget = _closeObjects.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
             }
             else
             {
-                clickTarget = _closeNpcs.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new Types.UnitAny(IntPtr.Zero);
+                clickTarget = _closeNpcs.Where(x => x.TxtFileNo == txtFileId).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             return clickTarget;
@@ -386,7 +386,7 @@ namespace MapAssist.Automation
                 counter++;
             }
 
-            _activeNpc = new Types.UnitAny(IntPtr.Zero);
+            _activeNpc = new Types.UnitMonster(IntPtr.Zero);
         }
 
         private void InitializeAct1(AreaData areaData)

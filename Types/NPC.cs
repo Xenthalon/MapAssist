@@ -229,7 +229,7 @@ namespace MapAssist.Types
             { "Magma Torquer", "imp5" },
             { "Blaze Ripper", "deathmauler5" },
             { "Frozenstein", "snowyeti4" },
-            { "Nihlathak Boss", "nihlathakboss" },
+            { "Nihlathak", "nihlathakboss" },
             { "Baal Subject 1", "fallenshaman5" },
             { "Baal Subject 2", "unraveler5" },
             { "Baal Subject 3", "baalhighpriest" },

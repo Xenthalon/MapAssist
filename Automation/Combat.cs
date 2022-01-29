@@ -32,10 +32,10 @@ namespace MapAssist.Automation
         private bool _defenseActive = false;
         private bool _reposition = true;
         private Point _playerPosition;
-        private UnitAny _playerUnit;
-        private HashSet<UnitAny> _monsters;
-        private IEnumerable<UnitAny> _chests;
-        private UnitAny _target;
+        private UnitPlayer _playerUnit;
+        private HashSet<UnitMonster> _monsters;
+        private IEnumerable<UnitObject> _chests;
+        private UnitMonster _target;
         private Point? _areaToClear;
         private List<uint> _blacklist = new List<uint>();
         private int _attackAttempts = 0;
@@ -88,7 +88,7 @@ namespace MapAssist.Automation
             _combatWorker.DoWork += new DoWorkEventHandler(Fight);
             _combatWorker.WorkerSupportsCancellation = true;
 
-            _target = new UnitAny(IntPtr.Zero);
+            _target = new UnitMonster(IntPtr.Zero);
         }
 
         public void Kill(string name, bool clearArea = false, bool reposition = true)
@@ -270,9 +270,9 @@ namespace MapAssist.Automation
             }
 
             if (resist == Resist.LIGHTNING &&
-                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHT))
+                COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHTNING))
             {
-                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHT).First();
+                mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHTNING).First();
             }
 
             if (mitigationSkill != null && !_playerUnit.StateList.Contains(mitigationSkill.BuffState))
@@ -285,19 +285,19 @@ namespace MapAssist.Automation
 
         public void Update(GameData gameData)
         {
-            if (gameData != null && gameData.PlayerUnit.IsValidPointer() && gameData.PlayerUnit.IsValidUnit())
+            if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
-                _chests = gameData.Objects.Where(x => x.IsChest() &&
+                _chests = gameData.Objects.Where(x => x.IsChest &&
                                                 (x.ObjectData.InteractType & ((byte)Chest.InteractFlags.Locked)) == ((byte)Chest.InteractFlags.None)); // only non-locked chests
-                _monsters = gameData.Monsters;
+                _monsters = gameData.Monsters.ToHashSet();
                 _playerPosition = gameData.PlayerPosition;
                 _playerUnit = gameData.PlayerUnit;
 
-                if (_target.IsValidPointer())
+                if (_target.IsValidPointer)
                 {
-                    _target = _monsters.Where(x => x.UnitId == _target.UnitId).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                    _target = _monsters.Where(x => x.UnitId == _target.UnitId).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
                     
-                    if (!_target.IsValidPointer())
+                    if (!_target.IsValidPointer)
                     {
                         _log.Info("Killed!");
 
@@ -329,11 +329,11 @@ namespace MapAssist.Automation
             _reposition = true;
             _lastEscapeAttempt = 0;
             _blacklist = new List<uint>();
-            _monsters = new HashSet<UnitAny>();
-            _chests = new List<UnitAny>();
+            _monsters = new HashSet<UnitMonster>();
+            _chests = new List<UnitObject>();
             _attackAttempts = 0;
             _targetLastHealth = int.MaxValue;
-            _target = new UnitAny(IntPtr.Zero);
+            _target = new UnitMonster(IntPtr.Zero);
             _combatWorker.CancelAsync();
             HuntBosses = false;
             GroupSize = 1;
@@ -345,7 +345,7 @@ namespace MapAssist.Automation
 
         private void Fight(object sender, DoWorkEventArgs e)
         {
-            if (_areaToClear != null && !_target.IsValidPointer())
+            if (_areaToClear != null && !_target.IsValidPointer)
             {
                 var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
                         (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
@@ -370,11 +370,11 @@ namespace MapAssist.Automation
                 }
             }
 
-            if (_target.IsValidPointer())
+            if (_target.IsValidPointer)
             {
                 var castLocation = new Point(_target.Position.X, _target.Position.Y);
 
-                if (_target.Mode != 0 && (uint)_target.Mode != 12) // if not dying or dead
+                if (_target.Struct.Mode != 0 && _target.Struct.Mode != 12) // if not dying or dead
                 {
                     var targetLife = 0;
 
@@ -453,7 +453,7 @@ namespace MapAssist.Automation
                 if (_attackAttempts >= MAX_ATTACK_ATTEMPTS)
                 {
                     _blacklist.Add(_target.UnitId);
-                    _target = new UnitAny(IntPtr.Zero);
+                    _target = new UnitMonster(IntPtr.Zero);
                     _attackAttempts = 0;
                 }
             }
@@ -491,12 +491,12 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(SLEEP_LONG);
         }
 
-        private UnitAny GetNextVictim(IEnumerable<UnitAny> monsters)
+        private UnitMonster GetNextVictim(IEnumerable<UnitMonster> monsters)
         {
             _targetLastHealth = int.MaxValue;
             var mainSkill = COMBAT_SKILLS.Where(x => x.IsMainSkill).FirstOrDefault();
             var fallbackSkill = COMBAT_SKILLS.Where(x => !x.IsMainSkill && !x.IsAoe && !x.IsBuff && !x.IsStatic).FirstOrDefault();
-            var victim = new UnitAny(IntPtr.Zero);
+            var victim = new UnitMonster(IntPtr.Zero);
 
             var supers = monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||
                                             (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique ||
@@ -512,51 +512,51 @@ namespace MapAssist.Automation
             }
 
             // get closest priority enemy (Shamans, Defilers, Spawners etc) not immune to us with line of sight
-            if (!victim.IsValidPointer())
+            if (!victim.IsValidPointer)
             {
                 victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && PriorityEnemies.Contains((Npc)x.TxtFileNo) && _pathing.HasLineOfSight(_playerPosition, x.Position))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             // get closest enemy not immune to us with line of sight
-            if (!victim.IsValidPointer())
+            if (!victim.IsValidPointer)
             { 
                 victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             // get closest enemy not immune to our fallback with line of sight
-            if (!victim.IsValidPointer() && fallbackSkill != null)
+            if (!victim.IsValidPointer && fallbackSkill != null)
             {
                 victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType) && _pathing.HasLineOfSight(_playerPosition, x.Position))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             // get closest enemy not immune to us
-            if (!victim.IsValidPointer())
+            if (!victim.IsValidPointer)
             {
                 victim = monsters.Where(x => !x.Immunities.Contains(mainSkill.DamageType))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             // get closest priority enemy (Shamans, Defilers, Spawners etc) not immune to our fallback
-            if (!victim.IsValidPointer())
+            if (!victim.IsValidPointer)
             {
                 victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType) && PriorityEnemies.Contains((Npc)x.TxtFileNo))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             // get closest enemy not immune to our fallback
-            if (!victim.IsValidPointer() && fallbackSkill != null)
+            if (!victim.IsValidPointer && fallbackSkill != null)
             {
                 victim = monsters.Where(x => !x.Immunities.Contains(fallbackSkill.DamageType))
-                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitAny(IntPtr.Zero);
+                                .OrderBy(x => Automaton.GetDistance(_playerPosition, x.Position)).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
             }
 
             return victim;
         }
 
-        private bool IsBoss(UnitAny monster)
+        private bool IsBoss(UnitMonster monster)
         {
             return (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique ||
                    (monster.MonsterData.MonsterType & Structs.MonsterTypeFlags.Unique) == Structs.MonsterTypeFlags.Unique ||

@@ -1,4 +1,4 @@
-﻿/**
+/**
  *   Copyright (C) 2021 okaygo
  *
  *   https://github.com/misterokaygo/MapAssist/
@@ -23,133 +23,245 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Timers;
 using YamlDotNet.Serialization;
 
 namespace MapAssist.Types
 {
-    [Flags]
-    public enum ItemFlags : uint
-    {
-        IFLAG_NEWITEM = 0x00000001,
-        IFLAG_TARGET = 0x00000002,
-        IFLAG_TARGETING = 0x00000004,
-        IFLAG_DELETED = 0x00000008,
-        IFLAG_IDENTIFIED = 0x00000010,
-        IFLAG_QUANTITY = 0x00000020,
-        IFLAG_SWITCHIN = 0x00000040,
-        IFLAG_SWITCHOUT = 0x00000080,
-        IFLAG_BROKEN = 0x00000100,
-        IFLAG_REPAIRED = 0x00000200,
-        IFLAG_UNK1 = 0x00000400,
-        IFLAG_SOCKETED = 0x00000800,
-        IFLAG_NOSELL = 0x00001000,
-        IFLAG_INSTORE = 0x00002000,
-        IFLAG_NOEQUIP = 0x00004000,
-        IFLAG_NAMED = 0x00008000,
-        IFLAG_ISEAR = 0x00010000,
-        IFLAG_STARTITEM = 0x00020000,
-        IFLAG_UNK2 = 0x00040000,
-        IFLAG_INIT = 0x00080000,
-        IFLAG_UNK3 = 0x00100000,
-        IFLAG_COMPACTSAVE = 0x00200000,
-        IFLAG_ETHEREAL = 0x00400000,
-        IFLAG_JUSTSAVED = 0x00800000,
-        IFLAG_PERSONALIZED = 0x01000000,
-        IFLAG_LOWQUALITY = 0x02000000,
-        IFLAG_RUNEWORD = 0x04000000,
-        IFLAG_ITEM = 0x08000000
-    }
-
-    public enum ItemQuality : uint
-    {
-        INFERIOR = 0x01, //0x01 Inferior
-        NORMAL = 0x02, //0x02 Normal
-        SUPERIOR = 0x03, //0x03 Superior
-        MAGIC = 0x04, //0x04 Magic
-        SET = 0x05, //0x05 Set
-        RARE = 0x06, //0x06 Rare
-        UNIQUE = 0x07, //0x07 Unique
-        CRAFT = 0x08, //0x08 Crafted
-        TEMPERED = 0x09 //0x09 Tempered
-    }
-
-    public enum InvPage : byte
-    {
-        INVENTORY = 0,
-        EQUIP = 1,
-        TRADE = 2,
-        CUBE = 3,
-        STASH = 4,
-        BELT = 5,
-        NULL = 255,
-    }
-
-    public enum StashType : byte
-    {
-        Body = 0,
-        Personal = 1,
-        Shared1 = 2,
-        Shared2 = 3,
-        Shared3 = 4,
-        Belt = 5
-    }
-
-    public enum BodyLoc : byte
-    {
-        NONE, //Not Equipped
-        HEAD, //Helm
-        NECK, //Amulet
-        TORSO, //Body Armor
-        RARM, //Right-Hand
-        LARM, //Left-Hand
-        RRIN, //Right Ring
-        LRIN, //Left Ring
-        BELT, //Belt
-        FEET, //Boots
-        GLOVES, //Gloves
-        SWRARM, //Right-Hand on Switch
-        SWLARM //Left-Hand on Switch
-    };
-
-    public enum ItemMode : uint
-    {
-        STORED, //Item is in Storage (inventory, cube, Stash?)
-        EQUIP, //Item is Equippped
-        INBELT, //Item is in Belt Rows
-        ONGROUND, //Item is on Ground
-        ONCURSOR, //Item is on Cursor
-        DROPPING, //Item is Being Dropped
-        SOCKETED //Item is Socketed in another Item
-    };
-
-    public enum ItemModeMapped // Provides more detail over ItemMode
-    {
-        Player,
-        Inventory,
-        Belt,
-        Cube,
-        Stash,
-        Vendor,
-        Trade,
-        Mercenary,
-        Socket,
-        Ground,
-        Unknown
-    };
-
     public class Items
     {
         public static Dictionary<int, HashSet<string>> ItemUnitHashesSeen = new Dictionary<int, HashSet<string>>();
         public static Dictionary<int, HashSet<uint>> ItemUnitIdsSeen = new Dictionary<int, HashSet<uint>>();
         public static Dictionary<int, HashSet<uint>> ItemUnitIdsToSkip = new Dictionary<int, HashSet<uint>>();
+        public static Dictionary<int, HashSet<uint>> InventoryItemUnitIdsToSkip = new Dictionary<int, HashSet<uint>>();
         public static Dictionary<int, Dictionary<uint, Npc>> ItemVendors = new Dictionary<int, Dictionary<uint, Npc>>();
-        public static Dictionary<int, List<UnitAny>> ItemLog = new Dictionary<int, List<UnitAny>>();
-        public static List<UnitAny> CurrentItemLog = new List<UnitAny>();
+        public static Dictionary<int, List<ItemLogEntry>> ItemLog = new Dictionary<int, List<ItemLogEntry>>();
         public static Dictionary<string, LocalizedObj> LocalizedItems = new Dictionary<string, LocalizedObj>();
-        public static Dictionary<int, List<Timer>> ItemLogTimers = new Dictionary<int, List<Timer>>();
 
-        public static string ItemNameFromKey(string key)
+        public static void LogItem(UnitItem item, int processId)
+        {
+            if (CheckDroppedItem(item, processId) || CheckInventoryItem(item, processId) || CheckVendorItem(item, processId))
+            {
+                if (item.IsInStore)
+                {
+                    InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                }
+                else
+                {
+                    ItemUnitHashesSeen[processId].Add(item.HashString);
+                }
+
+                if (item.IsPlayerOwned && item.IsIdentified)
+                {
+                    InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                    ItemUnitIdsToSkip[processId].Add(item.UnitId);
+                }
+
+                ItemUnitIdsSeen[processId].Add(item.UnitId);
+
+                var (logItem, rule) = LootFilter.Filter(item);
+                if (!logItem) return;
+
+                if (MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop && (rule == null || rule.PlaySoundOnDrop))
+                {
+                    AudioPlayer.PlayItemAlert();
+                }
+
+                ItemLog[processId].Add(new ItemLogEntry()
+                {
+                    Text = ItemLogDisplayName(item, rule),
+                    Color = item.ItemBaseColor,
+                    ItemHashString = item.HashString,
+                    UnitItem = item
+                });
+            }
+        }
+
+        private static bool CheckInventoryItem(UnitItem item, int processId) =>
+            item.IsIdentified && item.IsPlayerOwned &&
+            !InventoryItemUnitIdsToSkip[processId].Contains(item.UnitId);
+
+        private static bool CheckDroppedItem(UnitItem item, int processId) =>
+            !ItemUnitHashesSeen[processId].Contains(item.HashString) &&
+            !ItemUnitIdsSeen[processId].Contains(item.UnitId) &&
+            !ItemUnitIdsToSkip[processId].Contains(item.UnitId);
+
+        private static bool CheckVendorItem(UnitItem item, int processId) =>
+            item.IsInStore &&
+            !ItemUnitIdsSeen[processId].Contains(item.UnitId) &&
+            !ItemUnitIdsToSkip[processId].Contains(item.UnitId);
+
+        public static string ItemLogDisplayName(UnitItem item, ItemFilter rule)
+        {
+            var statsProcessed = new List<Stat>();
+            var itemBaseName = GetItemName(item);
+            var itemSpecialName = "";
+            var itemPrefix = "";
+            var itemSuffix = "";
+
+            if (item.IsInStore && item.VendorOwner != Npc.Invalid)
+            {
+                var vendorLabel = item.VendorOwner != Npc.Unknown ? NpcExtensions.Name(item.VendorOwner) : "Vendor";
+                itemPrefix += $"[{vendorLabel}] ";
+            }
+            else if (item.IsIdentified)
+            {
+                itemPrefix += "[Identified] ";
+            }
+
+            if (rule == null) return itemPrefix + itemBaseName;
+
+            if ((item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL)
+            {
+                itemPrefix += "[Eth] ";
+            }
+
+            if (item.Stats.TryGetValue(Stat.NumSockets, out var numSockets))
+            {
+                itemPrefix += "[" + numSockets + " S] ";
+            }
+
+            if (item.ItemData.ItemQuality == ItemQuality.SUPERIOR)
+            {
+                itemPrefix += "Sup. ";
+            }
+
+            if (rule.AllResist != null)
+            {
+                var itemAllRes = GetItemStatResists(item, false);
+                if (itemAllRes > 0)
+                {
+                    itemSuffix += $" ({itemAllRes} all res)";
+                }
+            }
+
+            if (rule.SumResist != null)
+            {
+                var itemSumRes = GetItemStatResists(item, true);
+                if (itemSumRes > 0)
+                {
+                    itemSuffix += $" ({itemSumRes} sum res)";
+                }
+            }
+
+            if (rule.AllSkills != null)
+            {
+                var itemAllSkills = GetItemStat(item, Stat.AllSkills);
+                if (itemAllSkills > 0)
+                {
+                    itemSuffix += $" (+{itemAllSkills} all skills)";
+                }
+                statsProcessed.Add(Stat.AllSkills);
+            }
+
+            if (rule.ClassSkills != null)
+            {
+                foreach (var subrule in rule.ClassSkills)
+                {
+                    var (className, classSkills) = GetItemStatAddClassSkills(item, subrule.Key);
+                    if (classSkills > 0)
+                    {
+                        itemSuffix += $" (+{classSkills} {className} skills)";
+                    }
+                }
+            }
+
+            if (rule.SkillTrees != null)
+            {
+                foreach (var subrule in rule.SkillTrees)
+                {
+                    var (skillTreeName, skillTrees) = GetItemStatAddSkillTreeSkills(item, subrule.Key);
+                    if (skillTrees > 0)
+                    {
+                        itemSuffix += $" (+{skillTrees} {skillTreeName.Name()} skills)";
+                    }
+                }
+            }
+
+            if (rule.Skills != null)
+            {
+                foreach (var subrule in rule.Skills)
+                {
+                    var (skill, singleSkills) = GetItemStatAddSingleSkills(item, subrule.Key);
+                    if (singleSkills > 0)
+                    {
+                        itemSuffix += $" (+{singleSkills} {skill.Name()})";
+                    }
+                }
+            }
+
+            if (rule.SkillCharges != null)
+            {
+                foreach (var subrule in rule.SkillCharges)
+                {
+                    var (skillLevel, currentCharges, maxCharges) = GetItemStatAddSkillCharges(item, subrule.Key);
+                    if (skillLevel > 0)
+                    {
+                        var charges = "";
+                        if (currentCharges > 0 && maxCharges > 0)
+                        {
+                            charges = $"{currentCharges}/{maxCharges}";
+                        }
+                        itemSuffix += $" (+{skillLevel} {subrule.Key.Name()} {charges} charges)";
+                    }
+                }
+            }
+
+            foreach (var (stat, shift) in LootFilter.StatShifts.Select(x => (x.Key, x.Value)))
+            {
+                var property = rule.GetType().GetProperty(stat.ToString());
+                var propertyValue = property.GetValue(rule, null);
+                if (propertyValue == null) continue;
+
+                var yamlAttribute = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(YamlMemberAttribute));
+                var propName = property.Name;
+
+                if (yamlAttribute != null) propName = yamlAttribute.NamedArguments.FirstOrDefault(x => x.MemberName == "Alias").TypedValue.Value.ToString();
+
+                var statValue = GetItemStatShifted(item, stat, shift);
+                if (statValue > 0)
+                {
+                    itemSuffix += $" ({statValue} {propName})";
+                }
+                statsProcessed.Add(stat);
+            }
+
+            foreach (var property in rule.GetType().GetProperties())
+            {
+                var yamlAttribute = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(YamlMemberAttribute));
+                var propName = property.Name;
+
+                if (yamlAttribute != null) propName = yamlAttribute.NamedArguments.FirstOrDefault(x => x.MemberName == "Alias").TypedValue.Value.ToString();
+
+                if (property.PropertyType == typeof(int?) && Enum.TryParse<Stat>(property.Name, out var stat))
+                {
+                    if (statsProcessed.Contains(stat)) continue;
+
+                    var propertyValue = rule.GetType().GetProperty(property.Name).GetValue(rule, null);
+                    if (propertyValue == null) continue;
+
+                    var statValue = GetItemStat(item, stat);
+                    if (statValue > 0)
+                    {
+                        itemSuffix += $" ({statValue} {propName})";
+                    }
+                }
+            }
+
+            switch (item.ItemData.ItemQuality)
+            {
+                case ItemQuality.UNIQUE:
+                    itemSpecialName = GetUniqueName(item) + " ";
+                    break;
+
+                case ItemQuality.SET:
+                    itemSpecialName = GetSetName(item) + " ";
+                    break;
+            }
+
+            return itemPrefix + itemSpecialName + itemBaseName + itemSuffix;
+        }
+
+        public static string GetItemNameFromKey(string key)
         {
             LocalizedObj localItem;
             if (!LocalizedItems.TryGetValue(key, out localItem))
@@ -163,10 +275,10 @@ namespace MapAssist.Types
             return prop.ToString();
         }
 
-        public static string ItemNameDisplay(uint txtFileNo)
+        public static string GetItemBaseName(UnitItem item)
         {
             string itemCode;
-            if (!_ItemCodes.TryGetValue(txtFileNo, out itemCode))
+            if (!_ItemCodes.TryGetValue(item.TxtFileNo, out itemCode))
             {
                 return "ItemNotFound";
             }
@@ -183,10 +295,10 @@ namespace MapAssist.Types
             return prop.ToString();
         }
 
-        public static string ItemName(uint txtFileNo)
+        public static string GetItemName(UnitItem item)
         {
             string itemCode;
-            if (!_ItemCodes.TryGetValue(txtFileNo, out itemCode))
+            if (!_ItemCodes.TryGetValue(item.TxtFileNo, out itemCode))
             {
                 return "ItemNotFound";
             }
@@ -200,10 +312,10 @@ namespace MapAssist.Types
             return localItem.enUS;
         }
 
-        public static string UniqueName(uint txtFileNo)
+        public static string GetUniqueName(UnitItem item)
         {
             string itemCode;
-            if (!_ItemCodes.TryGetValue(txtFileNo, out itemCode))
+            if (!_ItemCodes.TryGetValue(item.TxtFileNo, out itemCode))
             {
                 return "Unique";
             }
@@ -225,10 +337,10 @@ namespace MapAssist.Types
             return prop.ToString();
         }
 
-        public static string SetName(uint txtFileNo)
+        public static string GetSetName(UnitItem item)
         {
             string itemCode;
-            if (!_ItemCodes.TryGetValue(txtFileNo, out itemCode))
+            if (!_ItemCodes.TryGetValue(item.TxtFileNo, out itemCode))
             {
                 return "Set";
             }
@@ -250,196 +362,10 @@ namespace MapAssist.Types
             return prop.ToString();
         }
 
-        public static void LogItem(UnitAny unit, int processId)
-        {
-            if ((unit.ItemModeMapped() == ItemModeMapped.Vendor || !ItemUnitHashesSeen[processId].Contains(unit.ItemHash())) &&
-                !ItemUnitIdsSeen[processId].Contains(unit.UnitId) &&
-                !ItemUnitIdsToSkip[processId].Contains(unit.UnitId))
-            {
-                var (pickupItem, rule) = LootFilter.Filter(unit);
-                if (!pickupItem)
-                {
-                    return;
-                }
-
-                if (MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop && (rule == null || rule.PlaySoundOnDrop))
-                {
-                    AudioPlayer.PlayItemAlert();
-                }
-
-                string npcVendorName = null;
-                if (unit.IsInStore())
-                {
-                    using (var processContext = GameManager.GetProcessContext())
-                    {
-                        var lastNpcInteracted = (Npc)processContext.Read<ushort>(GameManager.InteractedNpcOffset);
-                        npcVendorName = NpcExtensions.Name(lastNpcInteracted);
-                    }
-                }
-
-                if (unit.ItemModeMapped() != ItemModeMapped.Vendor)
-                {
-                    ItemUnitHashesSeen[processId].Add(unit.ItemHash());
-                }
-                ItemUnitIdsSeen[processId].Add(unit.UnitId);
-                ItemLog[processId].Add(unit);
-                var timer = new Timer(MapAssistConfiguration.Loaded.ItemLog.DisplayForSeconds * 1000);
-                timer.Elapsed += (sender, args) => ItemLogTimerElapsed(sender, args, timer, processId);
-                timer.Start();
-
-                //keep track of timers in each d2r process
-                if (ItemLogTimers.ContainsKey(processId))
-                {
-                    ItemLogTimers[processId].Add(timer);
-                }
-                else
-                {
-                    ItemLogTimers.Add(processId, new List<Timer>());
-                    ItemLogTimers[processId].Add(timer);
-                }
-            }
-        }
-
-        public static string ItemLogDisplayName(UnitAny unit)
-        {
-            var itemBaseName = ItemName(unit.TxtFileNo);
-            var itemSpecialName = "";
-            var itemPrefix = "";
-            var itemSuffix = "";
-
-            (_, var rule) = LootFilter.Filter(unit);
-
-            if (unit.IsInStore() && unit.VendorOwner != Npc.Invalid)
-            {
-                var vendorLabel = unit.VendorOwner != Npc.Unknown ? NpcExtensions.Name(unit.VendorOwner) : "Vendor";
-                itemPrefix += $"[{vendorLabel}] ";
-            }
-
-            if (rule == null) return itemPrefix + itemBaseName;
-
-            if ((unit.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL)
-            {
-                itemPrefix += "[Eth] ";
-            }
-
-            if (unit.Stats.TryGetValue(Stat.NumSockets, out var numSockets))
-            {
-                itemPrefix += "[" + numSockets + " S] ";
-            }
-
-            if (unit.ItemData.ItemQuality == ItemQuality.SUPERIOR)
-            {
-                itemPrefix += "Sup. ";
-            }
-
-            if (rule.AllResist != null)
-            {
-                var itemAllRes = GetItemStatAllResist(unit);
-                if (itemAllRes > 0)
-                {
-                    itemSuffix += $" ({itemAllRes} all res)";
-                }
-            }
-
-            if (rule.AllSkills != null)
-            {
-                var itemAllSkills = GetItemStat(unit, Stat.AllSkills);
-                if (itemAllSkills > 0)
-                {
-                    itemSuffix += $" (+{itemAllSkills} all skills)";
-                }
-            }
-
-            if (rule.ClassSkills != null)
-            {
-                foreach (var subrule in rule.ClassSkills)
-                {
-                    var classSkills = GetItemStatAddClassSkills(unit, subrule.Key);
-                    if (classSkills > 0)
-                    {
-                        itemSuffix += $" (+{classSkills} {subrule.Key} skills)";
-                    }
-                }
-            }
-
-            if (rule.ClassTabSkills != null)
-            {
-                foreach (var subrule in rule.ClassTabSkills)
-                {
-                    var classTabSkills = GetItemStatAddClassTabSkills(unit, subrule.Key);
-                    if (classTabSkills > 0)
-                    {
-                        itemSuffix += $" (+{classTabSkills} {subrule.Key.Name()} skills)";
-                    }
-                }
-            }
-
-            if (rule.Skills != null)
-            {
-                foreach (var subrule in rule.Skills)
-                {
-                    var singleSkills = GetItemStatSingleSkills(unit, subrule.Key);
-                    if (singleSkills > 0)
-                    {
-                        itemSuffix += $" (+{singleSkills} {subrule.Key.Name()})";
-                    }
-                }
-            }
-
-            if (rule.SkillCharges != null)
-            {
-                foreach (var subrule in rule.SkillCharges)
-                {
-                    var (skillLevel, currentCharges, maxCharges) = GetItemStatAddSkillCharges(unit, subrule.Key);
-                    if (skillLevel > 0)
-                    {
-                        var charges = "";
-                        if (currentCharges > 0 && maxCharges > 0)
-                        {
-                            charges = $"{currentCharges}/{ maxCharges} ";
-                        }
-                        itemSuffix += $" (+{skillLevel} {subrule.Key.Name()} {charges}charges)";
-                    }
-                }
-            }
-
-            foreach (var property in rule.GetType().GetProperties())
-            {
-                var yamlAttribute = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(YamlMemberAttribute));
-                var propName = property.Name;
-
-                if (yamlAttribute != null) propName = yamlAttribute.NamedArguments.FirstOrDefault(x => x.MemberName == "Alias").TypedValue.Value.ToString();
-
-                if (property.PropertyType == typeof(int?) && Enum.TryParse<Stat>(property.Name, out var stat))
-                {
-                    var propertyValue = rule.GetType().GetProperty(property.Name).GetValue(rule, null);
-                    var statValue = GetItemStat(unit, stat);
-
-                    if (propertyValue != null && statValue > 0)
-                    {
-                        itemSuffix += $" ({statValue} {propName})";
-                    }
-                }
-            }
-
-            switch (unit.ItemData.ItemQuality)
-            {
-                case ItemQuality.UNIQUE:
-                    itemSpecialName = UniqueName(unit.TxtFileNo) + " ";
-                    break;
-
-                case ItemQuality.SET:
-                    itemSpecialName = SetName(unit.TxtFileNo) + " ";
-                    break;
-            }
-
-            return itemPrefix + itemSpecialName + itemBaseName + itemSuffix;
-        }
-
-        public static Color ItemNameColor(UnitAny unit)
+        public static Color GetItemBaseColor(UnitItem unit)
         {
             Color fontColor;
-            if (unit == null || !Items.ItemColors.TryGetValue(unit.ItemData.ItemQuality, out fontColor))
+            if (unit == null || !ItemColors.TryGetValue(unit.ItemData.ItemQuality, out fontColor))
             {
                 // Invalid item quality
                 return Color.Empty;
@@ -448,18 +374,18 @@ namespace MapAssist.Types
             var isEth = (unit.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
             if (isEth && fontColor == Color.White)
             {
-                return Items.ItemColors[ItemQuality.SUPERIOR];
+                return ItemColors[ItemQuality.SUPERIOR];
             }
 
             if (unit.Stats.ContainsKey(Stat.NumSockets) && fontColor == Color.White)
             {
-                return Items.ItemColors[ItemQuality.SUPERIOR];
+                return ItemColors[ItemQuality.SUPERIOR];
             }
 
             if (unit.TxtFileNo >= 610 && unit.TxtFileNo <= 642)
             {
                 // Runes
-                return Items.ItemColors[ItemQuality.CRAFT];
+                return ItemColors[ItemQuality.CRAFT];
             }
 
             switch (unit.TxtFileNo)
@@ -472,15 +398,15 @@ namespace MapAssist.Types
                 case 655: // Charged Essense of Hatred
                 case 656: // Burning Essence of Terror
                 case 657: // Festering Essence of Destruction
-                    return Items.ItemColors[ItemQuality.CRAFT];
+                    return ItemColors[ItemQuality.CRAFT];
             }
 
             return fontColor;
         }
 
-        public static ItemTier GetItemTier(UnitAny unitAny)
+        public static ItemTier GetItemTier(UnitItem item)
         {
-            return GetItemTier((Item)unitAny.TxtFileNo);
+            return GetItemTier(item.Item);
         }
 
         public static ItemTier GetItemTier(Item item)
@@ -494,62 +420,162 @@ namespace MapAssist.Types
             return (ItemTier)(Array.IndexOf(itemClass.Value, item) * 3 / itemClass.Value.Length); // All items with each class (except circlets) come in equal amounts within each tier
         }
 
-        public static int GetItemStat(UnitAny unitAny, Stat stat)
+        public static int GetItemStat(UnitItem item, Stat stat)
         {
-            return unitAny.Stats.TryGetValue(stat, out var statValue) ? statValue : 0;
+            return item.Stats.TryGetValue(stat, out var statValue) ? statValue : 0;
         }
 
-        public static int GetItemStatShifted(UnitAny unitAny, Stat stat, int shift)
+        public static int GetItemStatShifted(UnitItem item, Stat stat, int shift)
         {
-            return unitAny.Stats.TryGetValue(stat, out var statValue) ? statValue >> shift : 0;
+            return item.Stats.TryGetValue(stat, out var statValue) ? statValue >> shift : 0;
         }
 
-        public static int GetItemStatAllResist(UnitAny unitAny)
+        public static int GetItemStatResists(UnitItem item, bool sumOfEach)
         {
-            unitAny.Stats.TryGetValue(Stat.FireResist, out var fireRes);
-            unitAny.Stats.TryGetValue(Stat.LightningResist, out var lightRes);
-            unitAny.Stats.TryGetValue(Stat.ColdResist, out var coldRes);
-            unitAny.Stats.TryGetValue(Stat.PoisonResist, out var psnRes);
-            return new[] { fireRes, lightRes, coldRes, psnRes }.Min();
+            item.Stats.TryGetValue(Stat.FireResist, out var fireRes);
+            item.Stats.TryGetValue(Stat.LightningResist, out var lightRes);
+            item.Stats.TryGetValue(Stat.ColdResist, out var coldRes);
+            item.Stats.TryGetValue(Stat.PoisonResist, out var psnRes);
+            var resistances = new[] { fireRes, lightRes, coldRes, psnRes };
+            return sumOfEach ? resistances.Sum() : resistances.Min();
         }
 
-        public static int GetItemStatAllAttributes(UnitAny unitAny)
+        public static int GetItemStatAllAttributes(UnitItem item)
         {
-            unitAny.Stats.TryGetValue(Stat.Strength, out var strength);
-            unitAny.Stats.TryGetValue(Stat.Dexterity, out var dexterity);
-            unitAny.Stats.TryGetValue(Stat.Vitality, out var vitality);
-            unitAny.Stats.TryGetValue(Stat.Energy, out var energy);
+            item.Stats.TryGetValue(Stat.Strength, out var strength);
+            item.Stats.TryGetValue(Stat.Dexterity, out var dexterity);
+            item.Stats.TryGetValue(Stat.Vitality, out var vitality);
+            item.Stats.TryGetValue(Stat.Energy, out var energy);
             return new[] { strength, dexterity, vitality, energy }.Min();
         }
 
-        public static int GetItemStatAddClassSkills(UnitAny unitAny, Structs.PlayerClass playerClass)
+        public static (Structs.PlayerClass, int) GetItemStatAddClassSkills(UnitItem item, Structs.PlayerClass playerClass)
         {
-            if (unitAny.ItemStats.TryGetValue(Stat.AddClassSkills, out var itemStats) &&
+            var allSkills = GetItemStat(item, Stat.AllSkills);
+
+            if (playerClass == Structs.PlayerClass.Any)
+            {
+                var maxClassSkills = 0;
+                var maxClass = playerClass;
+
+                for (var classId = Structs.PlayerClass.Amazon; classId <= Structs.PlayerClass.Assassin; classId++)
+                {
+                    if (item.StatLayers.TryGetValue(Stat.AddClassSkills, out var anyItemStats) &&
+                        anyItemStats.TryGetValue((ushort)classId, out var anyClassSkills))
+                    {
+                        if (anyClassSkills > maxClassSkills)
+                        {
+                            maxClassSkills = anyClassSkills;
+                            maxClass = classId;
+                        }
+                    }
+                }
+
+                return (maxClass, allSkills + maxClassSkills);
+            }
+
+            if (item.StatLayers.TryGetValue(Stat.AddClassSkills, out var itemStats) &&
                 itemStats.TryGetValue((ushort)playerClass, out var addClassSkills))
             {
-                return addClassSkills;
+                return (playerClass, allSkills + addClassSkills);
             }
-            return 0;
+
+            return (playerClass, allSkills);
         }
 
-        public static int GetItemStatAddClassTabSkills(UnitAny unitAny, ClassTabs classTab)
+        public static (SkillTree, int) GetItemStatAddSkillTreeSkills(UnitItem item, SkillTree skillTree)
         {
-            if (unitAny.ItemStats.TryGetValue(Stat.AddSkillTab, out var itemStats) &&
-                itemStats.TryGetValue((ushort)classTab, out var addSkillTab))
+            if (skillTree == SkillTree.Any)
             {
-                return addSkillTab;
+                var maxSkillTreeQuantity = 0;
+                var maxSkillTree = skillTree;
+
+                foreach (var skillTreeId in Enum.GetValues(typeof(SkillTree)).Cast<SkillTree>().Where(x => x != SkillTree.Any).ToList())
+                {
+                    if (item.StatLayers.TryGetValue(Stat.AddSkillTab, out var anyItemStats) &&
+                        anyItemStats.TryGetValue((ushort)skillTreeId, out var anyTabSkills))
+                    {
+                        anyTabSkills += GetItemStatAddClassSkills(item, skillTreeId.GetPlayerClass()).Item2; // This adds the +class skill points and +all skills points
+
+                        if (anyTabSkills > maxSkillTreeQuantity)
+                        {
+                            maxSkillTree = skillTreeId;
+                            maxSkillTreeQuantity = anyTabSkills;
+                        }
+                    }
+                }
+
+                return (maxSkillTree, maxSkillTreeQuantity);
             }
-            return 0;
+
+            var baseAddSkills = GetItemStatAddClassSkills(item, skillTree.GetPlayerClass()).Item2; // This adds the +class skill points and +all skills points
+
+            if (item.StatLayers.TryGetValue(Stat.AddSkillTab, out var itemStats) &&
+                itemStats.TryGetValue((ushort)skillTree, out var addSkillTab))
+            {
+                return (skillTree, baseAddSkills + addSkillTab);
+            }
+
+            return (skillTree, baseAddSkills);
         }
 
-        public static (int, int, int) GetItemStatAddSkillCharges(UnitAny unitAny, Skill skill)
+        public static (Skill, int) GetItemStatAddSingleSkills(UnitItem item, Skill skill)
         {
-            if (unitAny.ItemStats.TryGetValue(Stat.ItemChargedSkill, out var itemStats))
+            var itemSkillsStats = new List<Stat>()
+            {
+                Stat.SingleSkill,
+                Stat.NonClassSkill,
+            };
+
+            if (skill == Skill.Any)
+            {
+                var maxSkillQuantity = 0;
+                var maxSkill = skill;
+
+                foreach (var statType in itemSkillsStats)
+                {
+                    foreach (var skillId in SkillExtensions.SkillTreeToSkillDict.SelectMany(x => x.Value).ToList())
+                    {
+                        if (item.StatLayers.TryGetValue(statType, out var anyItemStats) &&
+                            anyItemStats.TryGetValue((ushort)skillId, out var anySkillLevel))
+                        {
+                            anySkillLevel += (statType == Stat.SingleSkill ? GetItemStatAddSkillTreeSkills(item, skillId.GetSkillTree()).Item2 : 0); // This adds the +skill tree points, +class skill points and +all skills points
+
+                            if (anySkillLevel > maxSkillQuantity)
+                            {
+                                maxSkill = skillId;
+                                maxSkillQuantity = anySkillLevel;
+                            }
+                        }
+                    }
+                }
+
+                return (maxSkill, maxSkillQuantity);
+            }
+
+            var baseAddSkills = GetItemStatAddSkillTreeSkills(item, skill.GetSkillTree()).Item2; // This adds the +skill tree points, +class skill points and +all skills points
+
+            foreach (var statType in itemSkillsStats)
+            {
+                if (item.StatLayers.TryGetValue(statType, out var itemStats) &&
+                    itemStats.TryGetValue((ushort)skill, out var skillLevel))
+                {
+                    return (skill, (statType == Stat.SingleSkill ? baseAddSkills : 0) + skillLevel);
+                }
+            }
+
+            return (skill, baseAddSkills);
+        }
+
+        public static (int, int, int) GetItemStatAddSkillCharges(UnitItem item, Skill skill)
+        {
+            if (item.StatLayers.TryGetValue(Stat.ItemChargedSkill, out var itemStats))
             {
                 foreach (var stat in itemStats)
                 {
                     var skillId = stat.Key >> 6;
                     var level = stat.Key % (1 << 6);
+
                     if (skillId == (int)skill && itemStats.TryGetValue(stat.Key, out var data))
                     {
                         var maxCharges = data >> 8;
@@ -560,43 +586,6 @@ namespace MapAssist.Types
                 }
             }
             return (0, 0, 0);
-        }
-
-        public static int GetItemStatSingleSkills(UnitAny unitAny, Skill skill)
-        {
-            var itemSkillsStats = new List<Stat>()
-            {
-                Stat.SingleSkill,
-                Stat.NonClassSkill,
-            };
-
-            foreach (var statType in itemSkillsStats)
-            {
-                if (unitAny.ItemStats.TryGetValue(statType, out var itemStats) &&
-                    itemStats.TryGetValue((ushort)skill, out var skillLevel))
-                {
-                    return skillLevel;
-                }
-            }
-            return 0;
-        }
-
-        public static void ItemLogTimerElapsed(object sender, ElapsedEventArgs args, Timer self, int procId)
-        {
-            if (ItemLog.TryGetValue(procId, out var itemLog))
-            {
-                if (itemLog.Count > 0)
-                {
-                    itemLog.RemoveAt(0);
-                }
-
-                if (ItemLogTimers.TryGetValue(procId, out var timer) && timer.Contains(self))
-                {
-                    try { timer.Remove(self); } catch (Exception) { } // This still randomly errors, even with the proper checks in place, hence the try catch block
-                }
-            }
-
-            self.Dispose();
         }
 
         public static readonly Dictionary<ItemQuality, Color> ItemColors = new Dictionary<ItemQuality, Color>()
@@ -1786,6 +1775,128 @@ namespace MapAssist.Types
         };
     }
 
+    public class ItemLogEntry
+    {
+        public string Text { get; set; }
+        public Color Color { get; set; }
+        public DateTime LogDate { get; private set; } = DateTime.Now;
+        public bool ItemLogExpired { get => DateTime.Now.Subtract(LogDate).TotalSeconds > MapAssistConfiguration.Loaded.ItemLog.DisplayForSeconds; }
+        public string ItemHashString { get; set; }
+        public string ShowOnMap { get; set; }
+        public UnitItem UnitItem { get; set; }
+        public ItemFilter Rule { get; set; }
+    }
+
+    [Flags]
+    public enum ItemFlags : uint
+    {
+        IFLAG_NEWITEM = 0x00000001,
+        IFLAG_TARGET = 0x00000002,
+        IFLAG_TARGETING = 0x00000004,
+        IFLAG_DELETED = 0x00000008,
+        IFLAG_IDENTIFIED = 0x00000010,
+        IFLAG_QUANTITY = 0x00000020,
+        IFLAG_SWITCHIN = 0x00000040,
+        IFLAG_SWITCHOUT = 0x00000080,
+        IFLAG_BROKEN = 0x00000100,
+        IFLAG_REPAIRED = 0x00000200,
+        IFLAG_UNK1 = 0x00000400,
+        IFLAG_SOCKETED = 0x00000800,
+        IFLAG_NOSELL = 0x00001000,
+        IFLAG_INSTORE = 0x00002000,
+        IFLAG_NOEQUIP = 0x00004000,
+        IFLAG_NAMED = 0x00008000,
+        IFLAG_ISEAR = 0x00010000,
+        IFLAG_STARTITEM = 0x00020000,
+        IFLAG_UNK2 = 0x00040000,
+        IFLAG_INIT = 0x00080000,
+        IFLAG_UNK3 = 0x00100000,
+        IFLAG_COMPACTSAVE = 0x00200000,
+        IFLAG_ETHEREAL = 0x00400000,
+        IFLAG_JUSTSAVED = 0x00800000,
+        IFLAG_PERSONALIZED = 0x01000000,
+        IFLAG_LOWQUALITY = 0x02000000,
+        IFLAG_RUNEWORD = 0x04000000,
+        IFLAG_ITEM = 0x08000000
+    }
+
+    public enum ItemQuality : uint
+    {
+        INFERIOR = 0x01, //0x01 Inferior
+        NORMAL = 0x02, //0x02 Normal
+        SUPERIOR = 0x03, //0x03 Superior
+        MAGIC = 0x04, //0x04 Magic
+        SET = 0x05, //0x05 Set
+        RARE = 0x06, //0x06 Rare
+        UNIQUE = 0x07, //0x07 Unique
+        CRAFT = 0x08, //0x08 Crafted
+        TEMPERED = 0x09 //0x09 Tempered
+    }
+
+    public enum InvPage : byte
+    {
+        INVENTORY = 0,
+        EQUIP = 1,
+        TRADE = 2,
+        CUBE = 3,
+        STASH = 4,
+        BELT = 5,
+        NULL = 255,
+    }
+
+    public enum StashType : byte
+    {
+        Body = 0,
+        Personal = 1,
+        Shared1 = 2,
+        Shared2 = 3,
+        Shared3 = 4,
+        Belt = 5
+    }
+
+    public enum BodyLoc : byte
+    {
+        NONE, //Not Equipped
+        HEAD, //Helm
+        NECK, //Amulet
+        TORSO, //Body Armor
+        RARM, //Right-Hand
+        LARM, //Left-Hand
+        RRIN, //Right Ring
+        LRIN, //Left Ring
+        BELT, //Belt
+        FEET, //Boots
+        GLOVES, //Gloves
+        SWRARM, //Right-Hand on Switch
+        SWLARM //Left-Hand on Switch
+    };
+
+    public enum ItemMode : uint
+    {
+        STORED, //Item is in Storage (inventory, cube, Stash?)
+        EQUIP, //Item is Equippped
+        INBELT, //Item is in Belt Rows
+        ONGROUND, //Item is on Ground
+        ONCURSOR, //Item is on Cursor
+        DROPPING, //Item is Being Dropped
+        SOCKETED //Item is Socketed in another Item
+    };
+
+    public enum ItemModeMapped // Provides more detail over ItemMode
+    {
+        Player,
+        Inventory,
+        Belt,
+        Cube,
+        Stash,
+        Vendor,
+        Trade,
+        Mercenary,
+        Socket,
+        Ground,
+        Unknown
+    };
+
     public enum Item : uint
     {
         HandAxe,
@@ -2450,6 +2561,7 @@ namespace MapAssist.Types
 
         // Used only for item filter
         ClassAxes = 0xFFD0,
+
         ClassWands,
         ClassClubs,
         ClassScepters,

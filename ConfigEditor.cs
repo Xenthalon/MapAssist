@@ -44,6 +44,11 @@ namespace MapAssist
                 cboLanguage.Items.Add(LocaleExtensions.Name(element));
             }
 
+            foreach (var element in Enum.GetNames(typeof(MapLinesMode)))
+            {
+                cboMapLinesMode.Items.Add(element);
+            }
+
             foreach (var element in Enum.GetNames(typeof(GameInfoPosition)))
             {
                 cboGameInfoPosition.Items.Add(element.ToProperCase());
@@ -74,6 +79,7 @@ namespace MapAssist
             buffSize.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.BuffSize * 10d);
             lblBuffSizeValue.Text = MapAssistConfiguration.Loaded.RenderingConfiguration.BuffSize.ToString();
             cboBuffPosition.SelectedIndex = cboBuffPosition.FindStringExact(MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition.ToString().ToProperCase());
+            cboMapLinesMode.SelectedIndex = cboMapLinesMode.FindStringExact(MapAssistConfiguration.Loaded.RenderingConfiguration.LinesMode.ToString().ToProperCase());
 
             chkShowGameName.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowGameName;
             chkShowArea.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowArea;
@@ -83,7 +89,7 @@ namespace MapAssist
             chkShowArea.Checked = MapAssistConfiguration.Loaded.GameInfo.ShowAreaLevel;
             txtHuntIP.ReadOnly = !MapAssistConfiguration.Loaded.GameInfo.ShowGameIP;
             txtHuntIP.Text = MapAssistConfiguration.Loaded.GameInfo.HuntingIP;
-            txtD2Path.Text = MapAssistConfiguration.Loaded.D2Path;
+            txtD2Path.Text = MapAssistConfiguration.Loaded.D2LoDPath;
             chkGameInfoTextShadow.Checked = MapAssistConfiguration.Loaded.GameInfo.LabelTextShadow;
             btnClearGameInfoFont.Visible = MapAssistConfiguration.Loaded.GameInfo.LabelFont != MapAssistConfiguration.Default.GameInfo.LabelFont ||
                 MapAssistConfiguration.Loaded.GameInfo.LabelFontSize != MapAssistConfiguration.Default.GameInfo.LabelFontSize;
@@ -97,6 +103,8 @@ namespace MapAssist
 
             cboItemLogPosition.SelectedIndex = cboItemLogPosition.FindStringExact(MapAssistConfiguration.Loaded.ItemLog.Position.ToString().ToProperCase());
             chkItemLogEnabled.Checked = MapAssistConfiguration.Loaded.ItemLog.Enabled;
+            chkItemLogItemsOnIdentify.Checked = MapAssistConfiguration.Loaded.ItemLog.CheckItemOnIdentify;
+            chkItemLogVendorItems.Checked = MapAssistConfiguration.Loaded.ItemLog.CheckVendorItems;
             chkPlaySound.Checked = MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop;
             txtFilterFile.Text = MapAssistConfiguration.Loaded.ItemLog.FilterFileName;
             txtSoundFile.Text = MapAssistConfiguration.Loaded.ItemLog.SoundFile;
@@ -253,6 +261,11 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition = (BuffPosition)cboBuffPosition.SelectedIndex;
         }
 
+        private void cboMapLinesMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.RenderingConfiguration.LinesMode = (MapLinesMode)cboMapLinesMode.SelectedIndex;
+        }
+
         private void chkShowGameIP_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.GameInfo.ShowGameIP = chkShowGameIP.Checked;
@@ -286,7 +299,7 @@ namespace MapAssist
 
         private void txtD2Path_TextChanged(object sender, EventArgs e)
         {
-            MapAssistConfiguration.Loaded.D2Path = txtD2Path.Text;
+            MapAssistConfiguration.Loaded.D2LoDPath = txtD2Path.Text;
         }
 
         private void chkShowOverlayFPS_CheckedChanged(object sender, EventArgs e)
@@ -385,6 +398,7 @@ namespace MapAssist
                 btnClearLineColor.Visible = btnLineColor.BackColor.A > 0;
                 
                 lineArrowSize.Value = iconProp.ArrowHeadSize;
+                lineThicknessSize.Value = (int)iconProp.LineThickness;
                 lblLineArrowSizeValue.Text = lineArrowSize.Value.ToString();
                 lblLineThicknessSizeValue.Text = lineThicknessSize.Value.ToString();
             }
@@ -581,6 +595,16 @@ namespace MapAssist
         private void chkItemLogEnabled_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.ItemLog.Enabled = chkItemLogEnabled.Checked;
+        }
+
+        private void chkItemLogItemsOnIdentify_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.ItemLog.CheckItemOnIdentify = chkItemLogItemsOnIdentify.Checked;
+        }
+
+        private void chkItemLogVendorItems_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.ItemLog.CheckVendorItems = chkItemLogVendorItems.Checked;
         }
 
         private void cboItemLogPosition_SelectedIndexChanged(object sender, EventArgs e)
