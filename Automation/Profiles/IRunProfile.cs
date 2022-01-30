@@ -11,7 +11,7 @@ namespace MapAssist.Automation
     {
         void Abort();
 
-        void Update(GameData gameData, List<PointOfInterest> pointsOfInteres);
+        void Update(GameData gameData, AreaData areaData, List<PointOfInterest> pointsOfInterest);
 
         void Run();
 

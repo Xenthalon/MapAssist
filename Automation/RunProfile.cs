@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MapAssist.Automation
 {
-    public enum RunType { KillTarget, ClearArea, Explore, Travincal, Cows };
+    public enum RunType { KillTarget, ClearArea, Explore, Travincal, Cows, Diablo };
     public enum KillType { Everything, Bosses, Nothing };
 
     public class RunProfile

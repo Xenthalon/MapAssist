@@ -21,7 +21,6 @@ namespace MapAssist.Automation
         public string[] POTION_KEYS;
 
         private BackgroundWorker _chickenWorker;
-        private Combat _combat;
         private Input _input;
         private Inventory _inventory;
         private MenuMan _menuman;
@@ -37,9 +36,10 @@ namespace MapAssist.Automation
 
         public double PlayerLifePercentage => playerHealth / (double)playerHealthMax;
         public double MercLifePercentage => mercHealth / (double)32768.0;
+        public bool Dead => _amDead;
         public bool MercIsDead => _mercIsDead;
 
-        public Chicken(BotConfiguration config, Combat combat, Input input, Inventory inventory, MenuMan menuman, Movement movement)
+        public Chicken(BotConfiguration config, Input input, Inventory inventory, MenuMan menuman, Movement movement)
         {
             MAX_GAME_LENGTH = config.Settings.MaxGameLength;
             POTION_DRINK_WAIT_INTERVAL = config.Character.PotionWaitInterval;
@@ -47,7 +47,6 @@ namespace MapAssist.Automation
             MERC_POTION_LIFE_PERCENTAGE = config.Character.PotionMercLifePercent;
             POTION_KEYS = config.Character.KeysPotion;
 
-            _combat = combat;
             _input = input;
             _inventory = inventory;
             _menuman = menuman;
@@ -123,7 +122,6 @@ namespace MapAssist.Automation
             {
                 _log.Info("Died! Leaving game.");
                 _movement.Reset();
-                _combat.Reset();
                 _input.DoInput("{ESC}");
 
                 System.Threading.Thread.Sleep(8000); // wait for town to load

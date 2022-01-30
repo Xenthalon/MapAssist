@@ -122,6 +122,7 @@
     <Compile Include="Automation\Input.cs" />
     <Compile Include="Automation\InputOperations.cs" />
     <Compile Include="Automation\Profiles\Cows.cs" />
+    <Compile Include="Automation\Profiles\Diablo.cs" />
     <Compile Include="Automation\Profiles\IRunProfile.cs" />
     <Compile Include="Automation\MenuMan.cs" />
     <Compile Include="Automation\Movement.cs" />

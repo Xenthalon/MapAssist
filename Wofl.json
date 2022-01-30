@@ -99,10 +99,18 @@
       ],
       "target": "Nihlathak"
     }*/
-    {
+    /* {
       "name": "Cows",
       "type": "Cows",
       "area_path": [ { "Area":  "StonyField" } ]
+    } */
+    {
+      "name": "Diablo",
+      "type": "Diablo",
+      "area_path": [
+        { "Area": "RiverOfFlame" },
+        { "Area": "ChaosSanctuary" }
+      ]
     }
   ],
   "character": {
@@ -210,7 +218,7 @@
     /* IMPORTANT try to keep enemies at this range (7 okay for ranged, lower to 0 for melee) */
     "too_close_range": 0,
     /* do not reposition for this many seconds */
-    "escape_cooldown": 3000,
+    "escape_cooldown": 1000,
     /* ignore enemy if it didn't take damage after this many attacks */
     "max_attack_attempts": 10,
     "short_sleep": 100,
@@ -220,7 +228,7 @@
     "game_change_verification_attempts": 75,
     "area_change_verification_attempts": 5,
     /* only for dev things */
-    "autostart": false,
+    "autostart": true,
     /* window will be moved and resized to these settings each game */
     "window_x": 0,
     "window_y": 0,

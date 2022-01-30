@@ -38,6 +38,7 @@ namespace MapAssist.Automation
         private TownManager _townManager;
 
         private Area _currentArea;
+        private AreaData _areaData;
         private uint _currentGameSeed = 0;
         private uint _possiblyNewGameSeed = 0;
         private int _possiblyNewGameCounter = 0;
@@ -92,12 +93,13 @@ namespace MapAssist.Automation
             _explorer.WorkerSupportsCancellation = true;
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, MapApi mapApi)
+        public void Update(GameData gameData, AreaData areaData, List<PointOfInterest> pointsOfInterest, MapApi mapApi)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _gameData = gameData;
                 _currentArea = gameData.Area;
+                _areaData = areaData;
                 _pointsOfInterest = pointsOfInterest;
 
                 if (_gameData.MapSeed != _currentGameSeed && _gameData.MapSeed != _possiblyNewGameSeed)
@@ -149,7 +151,7 @@ namespace MapAssist.Automation
 
             if (_activeSpecialProfile != null)
             {
-                _activeSpecialProfile.Update(gameData, pointsOfInterest);
+                _activeSpecialProfile.Update(gameData, areaData, pointsOfInterest);
 
                 if (!_goBotGo)
                 {
@@ -360,13 +362,13 @@ namespace MapAssist.Automation
                         // means it's connected
                         var areaData = _mapApi.GetMapData(runArea.Area);
 
-                        var behind = _movement.GetPointBehind(_gameData.PlayerPosition, (Point)interactPoint, 8);
+                        var behind = _movement.GetPointBehind(_gameData.PlayerPosition, (Point)interactPoint, 15);
 
                         if (!areaData.IncludesPoint(behind))
                         {
                             _log.Info("point " + behind.X + "/" + behind.Y + " wasn't good, switching");
 
-                            behind = _movement.GetPointBehind((Point)interactPoint, _gameData.PlayerPosition, 8);
+                            behind = _movement.GetPointBehind((Point)interactPoint, _gameData.PlayerPosition, 15);
                         }
 
                         _log.Info(runArea.Area + " is connected, got point " + behind.X + "/" + behind.Y);
@@ -542,6 +544,22 @@ namespace MapAssist.Automation
                     System.Threading.Thread.Sleep(100);
                 }
                 while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
+
+                _activeSpecialProfile = null;
+            }
+            else if (activeProfile.Type == RunType.Diablo)
+            {
+                _activeSpecialProfile = new Profiles.Diablo(_buffboy, _combat, _movement, _input, _pickit);
+                System.Threading.Thread.Sleep(500); // give update time to insert data
+                _activeSpecialProfile.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
+
+                _log.Info("Done with Diablo");
 
                 _activeSpecialProfile = null;
             }

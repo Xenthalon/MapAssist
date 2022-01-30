@@ -39,8 +39,8 @@ namespace MapAssist
             _buffBoy = new BuffBoy(config, _input);
             _menuMan = new MenuMan(config, _input);
             _movement = new Movement(config, _input, _menuMan, _pathing);
-            _combat = new Combat(config, _input, _movement, _pathing);
-            _chicken = new Chicken(config, _combat, _input, _inventory, _menuMan, _movement);
+            _chicken = new Chicken(config, _input, _inventory, _menuMan, _movement);
+            _combat = new Combat(config, _chicken, _input, _movement, _pathing);
             _pickit = new PickIt(config, _input, _inventory, _movement);
             _townManager = new TownManager(config, _input, _menuMan, _movement);
 
@@ -62,7 +62,7 @@ namespace MapAssist
             _movement.Update(gameData);
             _pickit.Update(gameData);
             _townManager.Update(gameData, areaData);
-            _orchestrator.Update(gameData, pointsOfInterest, mapApi);
+            _orchestrator.Update(gameData, areaData, pointsOfInterest, mapApi);
         }
 
         public void Reset()

@@ -298,9 +298,10 @@ namespace MapAssist.Automation
                     _state = TownState.IDLE;
                     break;
                 case TownTask.REVIVE:
+                    var downTimes0 = target.Name == "Tyrael" ? 3 : 2;
                     _input.MouseMove(new Point(100, 100));
                     System.Threading.Thread.Sleep(100);
-                    _input.DoInput("{DOWN 2}{ENTER}");
+                    _input.DoInput("{DOWN " + downTimes0 + "}{ENTER}");
                     System.Threading.Thread.Sleep(500);
                     _state = TownState.IDLE;
                     break;

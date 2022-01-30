@@ -60,8 +60,11 @@ namespace MapAssist.Automation
                 var durability = -1;
                 var maxDurability = -1;
 
-                item.Stats.TryGetValue(Stat.Durability, out durability);
-                item.Stats.TryGetValue(Stat.MaxDurability, out maxDurability);
+                if (item != null && item.IsValidPointer && item.Stats != null)
+                {
+                    item.Stats.TryGetValue(Stat.Durability, out durability);
+                    item.Stats.TryGetValue(Stat.MaxDurability, out maxDurability);
+                }
 
                 if (durability > -1 && maxDurability > -1 &&
                     durability/(double)maxDurability < REPAIR_THRESHOLD)

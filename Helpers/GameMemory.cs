@@ -300,7 +300,7 @@ namespace MapAssist.Helpers
 
                 var session = new Session(GameManager.GameIPOffset);
 
-                var allItems = GetUnits<UnitItem>(UnitType.Item, false).Where(x => x.UnitId < uint.MaxValue).Select(x => { x.Update(); return x; }).ToArray();
+                var allItems = GetUnits<UnitItem>(UnitType.Item, false).Where(x => x.UnitId < uint.MaxValue).Select(x => x.Update()).ToArray();
 
                 return new GameData
                 {

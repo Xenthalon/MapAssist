@@ -51,7 +51,7 @@ namespace MapAssist.Automation.Profiles
             _worker.RunWorkerAsync();
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest)
+        public void Update(GameData gameData, AreaData areaData, List<PointOfInterest> pointsOfInterest)
         {
             if (_pointsOfInterests == null || _pointsOfInterests.Count != pointsOfInterest.Count)
             {
