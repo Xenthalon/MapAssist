@@ -157,7 +157,7 @@ namespace MapAssist.Automation
 
         public void StashItemAt(int x, int y)
         {
-            if (!_menus.Stash)
+            if (!_menus.Stash && !_menus.Cube)
             {
                 _log.Error("Got to be in stash menu to stash things!");
                 return;
@@ -168,6 +168,21 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(SHORT_SLEEP);
             _input.DoInputAtScreenPosition("^{LMB}", screenLocation);
             System.Threading.Thread.Sleep(LONG_SLEEP);
+        }
+
+        public void ClickStashItem(int x, int y, bool right = false)
+        {
+            if (!_menus.Stash)
+            {
+                _log.Error("Got to be in stash menu to click things there!");
+                return;
+            }
+
+            var screenLocation = new Point(_vendorAnchor.X + (int)(x * _window.Width * 0.0247), _vendorAnchor.Y + (int)(y * _window.Height * 0.047));
+
+            System.Threading.Thread.Sleep(SHORT_SLEEP);
+            _input.DoInputAtScreenPosition(right ? "{RMB}" : "{LMB}", screenLocation);
+            System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
         public void SellItemAt(int x, int y)
@@ -307,6 +322,19 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(SHORT_SLEEP);
             _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.3), (int)(_window.Height * 0.71)));
+            System.Threading.Thread.Sleep(LONG_SLEEP);
+        }
+
+        public void ClickTransmute()
+        {
+            if (!_menus.Cube)
+            {
+                _log.Error("Cube menu not open!");
+                return;
+            }
+
+            System.Threading.Thread.Sleep(SHORT_SLEEP);
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.20), (int)(_window.Height * 0.57)));
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 

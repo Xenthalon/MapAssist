@@ -19,6 +19,7 @@ namespace MapAssist.Automation
         private int AREA_CHANGE_VERIFICATION_LIMIT;
         private string FORCE_MOVE_KEY;
         private string TELEPORT_KEY;
+        private string PORTAL_KEY;
 
         private BackgroundWorker _movementWorker;
         private Input _input;
@@ -42,6 +43,7 @@ namespace MapAssist.Automation
         {
             AREA_CHANGE_VERIFICATION_LIMIT = config.Settings.AreaChangeVerificationAttempts;
             FORCE_MOVE_KEY = config.Character.KeyForceMove;
+            PORTAL_KEY = config.Character.KeyTownPortal;
             TELEPORT_KEY = config.Character.KeyTeleport;
 
             _input = input;
@@ -179,6 +181,156 @@ namespace MapAssist.Automation
             }
 
             return points;
+        }
+
+
+        public bool ChangeArea(Area destination, UnitObject unit)
+        {
+            var success = true;
+
+            var isActChange = _menuMan.IsActChange(destination);
+
+            _input.DoInputOnUnit("{LMB}", unit);
+
+            var retrys = 0;
+
+            do
+            {
+                System.Threading.Thread.Sleep(1000);
+
+                if (_currentArea == destination)
+                {
+                    break;
+                }
+
+                if (retrys >= MAX_RETRIES)
+                {
+                    _log.Error("Unable to interact with " + (GameObject)unit.TxtFileNo + ", help!");
+                    success = false;
+                    break;
+                }
+
+                _input.DoInputOnUnit("{LMB}", unit.Update());
+                retrys += 1;
+
+                if (_currentArea == Area.None)
+                {
+                    _log.Info("Received kill signal, aborting AreaChange.");
+                    success = false;
+                    break;
+                }
+            }
+            while (_currentArea != destination);
+
+            _log.Info("Changed area to " + _currentArea);
+
+            // wait for load
+            if (isActChange)
+            {
+                System.Threading.Thread.Sleep(4000);
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            return success;
+        }
+
+        public bool ChangeArea(Area destination, Point interactionPoint, bool isPortal = false)
+        {
+            var success = true;
+
+            var isActChange = _menuMan.IsActChange(destination);
+
+            _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
+
+            var loopLimit = 10;
+            var loops = 0;
+            var retrys = 0;
+
+            do
+            {
+                System.Threading.Thread.Sleep(100);
+
+                loops += 1;
+
+                if (loops >= loopLimit)
+                {
+                    retrys += 1;
+                    loops = 0;
+
+                    _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
+
+                    if (retrys >= MAX_RETRIES)
+                    {
+                        _log.Error("Unable to interact with " + interactionPoint + ", help!");
+                        success = false;
+                        break;
+                    }
+                }
+
+                if (_currentArea == Area.None)
+                {
+                    _log.Info("Received kill signal, aborting AreaChange.");
+                    success = false;
+                    break;
+                }
+            }
+            while (_currentArea != destination);
+
+            _log.Info("Changed area to " + _currentArea);
+
+            // wait for load
+            if (isActChange)
+            {
+                System.Threading.Thread.Sleep(4000);
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            return success;
+        }
+
+        public bool TakePortalHome()
+        {
+            var retryCount = 0;
+
+            var success = false;
+
+            _log.Info("Taking portal home!");
+
+            var portal = new UnitObject(IntPtr.Zero);
+
+            do
+            {
+                _input.DoInputAtWorldPosition(PORTAL_KEY, _gameData.PlayerPosition);
+                System.Threading.Thread.Sleep(1500);
+                portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
+                retryCount += 1;
+
+                if (_currentArea == Area.None)
+                    return false;
+            }
+            while (!portal.IsValidPointer && retryCount <= MAX_RETRIES);
+
+            if (portal.IsValidPointer)
+            {
+                var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
+
+                success = ChangeArea(destinationArea, portal);
+                System.Threading.Thread.Sleep(1500); // town loads take longer than other area changes
+            }
+            else
+            {
+                _log.Error("Couldn't find portal, quitting game!");
+                Reset();
+                _menuMan.ExitGame();
+            }
+
+            return success;
         }
 
         public void TeleportTo(Point worldPosition)

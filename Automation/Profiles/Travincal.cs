@@ -88,13 +88,14 @@ namespace MapAssist.Automation.Profiles
                 _combat.DefendAgainst(Resist.FIRE);
 
                 var location = _pointsOfInterests.Where(x => x.Label.StartsWith("Durance of Hate Level 1")).First().Position;
-                _log.Info("Moving to Durance of Hate Level 1");
-                MoveTo(location);
+
+                var entrance = new Point(location.X + 3, location.Y + 29);
+                _log.Info("Moving to Entrance");
+                MoveTo(entrance);
 
                 if (!_abort)
                 {
-                    _log.Info("Killing Council!");
-                    _combat.ClearArea(location);
+                    _combat.ClearArea(entrance);
 
                     do
                     {
@@ -103,6 +104,35 @@ namespace MapAssist.Automation.Profiles
                     while (!_combat.IsSafe && !_abort);
                 }
 
+                if (!_abort)
+                {
+                    var step1 = new Point(entrance.X - 20, entrance.Y);
+                    _log.Info("Moving to Entrance left");
+                    MoveTo(step1);
+
+                    _combat.ClearArea(step1);
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    while (!_combat.IsSafe && !_abort);
+                }
+
+                if (!_abort)
+                {
+                    var step2 = new Point(location.X - 12, location.Y + 8);
+                    _log.Info("Going inside.");
+                    MoveTo(step2);
+
+                    _combat.ClearArea(step2);
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    while (!_combat.IsSafe && !_abort);
+                }
             }
             catch (Exception exception)
             {

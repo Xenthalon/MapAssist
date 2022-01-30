@@ -121,6 +121,7 @@
     <Compile Include="Automation\Identification\IdentifyParser.cs" />
     <Compile Include="Automation\Input.cs" />
     <Compile Include="Automation\InputOperations.cs" />
+    <Compile Include="Automation\Profiles\Cows.cs" />
     <Compile Include="Automation\Profiles\IRunProfile.cs" />
     <Compile Include="Automation\MenuMan.cs" />
     <Compile Include="Automation\Movement.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="Types\RawAreaData.cs" />
     <Compile Include="Settings\Rendering.cs" />
     <Compile Include="Types\UnitAny.cs" />
+    <Compile Include="Types\UnitAny2.cs" />
     <Compile Include="Types\UnitObject.cs" />
     <Compile Include="Types\UnitPlayer.cs" />
     <Compile Include="Types\UnitMonster.cs" />

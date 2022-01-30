@@ -23,10 +23,19 @@ namespace MapAssist.Automation.Identification
 
         public static bool IsKeeper(UnitItem item)
         {
+            item.IsCached = false;
+            item = item.Update();
+
             var baseName = item.ItemBaseName;
             var itemQuality = item.ItemData.ItemQuality;
             var isEth = (item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
             var stats = item.Stats;
+
+            if (stats.Count() == 0)
+            {
+                _log.Warn(itemQuality + " " + baseName + " has no stats, keeping it!");
+                return true;
+            }
 
             return FilterDeep(baseName, itemQuality, isEth, stats);
         }

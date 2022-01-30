@@ -84,21 +84,21 @@ namespace MapAssist
             _log.Info("Units:");
             var rosterData = new Roster(GameManager.RosterDataOffset);
 
-            //for (var i = 0; i < 12; i++)
-            //{
-            //    var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
-            //    var unitType = (UnitType)i;
-            //    foreach (var pUnitAny in unitHashTable.UnitTable)
-            //    {
-            //        var unitAny = new UnitAny(pUnitAny);
-            //        while (unitAny.IsValidUnit())
-            //        {
-            //            _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.TxtFileNo} {unitAny.Name} {unitAny.Position}");
+            for (var i = 0; i < 12; i++)
+            {
+                var unitHashTable = GameManager.UnitHashTable(128 * 8 * i);
+                var unitType = (UnitType)i;
+                foreach (var pUnitAny in unitHashTable.UnitTable)
+                {
+                    var unitAny = new UnitAny2(pUnitAny);
+                    while (unitAny.IsValidUnit)
+                    {
+                        _log.Info($"{i} {unitAny.UnitId}: {unitAny.UnitType} {unitAny.TxtFileNo} {unitAny.Position}");
 
-            //            unitAny = unitAny.ListNext(rosterData);
-            //        }
-            //    }
-            //}
+                        unitAny = new UnitAny2(unitAny.Struct.pListNext);
+                    }
+                }
+            }
 
             _log.Info("Belt items:");
             foreach (UnitItem item in _currentGameData.AllItems.Where(x => x.ItemData.dwOwnerID == _currentGameData.PlayerUnit.UnitId && x.ItemData.InvPage == InvPage.NULL && x.ItemData.BodyLoc == BodyLoc.NONE).OrderBy(x => x.X % 4))

@@ -35,6 +35,95 @@ namespace MapAssist.Automation
             }
         }
 
+        public void DoInputOnUnit(string input, UnitAny unit)
+        {
+            var maxTries = 10;
+
+            Point screenPosition = Automaton.TranslateToScreenOffset(_playerPositionWorld, unit.Position, _playerPositionScreen);
+
+            var upfactor = 0.02;
+
+            if (unit.TxtFileNo == (uint)GameObject.TownPortal || unit.TxtFileNo == (uint)GameObject.PermanentTownPortal)
+            {
+                upfactor = 0.07;
+            }
+
+            screenPosition.Y = (float)(screenPosition.Y - (_window.Height * upfactor));
+
+            if (screenPosition.X < 20)
+                screenPosition.X = 20;
+
+            if (screenPosition.X > _window.Width * 0.98)
+                screenPosition.X = (int)(_window.Width * 0.98);
+
+            if (screenPosition.Y < 20)
+                screenPosition.Y = 20;
+
+            if (screenPosition.Y > _window.Height * 0.9)
+                screenPosition.Y = (int)(_window.Height * 0.9);
+
+            MouseMove(screenPosition);
+
+            if (unit is UnitMonster)
+                ((UnitMonster)unit).Update();
+            else if (unit is UnitObject)
+                ((UnitObject)unit).Update();
+            else if (unit is UnitItem)
+                ((UnitItem)unit).Update();
+
+            var direction = 0;
+            var tries = 0;
+
+            while (!unit.IsHovered)
+            {
+                tries += 1;
+                var point = new Point(screenPosition.X, screenPosition.Y);
+
+                if (direction == 0)
+                {
+                    point.Y += (int)(_window.Height * (0.005 * tries));
+                }
+                else if (direction == 1)
+                {
+                    point.Y -= (int)(_window.Height * (0.005 * tries));
+                }
+                else if (direction == 2)
+                {
+                    point.X += (int)(_window.Width * (0.005 * tries));
+                }
+                else if (direction == 3)
+                {
+                    point.X -= (int)(_window.Width * (0.005 * tries));
+                }
+
+                MouseMove(point);
+                System.Threading.Thread.Sleep(50);
+
+                if (unit is UnitMonster)
+                    ((UnitMonster)unit).Update();
+                else if (unit is UnitObject)
+                    ((UnitObject)unit).Update();
+                else if (unit is UnitItem)
+                    ((UnitItem)unit).Update();
+
+                if (tries > maxTries)
+                {
+                    tries = 0;
+                    direction += 1;
+                }
+
+                if (direction >= 4)
+                {
+                    break;
+                }
+            }
+
+            if (unit.IsHovered)
+            {
+                DoInput(input);
+            }
+        }
+
         public void DoInputAtWorldPosition(string input, Point worldPosition, bool targetFloor = true)
         {
             Point screenPosition = Automaton.TranslateToScreenOffset(_playerPositionWorld, worldPosition, _playerPositionScreen);

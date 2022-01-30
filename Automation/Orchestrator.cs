@@ -19,7 +19,6 @@ namespace MapAssist.Automation
         private int GAMBLE_STOP_AT;
         private int GAME_CHANGE_SAFETY_LIMIT;
         private bool AUTO_START;
-        public string KEY_PORTAL;
 
         private static List<RunProfile> RUN_PROFILES = new List<RunProfile>();
 
@@ -70,7 +69,6 @@ namespace MapAssist.Automation
             GAMBLE_STOP_AT = config.Character.GambleGoldStop;
             GAME_CHANGE_SAFETY_LIMIT = config.Settings.GameChangeVerificationAttempts;
             AUTO_START = config.Settings.Autostart;
-            KEY_PORTAL = config.Character.KeyTownPortal;
 
             RUN_PROFILES.AddRange(config.RunProfiles);
 
@@ -330,7 +328,7 @@ namespace MapAssist.Automation
                         if (target == null)
                         {
                             _log.Error("Couldn't find PointOfInterest for " + runArea.Area.Name() + "! Help!");
-                            TakePortalHome();
+                            _movement.TakePortalHome();
                             return;
                         }
 
@@ -344,7 +342,7 @@ namespace MapAssist.Automation
                         }
                         catch (NoPathFoundException)
                         {
-                            TakePortalHome();
+                            _movement.TakePortalHome();
                             return;
                         }
                     }
@@ -383,7 +381,15 @@ namespace MapAssist.Automation
                     {
                         // otherwise it's a level exit
                         _log.Info(runArea.Area + " trying to click it");
-                        changedArea = ChangeArea(runArea.Area, (Point)interactPoint, runArea.Area == Area.NihlathaksTemple);
+                        if (runArea.Area == Area.NihlathaksTemple || runArea.Area == Area.Abaddon) // expand here later
+                        {
+                            var portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.PermanentTownPortal).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
+                            changedArea = _movement.ChangeArea(runArea.Area, portal);
+                        }
+                        else
+                        {
+                            changedArea = _movement.ChangeArea(runArea.Area, (Point)interactPoint);
+                        }
                     }
 
                     if (_goBotGo == false)
@@ -404,7 +410,7 @@ namespace MapAssist.Automation
                         else
                         {
                             _log.Info("failed to change area from " + runArea.Area + ", returning to town.");
-                            TakePortalHome();
+                            _movement.TakePortalHome();
                             return;
                         }
                     }
@@ -425,7 +431,7 @@ namespace MapAssist.Automation
                     {
                         _log.Info("Gonna kill some things in " + runArea.Area);
                         _combat.HuntBosses = runArea.Kill == KillType.Bosses;
-                        _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
+                        _exploreSpots = _pathing.GetExploratoryPath(_combat.HasTeleport, _gameData.PlayerPosition);
                         _exploring = true;
 
                         do
@@ -539,6 +545,47 @@ namespace MapAssist.Automation
 
                 _activeSpecialProfile = null;
             }
+            else if (activeProfile.Type == RunType.Cows)
+            {
+                _activeSpecialProfile = new Profiles.Cows(_buffboy, _combat, _input, _inventory, _menuMan, _movement, _pickit, _townManager);
+                System.Threading.Thread.Sleep(500); // give update time to insert data
+                _activeSpecialProfile.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
+
+                _activeSpecialProfile = null;
+
+                if (_currentArea == Area.MooMooFarm)
+                {
+                    _combat.OpenChests = activeProfile.AreaPath[0].OpenChests;
+                    _combat.HuntBosses = activeProfile.AreaPath[0].Kill == KillType.Bosses;
+                    
+                    if (activeProfile.AreaPath[0].GroupSize > 0)
+                        _combat.GroupSize = activeProfile.AreaPath[0].GroupSize;
+
+                    _exploreSpots = _pathing.GetExploratoryPath(_combat.HasTeleport, _gameData.PlayerPosition);
+                    _exploring = true;
+
+                    do
+                    {
+                        System.Threading.Thread.Sleep(500);
+
+                        if (_goBotGo == false)
+                        {
+                            _log.Info("Aborting run while exploring " + activeProfile.Name);
+                            _exploring = false;
+                            return;
+                        }
+                    }
+                    while (_exploring);
+
+                    _exploreSpots = new List<Point>();
+                }
+            }
 
             do
             {
@@ -581,7 +628,7 @@ namespace MapAssist.Automation
                 // this is for eldritch + shenk, don't take tp if already there
                 if (RUN_PROFILES[_activeProfileIndex + 1].AreaPath[0].Area != _currentArea)
                 {
-                    TakePortalHome();
+                    _movement.TakePortalHome();
                 }
             }
 
@@ -590,7 +637,7 @@ namespace MapAssist.Automation
 
         public void ExploreArea()
         {
-            _exploreSpots = _pathing.GetExploratoryPath(true, _gameData.PlayerPosition);
+            _exploreSpots = _pathing.GetExploratoryPath(_combat.HasTeleport, _gameData.PlayerPosition);
             _exploring = true;
         }
 
@@ -678,7 +725,7 @@ namespace MapAssist.Automation
                 {
                     var currentArea = _gameData.Area;
 
-                    TakePortalHome();
+                    _movement.TakePortalHome();
 
                     DoChores();
 
@@ -706,7 +753,7 @@ namespace MapAssist.Automation
                             _movement.WalkTo(portal.Position);
                         }
 
-                        var success = ChangeArea(currentArea, portal.Position, true);
+                        var success = _movement.ChangeArea(currentArea, portal);
 
                         if (success)
                         {
@@ -1039,102 +1086,6 @@ namespace MapAssist.Automation
 
                 _menuMan.CloseMenu();
             }
-        }
-
-        private bool TakePortalHome()
-        {
-            var retryCount = 0;
-
-            var success = false;
-
-            _log.Info("Taking portal home!");
-
-            var portal = new UnitObject(IntPtr.Zero);
-
-            do
-            {
-                _input.DoInputAtWorldPosition(KEY_PORTAL, _gameData.PlayerPosition);
-                System.Threading.Thread.Sleep(1500);
-                portal = _gameData.Objects.Where(x => x.TxtFileNo == (uint)GameObject.TownPortal).FirstOrDefault() ?? new UnitObject(IntPtr.Zero);
-                retryCount += 1;
-
-                if (_goBotGo == false)
-                    return false;
-            }
-            while (!portal.IsValidPointer && retryCount <= MAX_RETRIES);
-
-            if (portal.IsValidPointer)
-            {
-                var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
-
-                success = ChangeArea(destinationArea, portal.Position, true);
-                System.Threading.Thread.Sleep(1500); // town loads take longer than other area changes
-            }
-            else
-            {
-                _log.Error("Couldn't find portal, quitting game!");
-                _goBotGo = false;
-                _menuMan.ExitGame();
-            }
-
-            return success;
-        }
-
-        private bool ChangeArea(Area destination, Point interactionPoint, bool isPortal = false)
-        {
-            var success = true;
-
-            var isActChange = _menuMan.IsActChange(destination);
-
-            _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
-
-            var loopLimit = 10;
-            var loops = 0;
-            var retrys = 0;
-
-            do
-            {
-                System.Threading.Thread.Sleep(100);
-
-                loops += 1;
-
-                if (loops >= loopLimit)
-                {
-                    retrys += 1;
-                    loops = 0;
-
-                    _input.DoInputAtWorldPosition("{LMB}", interactionPoint, !isPortal);
-
-                    if (retrys >= MAX_RETRIES)
-                    {
-                        _log.Error("Unable to interact with " + interactionPoint + ", help!");
-                        success = false;
-                        break;
-                    }
-                }
-
-                if (_goBotGo == false)
-                {
-                    _log.Info("Received kill signal, aborting AreaChange.");
-                    success = false;
-                    break;
-                }
-            }
-            while (_currentArea != destination);
-
-            _log.Info("Changed area to " + _currentArea);
-
-            // wait for load
-            if (isActChange)
-            {
-                System.Threading.Thread.Sleep(4000);
-            }
-            else
-            {
-                System.Threading.Thread.Sleep(1000);
-            }
-
-            return success;
         }
 
         private void BuffMe(bool force = false)

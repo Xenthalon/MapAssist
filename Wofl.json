@@ -1,6 +1,6 @@
 {
   "run_profiles": [
-    {
+    /* {
       "name": "Eldritch",
       "type": "KillTarget",
       "monster_name": "Eldritch",
@@ -33,9 +33,9 @@
         "x": 3902,
         "y": 5113
       }
-    },
+    }, */
     /* { "name": "Mausoleum", "type": "Explore", "area_path": [ { "Area": "ColdPlains" }, { "Area": "BurialGrounds" }, { "Area": "Mausoleum", "Kill": "Bosses", "group_size": 5, "combat_range": 10 } ] }, */
-    {
+    /* {
       "name": "Countess",
       "type": "KillTarget",
       "monster_name": "Countess",
@@ -76,16 +76,16 @@
           "open_chests": true
         }
       ]
-    },
+    }, */
     /* { "name": "Andariel", "type": "KillTarget", "monster_type": "Andariel", "area_path": [ { "Area": "CatacombsLevel2" }, { "Area": "CatacombsLevel3" }, { "Area": "CatacombsLevel4", "combat_range": 10, "group_size": 3 } ], "kill_spot": { "x": 22547, "y": 9550 } }, */
     /* { "name": "Summoner", "type": "KillTarget", "monster_type": "Summoner", "area_path": [ { "Area": "ArcaneSanctuary", "combat_range": 15 } ], "target": "The Summoner" }, */
-    {
+    /* {
       "name": "Travincal",
       "type": "Travincal",
       "area_path": [ { "Area": "Travincal" } ]
-    },
+    }, */
     /* { "name": "Mephisto", "type": "KillTarget", "monster_type": "Mephisto", "area_path": [ { "Area": "DuranceOfHateLevel2" }, { "Area": "DuranceOfHateLevel3" } ], "kill_spot": { "x": 17565, "y": 8070 } }, */
-    {
+    /* {
       "name": "Nihlathak",
       "type": "KillTarget",
       "monster_name": "Nihlathak",
@@ -98,6 +98,11 @@
         }
       ],
       "target": "Nihlathak"
+    }*/
+    {
+      "name": "Cows",
+      "type": "Cows",
+      "area_path": [ { "Area":  "StonyField" } ]
     }
   ],
   "character": {
@@ -213,7 +218,7 @@
     "game_change_verification_attempts": 75,
     "area_change_verification_attempts": 5,
     /* only for dev things */
-    "autostart": true,
+    "autostart": false,
     /* window will be moved and resized to these settings each game */
     "window_x": 0,
     "window_y": 0,

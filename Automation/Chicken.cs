@@ -74,14 +74,17 @@ namespace MapAssist.Automation
                     gameData.PlayerUnit.Stats.TryGetValue(Stat.Life, out health);
                     playerHealth = ConvertHexHealthToInt(health);
                 }
+                else
+                {
+                    _amDead = true;
+                    playerHealth = 0;
+                }
 
                 if (gameData.PlayerUnit.Stats.ContainsKey(Stat.MaxLife))
                 {
                     gameData.PlayerUnit.Stats.TryGetValue(Stat.MaxLife, out health);
                     playerHealthMax = ConvertHexHealthToInt(health);
                 }
-
-                _amDead = (playerHealth <= 0) && gameData.PlayerUnit.IsCorpse;
 
                 UnitMonster merc = gameData.Mercs.Where(x => x.IsMerc && x.IsPlayerOwned).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
 
