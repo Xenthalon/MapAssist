@@ -128,7 +128,7 @@ namespace MapAssist.Helpers
                         else if (stat == Stats.Stat.AddSkillTab)
                         {
                             var (skillTree, points) = Items.GetItemStatAddSkillTreeSkills(item, (SkillTree)layer);
-                            name = AddSpaces(skillTree.ToString()) + " Skills";
+                            name = AddSpaces(skillTree.ToString());
                             finalValue = points.ToString();
                         }
                         else if (stat == Stats.Stat.SingleSkill || stat == Stats.Stat.NonClassSkill)
