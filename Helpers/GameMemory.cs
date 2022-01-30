@@ -221,7 +221,10 @@ namespace MapAssist.Helpers
                     item.Update();
 
                     cache[item.UnitId] = item;
-                    //cache[item.HashString] = item;
+
+                    if (item.ItemModeMapped == ItemModeMapped.Ground) {
+                        cache[item.HashString] = item;
+                    }
 
                     if (item.UnitId == uint.MaxValue) continue;
 
@@ -256,8 +259,10 @@ namespace MapAssist.Helpers
 
                 var itemList = Items.ItemLog[_currentProcessId].Select(item =>
                 {
-                    //var cachedItem = (UnitItem)cache[item.ItemHashString];
-                    //if (cachedItem.HashString == item.ItemHashString) item.UnitItem = cachedItem;
+                    if (cache.TryGetValue(item.ItemHashString, out var cachedItem) && ((UnitItem)cachedItem).HashString == item.ItemHashString)
+                    {
+                        item.UnitItem = (UnitItem)cachedItem;
+                    }
 
                     if (item.UnitItem.DistanceTo(playerUnit) <= 40 && !rawItemUnits.Contains(item.UnitItem)) // Player is close to the item position but it was not found
                     {
@@ -354,10 +359,10 @@ namespace MapAssist.Helpers
                     {
                         UseCachedUnit(seenUnit1);
                     }
-                    //else if (saveToCache && cache.TryGetValue(unit.HashString, out var seenUnit2) && seenUnit2 is T && !allUnits.ContainsKey(((T)seenUnit2).UnitId))
-                    //{
-                    //    UseCachedUnit(seenUnit2);
-                    //}
+                    else if (saveToCache && cache.TryGetValue(unit.HashString, out var seenUnit2) && seenUnit2 is T && !allUnits.ContainsKey(((T)seenUnit2).UnitId))
+                    {
+                        UseCachedUnit(seenUnit2);
+                    }
                     else if (unit.IsValidUnit && !allUnits.ContainsKey(unit.UnitId))
                     {
                         allUnits[unit.UnitId] = unit;
