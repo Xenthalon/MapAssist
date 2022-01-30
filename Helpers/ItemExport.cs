@@ -40,12 +40,28 @@ namespace MapAssist.Helpers
                     template = template.Replace("{{inventory-items}}", GetItemList(inventoryItems));
                 }
 
+                var mercItems = items.Where(x => x.ItemMode == ItemMode.EQUIP && x.ItemModeMapped == ItemModeMapped.Mercenary);
+
+                if (mercItems.Count() > 0)
+                {
+                    template = template.Replace("{{show-merc}}", "show");
+                    template = template.Replace("{{merc-items}}", GetItemList(mercItems));
+                }
+
                 var stashItems = items.Where(x => x.ItemData.dwOwnerID == player.UnitId && x.ItemData.InvPage == InvPage.STASH);
 
                 if (stashItems.Count() > 0)
                 {
                     template = template.Replace("{{show-stash}}", "show");
                     template = template.Replace("{{stash-items}}", GetItemList(stashItems));
+                }
+
+                var cubeItems = items.Where(x => x.ItemData.dwOwnerID == player.UnitId && x.ItemModeMapped == ItemModeMapped.Cube);
+
+                if (cubeItems.Count() > 0)
+                {
+                    template = template.Replace("{{show-cube}}", "show");
+                    template = template.Replace("{{cube-items}}", GetItemList(cubeItems));
                 }
 
                 File.WriteAllText(outputfile, template);
@@ -163,8 +179,6 @@ namespace MapAssist.Helpers
 
             return itemText;
         }
-
-        private static int ConvertHexHealthToInt(int hex) => int.Parse(hex.ToString("X").Substring(2), System.Globalization.NumberStyles.HexNumber);
 
         public static string AddSpaces(string text) => Regex.Replace(text.ToString(), "(\\B[A-Z][a-z])", " $1");
     }
