@@ -90,7 +90,7 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyName>XenBot-TwoTwo</AssemblyName>
+    <AssemblyName>XenBot-TwoThree</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

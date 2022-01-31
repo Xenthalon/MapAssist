@@ -90,7 +90,8 @@ namespace MapAssist.Automation
                 BeltSlotsOpen[line.Slot] = BeltSlotsOpen[line.Slot] - line.Count;
             }
 
-            var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.INVENTORY);
+            var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.INVENTORY &&
+                                                x.X >= 0 && x.Y >= 0 && x.X < 10 && x.Y < 4);
 
             var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
 

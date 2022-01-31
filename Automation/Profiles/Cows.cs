@@ -161,6 +161,8 @@ namespace MapAssist.Automation.Profiles
 
                 _movement.TakePortalHome();
 
+                _combat.PrepareForTown();
+
                 _townManager.OpenTradeMenu();
 
                 do

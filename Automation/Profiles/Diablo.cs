@@ -12,7 +12,6 @@ namespace MapAssist.Automation.Profiles
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
         private bool _abort = false;
-        private bool _slow = false;
 
         private BuffBoy _buffBoy;
         private Combat _combat;
@@ -28,8 +27,6 @@ namespace MapAssist.Automation.Profiles
         private UnitObject[] _objects;
         private UnitMonster[] _monsters;
         private Point _playerPosition;
-
-        private List<Point> _lootSpots = new List<Point>();
 
         private bool _busy = false;
         private bool _error = false;
@@ -124,6 +121,10 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
+                _combat.PrepareForCombat();
+                ClearArea(seal4.Position);
+                MoveTo(seal4Pos);
+
                 var activated = ActivateSeal(seal4);
 
                 if (!activated)
@@ -146,6 +147,13 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
+                ClearArea(seal5.Position);
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                Buff();
+                _combat.PrepareForCombat();
+
+                MoveTo(seal5Pos);
                 activated = ActivateSeal(seal5);
 
                 if (!activated)
@@ -156,7 +164,7 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                KillBoss("Grand Vizier of Chaos", _slow);
+                KillBoss("Grand Vizier of Chaos");
 
                 if (_abort)
                 {
@@ -164,9 +172,9 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                if (_slow)
-                    Loot();
+                Loot();
 
+                _combat.DefendAgainst(Resist.FIRE);
                 _log.Info("Going up");
                 MoveTo(seal3Pos);
 
@@ -180,6 +188,11 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
+                _combat.PrepareForCombat();
+                ClearArea(seal3.Position);
+                Buff();
+
+                MoveTo(seal3Pos);
                 activated = ActivateSeal(seal3);
 
                 if (!activated)
@@ -195,7 +208,7 @@ namespace MapAssist.Automation.Profiles
                     MoveTo(new Point(seal3Pos.X, seal3Pos.Y + 40));
                 }
 
-                KillBoss("Lord De Seis", _slow, true);  // condition for precast... class based? add it to diablo profile config?
+                KillBoss("Lord De Seis", true);  // condition for precast... class based? add it to diablo profile config?
 
                 if (_abort)
                 {
@@ -203,8 +216,11 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                if (_slow)
-                    Loot();
+                Loot();
+
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                _combat.DefendAgainst(Resist.FIRE);
 
                 MoveTo(diabloSpawn);
 
@@ -221,6 +237,9 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
+                _combat.PrepareForCombat();
+                ClearArea(seal2.Position);
+                MoveTo(seal2Pos);
                 activated = ActivateSeal(seal2);
 
                 if (!activated)
@@ -243,6 +262,12 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
+                ClearArea(seal1.Position);
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                Buff();
+                _combat.DefendAgainst(Resist.FIRE);
+                MoveTo(seal1Pos);
                 activated = ActivateSeal(seal1);
 
                 if (!activated)
@@ -253,7 +278,12 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                KillBoss("Infector of Souls", _slow, true);
+                if (seal1Pos.X == 7915 && seal1Pos.Y == 5315)
+                {
+                    MoveTo(new Point(seal1Pos.X + 10, seal3Pos.Y - 23));
+                }
+
+                KillBoss("Infector of Souls", true);
 
                 if (_abort)
                 {
@@ -261,11 +291,11 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                if (_slow)
-                    Loot();
+                Loot();
 
                 _combat.RemoveDebuffs();
                 _combat.HealUp();
+                Buff();
 
                 _log.Info("Ripping old D-Bag a new one!");
                 MoveTo(diabloSpawn);
@@ -289,26 +319,13 @@ namespace MapAssist.Automation.Profiles
                 }
                 while (!_monsters.Any(x => x.TxtFileNo == (uint)Npc.Diablo) && !_abort);
 
-                _combat.Kill((uint)Npc.Diablo);
+                _combat.Kill((uint)Npc.Diablo, true);
 
                 do
                 {
                     System.Threading.Thread.Sleep(100);
                 }
                 while (_combat.Busy && !_abort && _monsters.Any(x => x.TxtFileNo == (uint)Npc.Diablo));
-
-                Loot();
-
-                if (!_slow)
-                {
-                    foreach (Point point in _lootSpots)
-                    {
-                        MoveTo(point);
-                        Loot();
-                    }
-
-                    MoveTo(diabloSpawn);
-                }
             }
             catch (Exception exception)
             {
@@ -319,7 +336,7 @@ namespace MapAssist.Automation.Profiles
             _busy = false;
         }
 
-        private void KillBoss(string name, bool clearArea = false, bool doDistancePrecast = false)
+        private void KillBoss(string name, bool doDistancePrecast = false)
         {
             do
             {
@@ -339,7 +356,7 @@ namespace MapAssist.Automation.Profiles
 
             while (_monsters.Any(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique))
             {
-                _combat.Kill(name, clearArea);
+                _combat.Kill(name, true);
 
                 do
                 {
@@ -347,8 +364,20 @@ namespace MapAssist.Automation.Profiles
                 }
                 while (_combat.Busy && !_abort);
             }
+        }
 
-            _lootSpots.Add(_playerPosition);
+        private void ClearArea(Point position)
+        {
+            if (!_combat.IsSafe)
+            {
+                _combat.ClearArea(position);
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_combat.Busy);
+            }
         }
 
         private void Loot()
@@ -362,6 +391,20 @@ namespace MapAssist.Automation.Profiles
                     System.Threading.Thread.Sleep(100);
                 }
                 while (_pickit.Busy && !_abort);
+            }
+        }
+
+        private void Buff()
+        {
+            if (_buffBoy.HasWork)
+            {
+                _buffBoy.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_buffBoy.Busy);
             }
         }
 

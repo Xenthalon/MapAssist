@@ -23,6 +23,7 @@ namespace MapAssist.Automation
         private int SLEEP_SHORT;
         private int SLEEP_LONG;
         private List<CombatSkill> COMBAT_SKILLS = new List<CombatSkill>();
+        private int MAX_ENEMY_SEARCHES = 5;
 
         private BackgroundWorker _combatWorker;
         private bool _fighting = false;
@@ -36,12 +37,13 @@ namespace MapAssist.Automation
         private UnitPlayer _playerUnit;
         private HashSet<UnitMonster> _monsters;
         private IEnumerable<UnitObject> _chests;
-        private UnitMonster _target;
+        private uint _targetId;
         private Point _areaToClear = new Point(0, 0);
         private List<uint> _blacklist = new List<uint>();
         private int _attackAttempts = 0;
         private int _targetLastHealth = int.MaxValue;
         private long _lastReposition = 0;
+        private int _currentEnemySearches = 0;
 
         public bool Busy => _fighting;
         public int GroupSize { get; set; } = 1;
@@ -90,7 +92,7 @@ namespace MapAssist.Automation
             _combatWorker.DoWork += new DoWorkEventHandler(Fight);
             _combatWorker.WorkerSupportsCancellation = true;
 
-            _target = new UnitMonster(IntPtr.Zero);
+            _targetId = 0;
         }
 
         public void Kill(string name, bool clearArea = false, bool reposition = true)
@@ -108,11 +110,11 @@ namespace MapAssist.Automation
 
                     if (!_fighting && !_combatWorker.IsBusy)
                     {
-                        _target = monster;
+                        _targetId = monster.UnitId;
+                        _currentEnemySearches = 0;
 
                         if (clearArea)
                         {
-                            _log.Info("Set areaToClear in Kill");
                             _areaToClear = monster.Position;
                         }
 
@@ -129,12 +131,16 @@ namespace MapAssist.Automation
             if (!_fighting && !_combatWorker.IsBusy &&
                 _monsters.Any(x => x.TxtFileNo == unitTxtFileNo))
             {
-                _target = _monsters.Where(x => x.TxtFileNo == unitTxtFileNo).First();
+                var target = _monsters.Where(x => x.TxtFileNo == unitTxtFileNo).First();
+
+                _targetId = target.UnitId;
+                _log.Info("_targetId set to " + target.UnitId);
+                _currentEnemySearches = 0;
 
                 if (clearArea)
                 {
-                    _log.Info("Set areaToClear in Kill2");
-                    _areaToClear = _target.Position;
+                    _areaToClear = target.Position;
+                    _log.Info("_areaToClear set to " + target.UnitId);
                 }
 
                 _fighting = true;
@@ -297,7 +303,7 @@ namespace MapAssist.Automation
             if (COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_REDEMPTION) &&
                 _chicken.PlayerLifePercentage < 0.7)
             {
-                var lastPercentage = _chicken.PlayerLifePercentage;
+                var wantPercentage = _chicken.PlayerLifePercentage + 0.1;
 
                 var redemption = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_REDEMPTION).First();
 
@@ -307,7 +313,7 @@ namespace MapAssist.Automation
                 {
                     System.Threading.Thread.Sleep(300);
                 }
-                while (_chicken.PlayerLifePercentage == lastPercentage);
+                while (_chicken.PlayerLifePercentage < wantPercentage);
             }
         }
 
@@ -361,20 +367,24 @@ namespace MapAssist.Automation
                 _playerPosition = gameData.PlayerPosition;
                 _playerUnit = gameData.PlayerUnit;
 
-                if (_target != null && _target.IsValidPointer)
+                if (_targetId > 0)
                 {
-                    _target = _monsters.Where(x => x.UnitId == _target.UnitId).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
-                    //_target = _monsters.Where(x => x.UnitId == _target.UnitId).Select(x => x.Update()).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
+                    var target = _monsters.Where(x => x.UnitId == _targetId && x.IsValidPointer).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
 
-                    if (_target == null || !_target.IsValidPointer)
+                    if (!target.IsValidPointer && _currentEnemySearches >= MAX_ENEMY_SEARCHES)
                     {
                         _log.Info("Killed!");
-                        _log.Info("Area to clear: " + _areaToClear);
+                        _targetId = 0;
 
                         if (_areaToClear.X == 0 && _areaToClear.Y == 0)
                         {
                             _fighting = false;
                         }
+                    }
+                    else if (!target.IsValidPointer)
+                    {
+                        _currentEnemySearches += 1;
+                        _log.Info(_targetId + " is probably dead " + _currentEnemySearches + "/" + MAX_ENEMY_SEARCHES);
                     }
                 }
 
@@ -401,6 +411,7 @@ namespace MapAssist.Automation
             _fighting = false;
             _defenseActive = false;
             _areaToClear = new Point(0, 0);
+            _currentEnemySearches = 0;
             _reposition = true;
             _lastReposition = 0;
             _blacklist = new List<uint>();
@@ -408,7 +419,7 @@ namespace MapAssist.Automation
             _chests = new List<UnitObject>();
             _attackAttempts = 0;
             _targetLastHealth = int.MaxValue;
-            _target = new UnitMonster(IntPtr.Zero);
+            _targetId = 0;
             _combatWorker.CancelAsync();
             HuntBosses = false;
             GroupSize = 1;
@@ -420,12 +431,13 @@ namespace MapAssist.Automation
 
         private void Fight(object sender, DoWorkEventArgs e)
         {
-            if (_areaToClear.X != 0 && _areaToClear.Y != 0 && (_target == null || !_target.IsValidPointer))
+            if (_areaToClear.X != 0 && _areaToClear.Y != 0 && _targetId == 0)
             {
                 var monstersInArea = _monsters.Where(x => !_blacklist.Contains(x.UnitId) &&
                         (MonsterFilter.Count == 0 || MonsterFilter.Contains((Npc)x.TxtFileNo)) &&
                         ((_reposition && Automaton.GetDistance(_areaToClear, x.Position) <= DETECTION_RANGE) ||
-                        (!_reposition && Automaton.GetDistance(_areaToClear, x.Position) <= COMBAT_RANGE)));
+                        (!_reposition && Automaton.GetDistance(_areaToClear, x.Position) <= COMBAT_RANGE)) &&
+                        _pathing.IsWalkable(x.Position));
 
                 if ((HuntBosses && monstersInArea.Any(x => IsBoss(x))) || monstersInArea.Count() >= GroupSize)
                 {
@@ -434,7 +446,8 @@ namespace MapAssist.Automation
                     if (!_defenseActive)
                         PrepareForCombat();
 
-                    _target = GetNextVictim(monstersInArea);
+                    _targetId = GetNextVictim(monstersInArea).UnitId;
+                    _currentEnemySearches = 0;
                 }
                 else
                 {
@@ -445,15 +458,22 @@ namespace MapAssist.Automation
                 }
             }
 
-            if (_target != null && _target.IsValidPointer)
+            if (_targetId > 0)
             {
-                var castLocation = new Point(_target.Position.X, _target.Position.Y);
+                var target = _monsters.Where(x => x.UnitId == _targetId && x.IsValidPointer).FirstOrDefault() ?? new UnitMonster(IntPtr.Zero);
 
-                if (_target.Struct.Mode != 0 && _target.Struct.Mode != 12) // if not dying or dead
+                if (!target.IsValidPointer)
+                {
+                    return;
+                }
+
+                var castLocation = new Point(target.Position.X, target.Position.Y);
+
+                if (target.Struct.Mode != 0 && target.Struct.Mode != 12) // if not dying or dead
                 {
                     var targetLife = 0;
 
-                    _target.Stats.TryGetValue(Stat.Life, out targetLife);
+                    target.Stats.TryGetValue(Stat.Life, out targetLife);
 
                     if (targetLife < _targetLastHealth)
                     {
@@ -472,7 +492,7 @@ namespace MapAssist.Automation
                         System.Threading.Thread.Sleep(SLEEP_SHORT);
                     }
 
-                    if ((_target.TxtFileNo == (uint)Npc.Mephisto || _target.TxtFileNo == (uint)Npc.Diablo || _target.TxtFileNo == (uint)Npc.BaalThrone) &&
+                    if ((target.TxtFileNo == (uint)Npc.Mephisto || target.TxtFileNo == (uint)Npc.Diablo || target.TxtFileNo == (uint)Npc.BaalThrone) &&
                         targetLifePercentage > 0.6 &&
                         COMBAT_SKILLS.Any(x => x.IsStatic))
                     {
@@ -481,10 +501,10 @@ namespace MapAssist.Automation
                         // means static is still on cooldown
                         if (staticSkill != null)
                         {
-                            if (Automaton.GetDistance(_target.Position, _playerPosition) > staticSkill.MaxRange || !_pathing.HasLineOfSight(_playerPosition, _target.Position))
+                            if (Automaton.GetDistance(target.Position, _playerPosition) > staticSkill.MaxRange || !_pathing.HasLineOfSight(_playerPosition, target.Position))
                             {
                                 _log.Info("Want to use " + staticSkill.Name + ", lets get closer.");
-                                GetInLOSRange(_target.Position, 1, (short)(staticSkill.MaxRange - 1));
+                                GetInLOSRange(target.Position, 1, (short)(staticSkill.MaxRange - 1));
                             }
 
                             _input.DoInput(staticSkill.Key);
@@ -492,17 +512,17 @@ namespace MapAssist.Automation
                             System.Threading.Thread.Sleep(SLEEP_SHORT);
                         }
                     }
-                    else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    else if (COMBAT_SKILLS.Any(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (target.Immunities == null || !target.Immunities.Contains(x.DamageType))))
                     {
                         // ranged combat
-                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (target.Immunities == null || !target.Immunities.Contains(x.DamageType))).First();
                         
                         if (_reposition &&
-                            Automaton.GetDistance(_target.Position, _playerPosition) < TOO_CLOSE_RANGE &&
+                            Automaton.GetDistance(target.Position, _playerPosition) < TOO_CLOSE_RANGE &&
                             Now - _lastReposition > REPOSITION_COOLDOWN)
                         {
                             _log.Info("This is a bit personal, lets get away.");
-                            GetInLOSRange(_target.Position, TOO_CLOSE_RANGE, (short)(skillToUse.MaxRange - 1));
+                            GetInLOSRange(target.Position, TOO_CLOSE_RANGE, (short)(skillToUse.MaxRange - 1));
                             _lastReposition = Now;
                         }
 
@@ -512,10 +532,10 @@ namespace MapAssist.Automation
                             _attackAttempts += 1;
                         }
                     }
-                    else if (COMBAT_SKILLS.Any(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))))
+                    else if (COMBAT_SKILLS.Any(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (target.Immunities == null || !target.Immunities.Contains(x.DamageType))))
                     {
                         // melee combat
-                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (_target.Immunities == null || !_target.Immunities.Contains(x.DamageType))).First();
+                        CombatSkill skillToUse = COMBAT_SKILLS.Where(x => !x.IsRanged && !x.IsAoe && !x.IsStatic && !x.IsTelekinesis && !x.IsAura && (target.Immunities == null || !target.Immunities.Contains(x.DamageType))).First();
 
                         if (Now - skillToUse.LastUsage > skillToUse.Cooldown)
                         {
@@ -527,8 +547,8 @@ namespace MapAssist.Automation
 
                 if (_attackAttempts >= MAX_ATTACK_ATTEMPTS)
                 {
-                    _blacklist.Add(_target.UnitId);
-                    _target = new UnitMonster(IntPtr.Zero);
+                    _blacklist.Add(target.UnitId);
+                    _targetId = 0;
                     _attackAttempts = 0;
                 }
                 //else
