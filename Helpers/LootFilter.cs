@@ -64,7 +64,8 @@ namespace MapAssist.Helpers
             foreach (var rule in matches.SelectMany(kv => kv.Value))
             {
                 // Skip generic unid rules for identified items
-                if (item.IsIdentified && rule.TargetsUnidItem()) continue;
+                //if (item.IsIdentified && rule.TargetsUnidItem()) continue;
+                if (item.IsIdentified && rule.TargetsUnidItem()) return (true, null); // this got rid of all our loot >_<
 
                 // Requirement check functions
                 var requirementsFunctions = new Dictionary<string, Func<bool>>()

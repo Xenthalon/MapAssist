@@ -815,6 +815,8 @@ namespace MapAssist.Automation
 
                 foreach (var item in _inventory.ItemsToIdentify)
                 {
+                    _log.Info("Identifying " + item.ItemData.ItemQuality + " " + item.ItemBaseName);
+
                     var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
                     if (idsc.IsValidPointer)
@@ -852,9 +854,14 @@ namespace MapAssist.Automation
 
                             while (!identifiedItem.IsIdentified)
                             {
+                                _log.Info("Clicked, waiting for identify.");
                                 System.Threading.Thread.Sleep(100);
+                                identifiedItem.IsCached = false;
                                 identifiedItem = identifiedItem.Update();
+                                
                             }
+
+                            _log.Info("Identified!");
 
                             if (!Identification.IdentificationFilter.IsKeeper(identifiedItem))
                             {
