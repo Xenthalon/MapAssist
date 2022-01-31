@@ -215,6 +215,8 @@
     "max_attack_attempts": 10,
     "short_sleep": 100,
     "long_sleep": 300,
+    "change_area_sleep": 1000,
+    "change_act_sleep": 4000,
     "game_change_verification_attempts": 75,
     "area_change_verification_attempts": 5,
     /* only for dev things */

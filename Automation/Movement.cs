@@ -20,6 +20,8 @@ namespace MapAssist.Automation
         private string FORCE_MOVE_KEY;
         private string TELEPORT_KEY;
         private string PORTAL_KEY;
+        private int CHANGE_AREA_SLEEP;
+        private int CHANGE_ACT_SLEEP;
 
         private BackgroundWorker _movementWorker;
         private Input _input;
@@ -45,6 +47,8 @@ namespace MapAssist.Automation
             FORCE_MOVE_KEY = config.Character.KeyForceMove;
             PORTAL_KEY = config.Character.KeyTownPortal;
             TELEPORT_KEY = config.Character.KeyTeleport;
+            CHANGE_AREA_SLEEP = config.Settings.ChangeAreaSleep;
+            CHANGE_ACT_SLEEP = config.Settings.ChangeActSleep;
 
             _input = input;
             _menuMan = menuMan;
@@ -227,11 +231,11 @@ namespace MapAssist.Automation
             // wait for load
             if (isActChange)
             {
-                System.Threading.Thread.Sleep(4000);
+                System.Threading.Thread.Sleep(CHANGE_ACT_SLEEP);
             }
             else
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(CHANGE_AREA_SLEEP);
             }
 
             return success;
@@ -284,11 +288,11 @@ namespace MapAssist.Automation
             // wait for load
             if (isActChange)
             {
-                System.Threading.Thread.Sleep(4000);
+                System.Threading.Thread.Sleep(CHANGE_ACT_SLEEP);
             }
             else
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(CHANGE_AREA_SLEEP);
             }
 
             return success;
@@ -321,7 +325,7 @@ namespace MapAssist.Automation
                 var destinationArea = (Area)Enum.ToObject(typeof(Area), portal.ObjectData.InteractType);
 
                 success = ChangeArea(destinationArea, portal);
-                System.Threading.Thread.Sleep(1500); // town loads take longer than other area changes
+                System.Threading.Thread.Sleep(CHANGE_AREA_SLEEP * 2); // town loads take longer than other area changes
             }
             else
             {

@@ -45,6 +45,8 @@
         public int MaxAttackAttempts { get; set; }
         public int ShortSleep { get; set; }
         public int LongSleep { get; set; }
+        public int ChangeAreaSleep { get; set; }
+        public int ChangeActSleep { get; set; }
         public int GameChangeVerificationAttempts { get; set; }
         public int AreaChangeVerificationAttempts { get; set; }
         public int WindowX { get; set; }

@@ -662,7 +662,7 @@ namespace MapAssist.Automation
 
                 _exploreSpots.RemoveAt(0);
 
-                do
+                while (!_combat.IsSafe)
                 {
                     System.Threading.Thread.Sleep(100);
 
@@ -677,7 +677,6 @@ namespace MapAssist.Automation
                         return;
                     }
                 }
-                while (!_combat.IsSafe);
 
                 _combat.CheckChests();
 
