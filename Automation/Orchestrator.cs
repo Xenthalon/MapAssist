@@ -549,7 +549,7 @@ namespace MapAssist.Automation
             }
             else if (activeProfile.Type == RunType.Diablo)
             {
-                _activeSpecialProfile = new Profiles.Diablo(_buffboy, _combat, _movement, _input, _pickit);
+                _activeSpecialProfile = new Profiles.Diablo(_buffboy, _combat, _movement, _input, _pickit, this);
                 System.Threading.Thread.Sleep(500); // give update time to insert data
                 _activeSpecialProfile.Run();
 
@@ -714,7 +714,7 @@ namespace MapAssist.Automation
             return result;
         }
 
-        private void PickThings()
+        public void PickThings()
         {
             while (_pickit.HasWork)
             {

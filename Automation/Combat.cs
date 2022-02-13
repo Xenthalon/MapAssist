@@ -303,6 +303,7 @@ namespace MapAssist.Automation
             if (COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_REDEMPTION) &&
                 _chicken.PlayerLifePercentage < 0.7)
             {
+                var waitMax = Now + 5000;
                 var wantPercentage = _chicken.PlayerLifePercentage + 0.1;
 
                 var redemption = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_REDEMPTION).First();
@@ -313,7 +314,7 @@ namespace MapAssist.Automation
                 {
                     System.Threading.Thread.Sleep(300);
                 }
-                while (_chicken.PlayerLifePercentage < wantPercentage);
+                while (_chicken.PlayerLifePercentage < wantPercentage && Now < waitMax);
             }
         }
 

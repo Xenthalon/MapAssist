@@ -101,7 +101,7 @@ namespace MapAssist.Automation.Profiles
                     {
                         System.Threading.Thread.Sleep(100);
                     }
-                    while (!_combat.IsSafe && !_abort);
+                    while (_combat.Busy && !_abort);
                 }
 
                 if (!_abort)
@@ -116,7 +116,7 @@ namespace MapAssist.Automation.Profiles
                     {
                         System.Threading.Thread.Sleep(100);
                     }
-                    while (!_combat.IsSafe && !_abort);
+                    while (_combat.Busy && !_abort);
                 }
 
                 if (!_abort)
@@ -131,7 +131,7 @@ namespace MapAssist.Automation.Profiles
                     {
                         System.Threading.Thread.Sleep(100);
                     }
-                    while (!_combat.IsSafe && !_abort);
+                    while (_combat.Busy && !_abort);
                 }
             }
             catch (Exception exception)

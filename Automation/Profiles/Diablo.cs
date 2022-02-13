@@ -18,6 +18,7 @@ namespace MapAssist.Automation.Profiles
         private Input _input;
         private Movement _movement;
         private PickIt _pickit;
+        private Orchestrator _orchestrator;
 
         private BackgroundWorker _worker;
 
@@ -31,13 +32,14 @@ namespace MapAssist.Automation.Profiles
         private bool _busy = false;
         private bool _error = false;
 
-        public Diablo(BuffBoy buffBoy, Combat combat, Movement movement, Input input, PickIt pickit)
+        public Diablo(BuffBoy buffBoy, Combat combat, Movement movement, Input input, PickIt pickit, Orchestrator orchestrator)
         {
             _buffBoy = buffBoy;
             _combat = combat;
             _input = input;
             _movement = movement;
             _pickit = pickit;
+            _orchestrator = orchestrator;
 
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(Work);
@@ -125,7 +127,7 @@ namespace MapAssist.Automation.Profiles
                 ClearArea(seal4.Position);
                 MoveTo(seal4Pos);
 
-                var activated = ActivateSeal(seal4);
+                var activated = ActivateSeal(seal4, seal4Pos);
 
                 if (!activated)
                 {
@@ -154,7 +156,7 @@ namespace MapAssist.Automation.Profiles
                 _combat.PrepareForCombat();
 
                 MoveTo(seal5Pos);
-                activated = ActivateSeal(seal5);
+                activated = ActivateSeal(seal5, seal5Pos);
 
                 if (!activated)
                 {
@@ -193,7 +195,7 @@ namespace MapAssist.Automation.Profiles
                 Buff();
 
                 MoveTo(seal3Pos);
-                activated = ActivateSeal(seal3);
+                activated = ActivateSeal(seal3, seal3Pos);
 
                 if (!activated)
                 {
@@ -203,9 +205,13 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                if (seal3Pos.X == 7778 && seal3Pos.Y == 5160)
+                if (seal3Pos.X == 7770 && seal3Pos.Y == 5159)
                 {
                     MoveTo(new Point(seal3Pos.X, seal3Pos.Y + 40));
+                }
+                else if (seal3Pos.X == 7820 && seal3Pos.Y == 5160)
+                {
+                    MoveTo(new Point(seal3Pos.X - 27, seal3Pos.Y - 8));
                 }
 
                 KillBoss("Lord De Seis", true);  // condition for precast... class based? add it to diablo profile config?
@@ -240,7 +246,7 @@ namespace MapAssist.Automation.Profiles
                 _combat.PrepareForCombat();
                 ClearArea(seal2.Position);
                 MoveTo(seal2Pos);
-                activated = ActivateSeal(seal2);
+                activated = ActivateSeal(seal2, seal2Pos);
 
                 if (!activated)
                 {
@@ -268,7 +274,7 @@ namespace MapAssist.Automation.Profiles
                 Buff();
                 _combat.DefendAgainst(Resist.FIRE);
                 MoveTo(seal1Pos);
-                activated = ActivateSeal(seal1);
+                activated = ActivateSeal(seal1, seal1Pos);
 
                 if (!activated)
                 {
@@ -278,9 +284,13 @@ namespace MapAssist.Automation.Profiles
                     return;
                 }
 
-                if (seal1Pos.X == 7915 && seal1Pos.Y == 5315)
+                if (seal1Pos.X == 7920 && seal1Pos.Y == 5320)
                 {
-                    MoveTo(new Point(seal1Pos.X + 10, seal3Pos.Y - 23));
+                    MoveTo(new Point(seal1Pos.X + 12, seal1Pos.Y - 18));
+                }
+                else if (seal1Pos.X == 7898 && seal1Pos.Y == 5318)
+                {
+                    MoveTo(new Point(seal1Pos.X + 3, seal1Pos.Y - 22));
                 }
 
                 KillBoss("Infector of Souls", true);
@@ -382,16 +392,7 @@ namespace MapAssist.Automation.Profiles
 
         private void Loot()
         {
-            while (_pickit.HasWork && !_abort)
-            {
-                _pickit.Run();
-
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                while (_pickit.Busy && !_abort);
-            }
+            _orchestrator.PickThings();
         }
 
         private void Buff()
@@ -432,7 +433,7 @@ namespace MapAssist.Automation.Profiles
             while (_movement.Busy && !_abort);
         }
 
-        private bool ActivateSeal(UnitObject seal)
+        private bool ActivateSeal(UnitObject seal, Point location)
         {
             var success = false;
             var maxRetries = 3;
@@ -440,8 +441,8 @@ namespace MapAssist.Automation.Profiles
 
             while (retries <= maxRetries && !success)
             {
-                if (Automaton.GetDistance(seal.Position, _playerPosition) > 7)
-                    MoveTo(seal.Position);
+                if (Automaton.GetDistance(seal.Position, _playerPosition) > 9)
+                    MoveTo(location);
 
                 var activated = TryActivateSeal(seal);
                 seal.IsCached = false;
@@ -454,7 +455,7 @@ namespace MapAssist.Automation.Profiles
                 }
 
                 retries += 1;
-                _movement.GetInLOSRange(seal.Position, 7, 10, _combat.HasTeleport); // move away from seal
+                _movement.GetInLOSRange(seal.Position, 7, 9, _combat.HasTeleport); // move away from seal
             }
 
             return success;
@@ -482,10 +483,17 @@ namespace MapAssist.Automation.Profiles
         private Point GetPoint(AreaData areaData, GameObject target)
         {
             var results = new Point[0];
+            var offset = new Point(5, 5);
 
             var success = areaData.Objects.TryGetValue(target, out results);
 
-            return success ? new Point(results[0].X + 5, results[0].Y + 5) : new Point();
+            if (success && target == GameObject.DiabloSeal3 && results[0].X == 7773 && results[0].Y == 5155)
+            {
+                // stand to lower left of seal 3, because it's buggy as hell
+                offset = new Point(-3, 4);
+            }
+
+            return success ? new Point(results[0].X + offset.X, results[0].Y + offset.Y) : new Point();
         }
 
         private UnitObject FindObject(UnitObject[] objects, GameObject target)
