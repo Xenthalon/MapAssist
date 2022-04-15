@@ -131,7 +131,7 @@ namespace MapAssist.Types
     {
         private static readonly float DistanceBetweenCells = 5.0f;
 
-        public static Point MapToPoint(this AreaData areaData, Position position)
+        public static Point MapToPoint(this AreaData areaData, Roy_T.AStar.Primitives.Position position)
         {
             var point = areaData.Origin;
             return new Point((ushort)(point.X + position.X / DistanceBetweenCells), (ushort)(point.Y + position.Y / DistanceBetweenCells));
@@ -169,7 +169,7 @@ namespace MapAssist.Types
             {
                 for (var j = 0; j < rows; j++)
                 {
-                    nodes[i, j] = new Node(new Position(i * DistanceBetweenCells, j * DistanceBetweenCells));
+                    nodes[i, j] = new Node(new Roy_T.AStar.Primitives.Position(i * DistanceBetweenCells, j * DistanceBetweenCells));
                 }
             }
 

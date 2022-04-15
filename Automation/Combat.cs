@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.Automation
 {
@@ -263,25 +264,25 @@ namespace MapAssist.Automation
         {
             CombatSkill mitigationSkill = null;
 
-            if ((resist == Resist.FIRE || resist == Resist.COLD || resist == Resist.LIGHTNING || resist == Resist.POISON) &&
+            if ((resist == Resist.Fire || resist == Resist.Cold || resist == Resist.Lightning || resist == Resist.Poison) &&
                 COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTALL))
             {
                 mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTALL).First();
             }
 
-            if (resist == Resist.FIRE &&
+            if (resist == Resist.Fire &&
                 COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTFIRE))
             {
                 mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTFIRE).First();
             }
 
-            if (resist == Resist.COLD &&
+            if (resist == Resist.Cold &&
                 COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTCOLD))
             {
                 mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTCOLD).First();
             }
 
-            if (resist == Resist.LIGHTNING &&
+            if (resist == Resist.Lightning &&
                 COMBAT_SKILLS.Any(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHTNING))
             {
                 mitigationSkill = COMBAT_SKILLS.Where(x => x.IsAura && x.BuffState == State.STATE_RESISTLIGHTNING).First();

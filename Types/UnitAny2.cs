@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GameOverlay.Drawing;
 using MapAssist.Helpers;
 using MapAssist.Structs;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.Types
 {
@@ -15,8 +16,8 @@ namespace MapAssist.Types
         public uint TxtFileNo => Struct.TxtFileNo;
         public Area Area { get; private set; }
         public Point Position => new Point(X, Y);
-        public ushort X => IsMovable ? Path.DynamicX : Path.StaticX;
-        public ushort Y => IsMovable ? Path.DynamicY : Path.StaticY;
+        public ushort X => IsMovable ? (ushort)Path.DynamicX : Path.StaticX;
+        public ushort Y => IsMovable ? (ushort)Path.DynamicY : Path.StaticY;
         public StatListStruct StatsStruct { get; private set; }
         public Dictionary<Stat, Dictionary<ushort, int>> StatLayers { get; private set; }
         public Dictionary<Stat, int> Stats { get; private set; }

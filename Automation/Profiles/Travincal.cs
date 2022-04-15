@@ -85,7 +85,7 @@ namespace MapAssist.Automation.Profiles
             try
             {
                 _combat.MonsterFilter = new List<Npc> { Npc.CouncilMember, Npc.CouncilMember2, Npc.CouncilMember3 };
-                _combat.DefendAgainst(Resist.FIRE);
+                _combat.DefendAgainst(Resist.Fire);
 
                 var location = _pointsOfInterests.Where(x => x.Label.StartsWith("Durance of Hate Level 1")).First().Position;
 

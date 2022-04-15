@@ -105,7 +105,7 @@ namespace MapAssist.Automation.Profiles
                 var seal4Pos = GetPoint(_areaData, GameObject.DiabloSeal4);
                 var seal5Pos = GetPoint(_areaData, GameObject.DiabloSeal5);
 
-                _combat.DefendAgainst(Resist.FIRE);
+                _combat.DefendAgainst(Resist.Fire);
 
                 _log.Info("Moving to center");
                 MoveTo(diabloSpawn);
@@ -176,7 +176,7 @@ namespace MapAssist.Automation.Profiles
 
                 Loot();
 
-                _combat.DefendAgainst(Resist.FIRE);
+                _combat.DefendAgainst(Resist.Fire);
                 _log.Info("Going up");
                 MoveTo(seal3Pos);
 
@@ -226,7 +226,7 @@ namespace MapAssist.Automation.Profiles
 
                 _combat.RemoveDebuffs();
                 _combat.HealUp();
-                _combat.DefendAgainst(Resist.FIRE);
+                _combat.DefendAgainst(Resist.Fire);
 
                 MoveTo(diabloSpawn);
 
@@ -272,7 +272,7 @@ namespace MapAssist.Automation.Profiles
                 _combat.RemoveDebuffs();
                 _combat.HealUp();
                 Buff();
-                _combat.DefendAgainst(Resist.FIRE);
+                _combat.DefendAgainst(Resist.Fire);
                 MoveTo(seal1Pos);
                 activated = ActivateSeal(seal1, seal1Pos);
 

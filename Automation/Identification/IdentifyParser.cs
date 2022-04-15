@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.Automation.Identification
 {

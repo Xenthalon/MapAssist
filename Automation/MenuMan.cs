@@ -95,7 +95,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
-        public void VendorBuyOne(int x, int y)
+        public void VendorBuyOne(float x, float y)
         {
             if (!_menus.NpcShop)
             {
@@ -110,7 +110,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
-        public void VendorBuyMax(int x, int y)
+        public void VendorBuyMax(float x, float y)
         {
             if (!_menus.NpcShop)
             {
@@ -125,7 +125,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
-        public void LeftClickInventoryItem(int x, int y)
+        public void LeftClickInventoryItem(float x, float y)
         {
             if (!_menus.Inventory)
             {
@@ -140,7 +140,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
-        public void RightClickInventoryItem(int x, int y)
+        public void RightClickInventoryItem(float x, float y)
         {
             if (!_menus.Inventory)
             {
@@ -155,7 +155,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
-        public void StashItemAt(int x, int y)
+        public void StashItemAt(float x, float y)
         {
             if (!_menus.Stash && !_menus.Cube)
             {
@@ -170,7 +170,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
-        public void ClickStashItem(int x, int y, bool right = false)
+        public void ClickStashItem(float x, float y, bool right = false)
         {
             if (!_menus.Stash)
             {
@@ -185,7 +185,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP * 2);
         }
 
-        public void SellItemAt(int x, int y)
+        public void SellItemAt(float x, float y)
         {
             if (!_menus.NpcShop)
             {
@@ -217,7 +217,7 @@ namespace MapAssist.Automation
             System.Threading.Thread.Sleep(LONG_SLEEP);
         }
 
-        public void PutItemIntoBelt(int x, int y)
+        public void PutItemIntoBelt(float x, float y)
         {
             if (!_menus.Inventory)
             {

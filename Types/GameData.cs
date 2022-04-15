@@ -39,6 +39,7 @@ namespace MapAssist.Types
         public UnitMonster[] Mercs;
         public UnitMonster[] NPCs;
         public UnitObject[] Objects;
+        public UnitMissile[] Missiles;
         public UnitItem[] Items;
         public UnitItem[] AllItems;
         public ItemLogEntry[] ItemLog;

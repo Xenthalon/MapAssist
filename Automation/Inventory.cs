@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.Automation
 {
@@ -87,18 +88,18 @@ namespace MapAssist.Automation
                                     })
                                     .OrderBy(x => x.Slot))
             {
-                BeltSlotsOpen[line.Slot] = BeltSlotsOpen[line.Slot] - line.Count;
+                BeltSlotsOpen[(int)line.Slot] = BeltSlotsOpen[(int)line.Slot] - line.Count;
             }
 
             var inventoryItems = items.Where(x => x.ItemData.dwOwnerID == playerUnitId && x.ItemData.InvPage == InvPage.INVENTORY &&
                                                 x.X >= 0 && x.Y >= 0 && x.X < 10 && x.Y < 4);
 
-            var itemsToHandle = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1);
+            var itemsToHandle = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1);
 
-            ItemsToStash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && LootFilter.Filter(x).Item1);
+            ItemsToStash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && LootFilter.Filter(x).Item1);
             ItemsToIdentify = ItemsToStash.Where(x => !x.IsIdentified && IdentificationFilter.HasEntry(x));
-            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && !LootFilter.Filter(x).Item1);
-            ItemsToBelt = inventoryItems.Where(x => InventoryOpen[x.Y][x.X] == 1 && 
+            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && !LootFilter.Filter(x).Item1);
+            ItemsToBelt = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && 
                 (x.ItemBaseName == "Full Rejuvenation Potion" || x.ItemBaseName == "Rejuvenation Potion"));
 
             var tpTome = inventoryItems.Where(x => x.TxtFileNo == 518).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
