@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MapAssist.Automation.Profiles
 {
-    class Diablo : IRunProfile
+    class Baal : IRunProfile
     {
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
 
@@ -32,7 +32,7 @@ namespace MapAssist.Automation.Profiles
         private bool _busy = false;
         private bool _error = false;
 
-        public Diablo(BuffBoy buffBoy, Combat combat, Movement movement, Input input, PickIt pickit, Orchestrator orchestrator)
+        public Baal(BuffBoy buffBoy, Combat combat, Movement movement, Input input, PickIt pickit, Orchestrator orchestrator)
         {
             _buffBoy = buffBoy;
             _combat = combat;
@@ -48,10 +48,10 @@ namespace MapAssist.Automation.Profiles
 
         public void Run()
         {
-            if (_currentArea != Area.ChaosSanctuary)
+            if (_currentArea != Area.ThroneOfDestruction)
             {
-                _log.Error("Must be in ChaosSanctuary to run this profile!");
-                throw new Exception("Not in Chaos Sanctuary!");
+                _log.Error("Must be in Throne Of Destruction to run this profile!");
+                throw new Exception("Not in Throne Of Destruction!");
             }
 
             _busy = true;
@@ -98,244 +98,129 @@ namespace MapAssist.Automation.Profiles
         {
             try
             {
-                var diabloSpawn = GetPoint(_areaData, GameObject.DiabloStartPoint);
-                var seal1Pos = GetPoint(_areaData, GameObject.DiabloSeal1);
-                var seal2Pos = GetPoint(_areaData, GameObject.DiabloSeal2);
-                var seal3Pos = GetPoint(_areaData, GameObject.DiabloSeal3);
-                var seal4Pos = GetPoint(_areaData, GameObject.DiabloSeal4);
-                var seal5Pos = GetPoint(_areaData, GameObject.DiabloSeal5);
+                _log.Info("Moving to throne entrance.");
 
-                _combat.DefendAgainst(Resist.FIRE);
+                var entrance = new Point(15095, 5070);
 
-                _log.Info("Moving to center");
-                MoveTo(diabloSpawn);
-
-                _log.Info("Going left");
-                MoveTo(seal4Pos);
-
-                var seal4 = FindObject(_objects, GameObject.DiabloSeal4);
-
-                if (!seal4.IsValidPointer)
-                {
-                    _log.Error("Couldn't find seal 4, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
+                MoveTo(entrance);
 
                 _combat.PrepareForCombat();
-                ClearArea(seal4.Position);
-                MoveTo(seal4Pos);
 
-                var activated = ActivateSeal(seal4, seal4Pos);
+                _log.Info("Clearing throne room.");
 
-                if (!activated)
-                {
-                    _log.Error("Couldn't activate seal 4, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
+                var lowerRight = new Point(entrance.X + 20, entrance.Y);
+                var lowerLeft = new Point(entrance.X - 20, entrance.Y);
+                var middle = new Point(entrance.X, entrance.Y - 30);
+                var middleRight = new Point(lowerRight.X, lowerRight.Y - 30);
+                var middleLeft = new Point(lowerLeft.X, lowerLeft.Y - 30);
+                var upperRight = new Point(middleRight.X, middleRight.Y - 30);
+                var upperLeft = new Point(middleLeft.X, middleLeft.Y - 30);
 
-                MoveTo(seal5Pos);
+                ClearArea(entrance);
 
-                var seal5 = FindObject(_objects, GameObject.DiabloSeal5);
+                MoveTo(lowerRight);
 
-                if (!seal5.IsValidPointer)
-                {
-                    _log.Error("Couldn't find seal 5, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
+                ClearArea(lowerRight);
 
-                ClearArea(seal5.Position);
-                _combat.RemoveDebuffs();
-                _combat.HealUp();
-                Buff();
-                _combat.PrepareForCombat();
+                MoveTo(middleRight);
 
-                MoveTo(seal5Pos);
-                activated = ActivateSeal(seal5, seal5Pos);
+                ClearArea(middleRight);
 
-                if (!activated)
-                {
-                    _log.Error("Couldn't activate seal 5, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
+                MoveTo(upperRight);
 
-                KillBoss("Grand Vizier of Chaos");
+                ClearArea(upperRight);
 
-                if (_abort)
-                {
-                    _busy = false;
-                    return;
-                }
+                MoveTo(middle);
+
+                ClearArea(middle);
+
+                MoveTo(upperLeft);
+
+                ClearArea(upperLeft);
+
+                MoveTo(middleLeft);
+
+                ClearArea(middleLeft);
+
+                MoveTo(lowerLeft);
+
+                ClearArea(lowerLeft);
 
                 Loot();
 
-                _combat.DefendAgainst(Resist.FIRE);
-                _log.Info("Going up");
-                MoveTo(seal3Pos);
+                MoveTo(middle);
 
-                var seal3 = FindObject(_objects, GameObject.DiabloSeal3);
-
-                if (!seal3.IsValidPointer)
-                {
-                    _log.Error("Couldn't find seal 3, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
-
-                _combat.PrepareForCombat();
-                ClearArea(seal3.Position);
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
                 Buff();
+                _combat.PrepareForCombat();
 
-                MoveTo(seal3Pos);
-                activated = ActivateSeal(seal3, seal3Pos);
-
-                if (!activated)
-                {
-                    _log.Error("Couldn't activate seal 3, aborting");
-                    _busy = false;
-                    _error = true;
-                    return;
-                }
-
-                if (seal3Pos.X == 7770 && seal3Pos.Y == 5159)
-                {
-                    MoveTo(new Point(seal3Pos.X, seal3Pos.Y + 40));
-                }
-                else if (seal3Pos.X == 7820 && seal3Pos.Y == 5160)
-                {
-                    MoveTo(new Point(seal3Pos.X - 27, seal3Pos.Y - 8));
-                }
-
-                KillBoss("Lord De Seis", true);  // condition for precast... class based? add it to diablo profile config?
-
-                if (_abort)
-                {
-                    _busy = false;
-                    return;
-                }
-
+                KillBoss("Colenzo the Annihilator");
+                MoveTo(middle);
+                ClearArea(middle);
                 Loot();
-
-                _combat.RemoveDebuffs();
-                _combat.HealUp();
-                _combat.DefendAgainst(Resist.FIRE);
-
-                MoveTo(diabloSpawn);
-
-                _log.Info("Going right");
-                MoveTo(seal2Pos);
-
-                var seal2 = FindObject(_objects, GameObject.DiabloSeal2);
-
-                if (!seal2.IsValidPointer)
-                {
-                    _log.Error("Couldn't find seal 2, aborting");
-                    _error = true;
-                    _busy = false;
-                    return;
-                }
-
-                _combat.PrepareForCombat();
-                ClearArea(seal2.Position);
-                MoveTo(seal2Pos);
-                activated = ActivateSeal(seal2, seal2Pos);
-
-                if (!activated)
-                {
-                    _log.Error("Couldn't activate seal 2, aborting");
-                    _error = true;
-                    _busy = false;
-                    return;
-                }
-
-                MoveTo(seal1Pos);
-
-                var seal1 = FindObject(_objects, GameObject.DiabloSeal1);
-
-                if (!seal1.IsValidPointer)
-                {
-                    _log.Error("Couldn't find seal 1, aborting");
-                    _error = true;
-                    _busy = false;
-                    return;
-                }
-
-                ClearArea(seal1.Position);
                 _combat.RemoveDebuffs();
                 _combat.HealUp();
                 Buff();
-                _combat.DefendAgainst(Resist.FIRE);
-                MoveTo(seal1Pos);
-                activated = ActivateSeal(seal1, seal1Pos);
+                _combat.PrepareForCombat();
 
-                if (!activated)
-                {
-                    _log.Error("Couldn't activate seal 1, aborting");
-                    _error = true;
-                    _busy = false;
-                    return;
-                }
-
-                if (seal1Pos.X == 7920 && seal1Pos.Y == 5320)
-                {
-                    MoveTo(new Point(seal1Pos.X + 12, seal1Pos.Y - 18));
-                }
-                else if (seal1Pos.X == 7898 && seal1Pos.Y == 5318)
-                {
-                    MoveTo(new Point(seal1Pos.X + 3, seal1Pos.Y - 22));
-                }
-
-                KillBoss("Infector of Souls", true);
-
-                if (_abort)
-                {
-                    _busy = false;
-                    return;
-                }
-
+                KillBoss("Achmel the Cursed", true);
+                MoveTo(middle);
+                ClearArea(middle);
                 Loot();
-
                 _combat.RemoveDebuffs();
                 _combat.HealUp();
                 Buff();
-
-                _log.Info("Ripping old D-Bag a new one!");
-                MoveTo(diabloSpawn);
-                
-                if (_buffBoy.HasWork)
-                {
-                    _buffBoy.Run();
-
-                    do
-                    {
-                        System.Threading.Thread.Sleep(100);
-                    }
-                    while (_buffBoy.Busy && !_abort);
-                }
-
                 _combat.PrepareForCombat();
 
-                do
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                while (!_monsters.Any(x => x.TxtFileNo == (uint)Npc.Diablo) && !_abort);
+                KillBoss("Bartuc the Bloody", true);
+                MoveTo(middle);
+                ClearArea(middle);
+                Loot();
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                Buff();
+                _combat.PrepareForCombat();
 
-                _combat.Kill((uint)Npc.Diablo, true);
+                KillBoss("Ventar the Unholy", true);
+                MoveTo(middle);
+                ClearArea(middle);
+                Loot();
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                Buff(true);
+                _combat.PrepareForCombat();
 
-                do
+                KillBoss("Lister the Tormentor", true);
+                MoveTo(middle);
+                ClearArea(middle);
+                Loot();
+                _combat.RemoveDebuffs();
+                _combat.HealUp();
+                Buff();
+                _combat.PrepareForCombat();
+
+                var baalPortal = _objects.Where(x => x.GameObject == GameObject.BaalsPortal).FirstOrDefault() ?? new UnitObject(new IntPtr());
+
+                if (baalPortal.IsValidPointer)
                 {
-                    System.Threading.Thread.Sleep(100);
+                    MoveTo(baalPortal.Position);
+
+                    System.Threading.Thread.Sleep(15000);
+                    Buff(true);
+                    _combat.PrepareForCombat();
+
+                    _movement.ChangeArea(Area.TheWorldstoneChamber, baalPortal);
+
+                    Point[] baalLocation;
+
+                    _areaData.NPCs.TryGetValue(Npc.BaalCrab, out baalLocation);
+
+                    MoveTo(baalLocation[0]);
+
+                    ClearArea(baalLocation[0]);
+                    Loot();
                 }
-                while (_combat.Busy && !_abort && _monsters.Any(x => x.TxtFileNo == (uint)Npc.Diablo));
             }
             catch (Exception exception)
             {
@@ -395,11 +280,11 @@ namespace MapAssist.Automation.Profiles
             _orchestrator.PickThings();
         }
 
-        private void Buff()
+        private void Buff(bool force = false)
         {
             if (_buffBoy.HasWork)
             {
-                _buffBoy.Run();
+                _buffBoy.Run(force);
 
                 do
                 {

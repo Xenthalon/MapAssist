@@ -43,7 +43,7 @@ namespace MapAssist.Automation
 
             var upfactor = 0.02;
 
-            if (unit.TxtFileNo == (uint)GameObject.TownPortal || unit.TxtFileNo == (uint)GameObject.PermanentTownPortal)
+            if (unit.TxtFileNo == (uint)GameObject.TownPortal || unit.TxtFileNo == (uint)GameObject.PermanentTownPortal || unit.TxtFileNo == (uint)GameObject.BaalsPortal)
             {
                 upfactor = 0.07;
             }

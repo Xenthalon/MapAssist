@@ -559,7 +559,23 @@ namespace MapAssist.Automation
                 }
                 while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
 
-                _log.Info("Done with Diablo");
+                _log.Info("Done with Diablo.");
+
+                _activeSpecialProfile = null;
+            }
+            else if (activeProfile.Type == RunType.Baal)
+            {
+                _activeSpecialProfile = new Profiles.Baal(_buffboy, _combat, _movement, _input, _pickit, this);
+                System.Threading.Thread.Sleep(500); // give update time to insert data
+                _activeSpecialProfile.Run();
+
+                do
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                while (_activeSpecialProfile.IsBusy() && !_activeSpecialProfile.HasError());
+
+                _log.Info("Done with Baal.");
 
                 _activeSpecialProfile = null;
             }
