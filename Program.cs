@@ -1,6 +1,6 @@
 /**
  *   Copyright (C) 2021 okaygo
- *   
+ *
  *   https://github.com/misterokaygo/MapAssist/
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,20 +17,20 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using System;
-using System.Threading;
-using System.Windows.Forms;
 using Gma.System.MouseKeyHook;
+using MapAssist.Helpers;
 using MapAssist.Settings;
+using NLog;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using NLog;
-using MapAssist.Helpers;
-using MapAssist.Types;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace MapAssist
 {
-    static class Program
+    internal static class Program
     {
         private static readonly string githubSha = "GITHUB_SHA";
         private static readonly string githubRunNumber = "GITHUB_RUN_NUMBER";
@@ -49,7 +49,7 @@ namespace MapAssist
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             try
             {
@@ -76,6 +76,11 @@ namespace MapAssist
                     if (githubSha.Length == 40)
                     {
                         _log.Info($"Running from commit {githubSha}");
+                    }
+
+                    if (MapAssistConfiguration.Loaded.DPIAware)
+                    {
+                        SetProcessDPIAware();
                     }
 
                     Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
@@ -179,7 +184,7 @@ namespace MapAssist
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            ProcessException((Exception) e.ExceptionObject);
+            ProcessException((Exception)e.ExceptionObject);
         }
 
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -332,5 +337,8 @@ namespace MapAssist
 
             Application.Exit();
         }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetProcessDPIAware();
     }
 }

@@ -61,6 +61,12 @@ namespace MapAssist.Types
             State.STATE_PENETRATE,
             State.STATE_PIERCE,
             State.STATE_POLEARMMASTERY,
+            State.STATE_TIGERSTRIKE,
+            State.STATE_COBRASTRIKE,
+            State.STATE_PHOENIXSTRIKE,
+            State.STATE_FISTSOFFIRE,
+            State.STATE_BLADESOFICE,
+            State.STATE_CLAWSOFTHUNDER,
             State.STATE_SPEARMASTERY,
             State.STATE_SWORDMASTERY,
             State.STATE_THROWINGMASTERY,
@@ -210,23 +216,23 @@ namespace MapAssist.Types
     {
         public static Dictionary<Resist, Color> ResistColor = new Dictionary<Resist, Color>
         {
-            {Resist.PHYSICAL, Color.RosyBrown},
-            {Resist.MAGIC, Color.DarkOrange},
-            {Resist.FIRE, Color.Red},
-            {Resist.LIGHTNING, Color.Yellow},
-            {Resist.COLD, Color.CornflowerBlue},
-            {Resist.POISON, Color.LimeGreen},
+            {Resist.Physical, Color.RosyBrown},
+            {Resist.Magic, Color.DarkOrange},
+            {Resist.Fire, Color.Red},
+            {Resist.Lightning, Color.Yellow},
+            {Resist.Cold, Color.CornflowerBlue},
+            {Resist.Poison, Color.LimeGreen},
         };
     }
 
     public enum Resist
     {
-        PHYSICAL = 0,
-        MAGIC = 1,
-        FIRE = 2,
-        LIGHTNING = 3,
-        COLD = 4,
-        POISON = 5
+        Physical = 0,
+        Magic = 1,
+        Fire = 2,
+        Lightning = 3,
+        Cold = 4,
+        Poison = 5
     }
 
     public enum State
@@ -353,12 +359,12 @@ namespace MapAssist.Types
         STATE_SHADOWWARRIOR,
         STATE_FERALRAGE,
         STATE_SKILLDELAY,
-        STATE_PROGRESSIVE_DAMAGE,
-        STATE_PROGRESSIVE_STEAL,
-        STATE_PROGRESSIVE_OTHER,
-        STATE_PROGRESSIVE_FIRE,
-        STATE_PROGRESSIVE_COLD,
-        STATE_PROGRESSIVE_LIGHTNING,
+        STATE_TIGERSTRIKE,
+        STATE_COBRASTRIKE,
+        STATE_PHOENIXSTRIKE,
+        STATE_FISTSOFFIRE,
+        STATE_BLADESOFICE,
+        STATE_CLAWSOFTHUNDER,
         STATE_SHRINE_ARMOR,
         STATE_SHRINE_COMBAT,
         STATE_SHRINE_RESIST_LIGHTNING,
@@ -416,6 +422,9 @@ namespace MapAssist.Types
         STATE_PASSIVE_RESISTCOLD,
         STATE_PASSIVE_RESISTLTNG,
         STATE_UBERMINION,
+        STATE_COOLDOWN,
+        STATE_SHAREDSTASH,
+        STATE_HIDEDEAD
     };
 
     public static class Stats
@@ -424,6 +433,9 @@ namespace MapAssist.Types
         {
             [Stat.MaxLife] = 8,
             [Stat.MaxMana] = 8,
+            [Stat.Life] = 8,
+            [Stat.Mana] = 8,
+            [Stat.MaxStamina] = 8,
         };
 
         public static Dictionary<Stat, double> StatDivisors = new Dictionary<Stat, double>()
@@ -461,8 +473,8 @@ namespace MapAssist.Types
             Gold,
             StashGold,
             ArmorPercent,
-            MaxDamagePerent,
-            MinDamagePercent,
+            EnhancedDamageMax,
+            EnhancedDamage,
             AttackRating,
             ChanceToBlock,
             MinDamage,

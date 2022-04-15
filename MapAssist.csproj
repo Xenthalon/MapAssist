@@ -167,8 +167,10 @@
     <Compile Include="Structs\UnitAny.cs" />
     <Compile Include="Structs\UnitHashTable.cs" />
     <Compile Include="Types\Chest.cs" />
+    <Compile Include="Types\ItemsExport.cs" />
     <Compile Include="Types\Locale.cs" />
     <Compile Include="Types\Items.cs" />
+    <Compile Include="Types\Missile.cs" />
     <Compile Include="Types\Roster.cs" />
     <Compile Include="Types\Session.cs" />
     <Compile Include="Types\Shrine.cs" />
@@ -193,6 +195,7 @@
     <Compile Include="Types\RawAreaData.cs" />
     <Compile Include="Settings\Rendering.cs" />
     <Compile Include="Types\UnitAny.cs" />
+    <Compile Include="Types\UnitMissile.cs" />
     <Compile Include="Types\UnitObject.cs" />
     <Compile Include="Types\UnitPlayer.cs" />
     <Compile Include="Types\UnitMonster.cs" />
@@ -557,6 +560,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Cold.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\TigerStrike.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BladesOfIce.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ClawsOfThunder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CobraStrike.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FistsOfFire.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PhoenixStrike.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="MAServer.exe">

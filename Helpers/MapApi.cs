@@ -112,7 +112,10 @@ namespace MapAssist.Helpers
             var providedPath = MapAssistConfiguration.Loaded.D2LoDPath;
             if (!string.IsNullOrEmpty(providedPath))
             {
-                if (Path.HasExtension(providedPath))
+                //Set attributes of directory used
+                var attributes = File.GetAttributes($@"{providedPath}");
+                //If this flag is found, path is a directory. Otherwise it is a file
+                if (!attributes.HasFlag(FileAttributes.Directory))
                 {
                     var config1 = new ConfigEditor();
                     MessageBox.Show("Provided D2 LoD path is not set to a directory." + Environment.NewLine + Environment.NewLine + "Please provide a path to a D2 LoD 1.13c installation and restart MapAssist.");
@@ -399,8 +402,13 @@ namespace MapAssist.Helpers
                     return new Area[] {
                         Area.InnerCloister, // Missing adjacent area
                     };
+                case Area.LutGholein:
+                    return new Area[] {
+                        Area.DryHills,
+                    };
                 case Area.DryHills:
                     return new Area[] {
+                        Area.LutGholein,
                         Area.LostCity,
                     };
                 case Area.RockyWaste:

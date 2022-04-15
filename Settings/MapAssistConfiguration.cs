@@ -17,11 +17,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using System.Drawing;
 using MapAssist.Files;
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using MapAssist.Types;
+using System.Drawing;
 using YamlDotNet.Serialization;
 
 namespace MapAssist.Settings
@@ -30,6 +30,7 @@ namespace MapAssist.Settings
     {
         public static MapAssistConfiguration Default { get; set; }
         public static MapAssistConfiguration Loaded { get; set; }
+
         public static void Load()
         {
             Default = ConfigurationParser<MapAssistConfiguration>.ParseConfigurationMain(Properties.Resources.Config);
@@ -69,14 +70,16 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "LanguageCode", ApplyNamingConventions = false)]
         public Locale LanguageCode { get; set; }
+
+        [YamlMember(Alias = "DPIAware", ApplyNamingConventions = false)]
+        public bool DPIAware { get; set; }
     }
 
     public class MapColorConfiguration
     {
-        
         [YamlMember(Alias = "Walkable", ApplyNamingConventions = false)]
         public Color? Walkable { get; set; }
-        
+
         [YamlMember(Alias = "Border", ApplyNamingConventions = false)]
         public Color? Border { get; set; }
     }
@@ -157,6 +160,42 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "Item", ApplyNamingConventions = false)]
         public PointOfInterestRendering Item { get; set; }
+
+        [YamlMember(Alias = "MissilePhysicalLarge", ApplyNamingConventions = false)]
+        public IconRendering MissilePhysicalLarge { get; set; }
+
+        [YamlMember(Alias = "MissilePhysicalSmall", ApplyNamingConventions = false)]
+        public IconRendering MissilePhysicalSmall { get; set; }
+
+        [YamlMember(Alias = "MissileFireLarge", ApplyNamingConventions = false)]
+        public IconRendering MissileFireLarge { get; set; }
+        
+        [YamlMember(Alias = "MissileFireSmall", ApplyNamingConventions = false)]
+        public IconRendering MissileFireSmall { get; set; }
+        
+        [YamlMember(Alias = "MissileIceLarge", ApplyNamingConventions = false)]
+        public IconRendering MissileIceLarge { get; set; }
+        
+        [YamlMember(Alias = "MissileIceSmall", ApplyNamingConventions = false)]
+        public IconRendering MissileIceSmall { get; set; }
+        
+        [YamlMember(Alias = "MissileLightLarge", ApplyNamingConventions = false)]
+        public IconRendering MissileLightLarge { get; set; }
+        
+        [YamlMember(Alias = "MissileLightSmall", ApplyNamingConventions = false)]
+        public IconRendering MissileLightSmall { get; set; }
+        
+        [YamlMember(Alias = "MissilePoisonLarge", ApplyNamingConventions = false)]
+        public IconRendering MissilePoisonLarge { get; set; }
+        
+        [YamlMember(Alias = "MissilePoisonSmall", ApplyNamingConventions = false)]
+        public IconRendering MissilePoisonSmall { get; set; }
+
+        [YamlMember(Alias = "MissileMagicLarge", ApplyNamingConventions = false)]
+        public IconRendering MissileMagicLarge { get; set; }
+
+        [YamlMember(Alias = "MissileMagicSmall", ApplyNamingConventions = false)]
+        public IconRendering MissileMagicSmall { get; set; }
     }
 }
 
@@ -188,16 +227,44 @@ public class RenderingConfiguration
 
     [YamlMember(Alias = "Size", ApplyNamingConventions = false)]
     public int Size { get; set; }
+
     internal int InitialSize { get; set; }
 
     [YamlMember(Alias = "ZoomLevel", ApplyNamingConventions = false)]
     public double ZoomLevel { get; set; }
 
+    [YamlMember(Alias = "BuffSize", ApplyNamingConventions = false)]
+    public double BuffSize { get; set; }
+
+    [YamlMember(Alias = "BuffAlertLowRes", ApplyNamingConventions = false)]
+    public bool BuffAlertLowRes { get; set; }
+
     [YamlMember(Alias = "BuffPosition", ApplyNamingConventions = false)]
     public BuffPosition BuffPosition { get; set; }
 
-    [YamlMember(Alias = "BuffSize", ApplyNamingConventions = false)]
-    public double BuffSize { get; set; }
+    [YamlMember(Alias = "ShowLife", ApplyNamingConventions = false)]
+    public bool ShowLife { get; set; }
+
+    [YamlMember(Alias = "ShowLifePerc", ApplyNamingConventions = false)]
+    public bool ShowLifePerc { get; set; }
+
+    [YamlMember(Alias = "ShowMana", ApplyNamingConventions = false)]
+    public bool ShowMana { get; set; }
+
+    [YamlMember(Alias = "ShowManaPerc", ApplyNamingConventions = false)]
+    public bool ShowManaPerc { get; set; }
+
+    [YamlMember(Alias = "ShowCurrentLevel", ApplyNamingConventions = false)]
+    public bool ShowCurrentLevel { get; set; }
+
+    [YamlMember(Alias = "ShowExpProgress", ApplyNamingConventions = false)]
+    public bool ShowExpProgress { get; set; }
+
+    [YamlMember(Alias = "ShowPotionBelt", ApplyNamingConventions = false)]
+    public bool ShowPotionBelt { get; set; }
+
+    [YamlMember(Alias = "ShowResistances", ApplyNamingConventions = false)]
+    public bool ShowResistances { get; set; }
 
     [YamlMember(Alias = "LinesMode", ApplyNamingConventions = false)]
     public MapLinesMode LinesMode { get; set; }
@@ -207,6 +274,9 @@ public class HotkeyConfiguration
 {
     [YamlMember(Alias = "ToggleKey", ApplyNamingConventions = false)]
     public string ToggleKey { get; set; }
+
+    [YamlMember(Alias = "HideMapKey", ApplyNamingConventions = false)]
+    public string HideMapKey { get; set; }
 
     [YamlMember(Alias = "AreaLevelKey", ApplyNamingConventions = false)]
     public string AreaLevelKey { get; set; }
@@ -235,18 +305,18 @@ public class GameInfoConfiguration
     [YamlMember(Alias = "ShowDifficulty", ApplyNamingConventions = false)]
     public bool ShowDifficulty { get; set; }
 
-    [YamlMember(Alias = "ShowGameIP", ApplyNamingConventions = false)]
-    public bool ShowGameIP { get; set; }
-
-    [YamlMember(Alias = "HuntingIP", ApplyNamingConventions = false)]
-    public string HuntingIP { get; set; }
-
     [YamlMember(Alias = "ShowAreaLevel", ApplyNamingConventions = false)]
     public bool ShowAreaLevel { get; set; }
 
     [YamlMember(Alias = "ShowOverlayFPS", ApplyNamingConventions = false)]
     public bool ShowOverlayFPS { get; set; }
-    
+
+    [YamlMember(Alias = "ShowGameTimer", ApplyNamingConventions = false)]
+    public bool ShowGameTimer { get; set; }
+
+    [YamlMember(Alias = "ShowAreaTimer", ApplyNamingConventions = false)]
+    public bool ShowAreaTimer { get; set; }
+
     [YamlMember(Alias = "LabelFont", ApplyNamingConventions = false)]
     public string LabelFont { get; set; }
 
