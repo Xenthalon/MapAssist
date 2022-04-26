@@ -4,6 +4,7 @@ using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -13,7 +14,6 @@ namespace MapAssist
     {
         private PropertyInfo SelectedProperty;
         private AddAreaForm areaForm;
-        private AddAuthorizedWindowTitleForm authorizedWindowTitleForm;
 
         public ConfigEditor()
         {
@@ -848,20 +848,11 @@ namespace MapAssist
         
         private void btnAddAuthorizedWindowTitle_Click(object sender, EventArgs e)
         {
-            if (authorizedWindowTitleForm == null)
+            if (txtAuthorizedWindowTitle.Text.Length > 0)
             {
-                authorizedWindowTitleForm = new AddAuthorizedWindowTitleForm();
-            }
-
-            authorizedWindowTitleForm.listToAddTo = "lstAuthorizedWindowTitle";
-
-            if (authorizedWindowTitleForm.Visible)
-            {
-                authorizedWindowTitleForm.Activate();
-            }
-            else
-            {
-                authorizedWindowTitleForm.ShowDialog(this);
+                lstAuthorizedWindowTitle.Items.Add(txtAuthorizedWindowTitle.Text);
+                MapAssistConfiguration.Loaded.AuthorizedWindowTitles = MapAssistConfiguration.Loaded.AuthorizedWindowTitles.Append(txtAuthorizedWindowTitle.Text).ToArray();
+                txtAuthorizedWindowTitle.Text = "";
             }
         }
 
