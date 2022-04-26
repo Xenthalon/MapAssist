@@ -851,7 +851,8 @@ namespace MapAssist.Automation
                 {
                     _log.Info("Identifying " + item.ItemData.ItemQuality + " " + item.ItemBaseName);
 
-                    var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
+                    //var idsc = npcInventory.Where(x => x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
+                    var idsc = _gameData.AllItems.Where(x => x.IsInStore && x.VendorOwner == _townManager.ActiveNPC.Npc && x.TxtFileNo == 530).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
                     if (idsc.IsValidPointer)
                     {
@@ -917,7 +918,8 @@ namespace MapAssist.Automation
 
                 if (_inventory.TPScrolls < 15)
                 {
-                    var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
+                    // var tp = npcInventory.Where(x => x.TxtFileNo == 529).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
+                    var tp = _gameData.AllItems.Where(x => x.IsInStore && x.VendorOwner == _townManager.ActiveNPC.Npc && x.TxtFileNo == 529).FirstOrDefault() ?? new UnitItem(IntPtr.Zero);
 
                     if (tp.IsValidPointer)
                     {

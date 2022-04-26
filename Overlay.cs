@@ -167,6 +167,7 @@ namespace MapAssist
                         var oog = new OOG(_botConfig, input);
                         oog.Update(window);
                         oog.CreateGame();
+
                         System.Threading.Thread.Sleep(3000);
 
                         if (oog.NeedsResize(window))
@@ -174,6 +175,8 @@ namespace MapAssist
                             // resize crashes sometimes while in chat :/
                             oog.ResizeWindow(GameManager.MainWindowHandle);
                         }
+
+                        System.Threading.Thread.Sleep(5000);
                     }
                 }
             }

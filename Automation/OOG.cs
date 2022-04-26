@@ -42,15 +42,19 @@ namespace MapAssist.Automation
 
             System.Threading.Thread.Sleep(3 * LONG_SLEEP);
 
+            _input.DoInputAtScreenPosition("{LMB}", new Point((int)(_window.Width * 0.8), (int)(_window.Height * 0.17)));
+
             var gamename = RandomString(random.Next(12, 16));
             var password = RandomString(random.Next(5, 8));
 
-            _input.DoInput(gamename + "{TAB}");
-
+            _input.DoInput("^{a}");
+            System.Threading.Thread.Sleep(LONG_SLEEP);
+            _input.DoInput("{BACKSPACE}" + gamename + "{TAB}");
             System.Threading.Thread.Sleep(LONG_SLEEP);
 
+            _input.DoInput("^{a}");
+            System.Threading.Thread.Sleep(LONG_SLEEP);
             _input.DoInput(password);
-
             System.Threading.Thread.Sleep(LONG_SLEEP);
 
             _input.DoInput("{ENTER}");
