@@ -22,6 +22,7 @@ using MapAssist.Structs;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace MapAssist.Helpers
@@ -89,6 +90,13 @@ namespace MapAssist.Helpers
             try // The process can end before this block is done, hence wrap it in a try catch
             {
                 process = Process.GetProcessById(_foregroundProcessId); // If closing another non-foreground window, Process.GetProcessById can fail
+                
+                // Skip process by window title
+                if (MapAssistConfiguration.Loaded.AuthorizedWindowTitles.Length != 0 && !MapAssistConfiguration.Loaded.AuthorizedWindowTitles.Any(process.MainWindowTitle.Contains))
+                {
+                    _log.Info($"Skipping window because of title (handle: {hwnd})");
+                    return;
+                }
 
                 if (process.ProcessName != ProcessName) // Not a valid game process
                 {

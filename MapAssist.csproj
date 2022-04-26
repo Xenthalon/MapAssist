@@ -112,6 +112,12 @@
     <Compile Include="AddAreaForm.Designer.cs">
       <DependentUpon>AddAreaForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddAuthorizedWindowTitleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddAuthorizedWindowTitleForm.Designer.cs">
+      <DependentUpon>AddAuthorizedWindowTitleForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConfigEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -203,6 +209,9 @@
     <Compile Include="Types\UnitType.cs" />
     <EmbeddedResource Include="AddAreaForm.resx">
       <DependentUpon>AddAreaForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddAuthorizedWindowTitleForm.resx">
+      <DependentUpon>AddAuthorizedWindowTitleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Fonts\exocetblizzardot-medium.otf" />
     <EmbeddedResource Include="Fonts\formal436bt-regular.otf" />

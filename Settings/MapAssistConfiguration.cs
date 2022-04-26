@@ -49,7 +49,10 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "HiddenAreas", ApplyNamingConventions = false)]
         public Area[] HiddenAreas { get; set; }
-
+        
+        [YamlMember(Alias = "AuthorizedWindowTitles", ApplyNamingConventions = false)]
+        public string[] AuthorizedWindowTitles { get; set; }
+        
         [YamlMember(Alias = "RenderingConfiguration", ApplyNamingConventions = false)]
         public RenderingConfiguration RenderingConfiguration { get; set; }
 

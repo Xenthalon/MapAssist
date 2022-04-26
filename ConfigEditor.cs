@@ -13,6 +13,7 @@ namespace MapAssist
     {
         private PropertyInfo SelectedProperty;
         private AddAreaForm areaForm;
+        private AddAuthorizedWindowTitleForm authorizedWindowTitleForm;
 
         public ConfigEditor()
         {
@@ -155,6 +156,12 @@ namespace MapAssist
             {
                 lstHidden.Items.Add(AreaExtensions.Name(area));
             }
+            
+            foreach (var authorizedWindowTitle in MapAssistConfiguration.Loaded.AuthorizedWindowTitles)
+            {
+                lstAuthorizedWindowTitle.Items.Add(authorizedWindowTitle);
+            }
+            
             chkDPIAware.Checked = MapAssistConfiguration.Loaded.DPIAware;
         }
 
@@ -836,6 +843,37 @@ namespace MapAssist
                 var hiddenList = new List<Area>(MapAssistConfiguration.Loaded.HiddenAreas);
                 hiddenList.RemoveAt(indexToRemove);
                 MapAssistConfiguration.Loaded.HiddenAreas = hiddenList.ToArray();
+            }
+        }
+        
+        private void btnAddAuthorizedWindowTitle_Click(object sender, EventArgs e)
+        {
+            if (authorizedWindowTitleForm == null)
+            {
+                authorizedWindowTitleForm = new AddAuthorizedWindowTitleForm();
+            }
+
+            authorizedWindowTitleForm.listToAddTo = "lstAuthorizedWindowTitle";
+
+            if (authorizedWindowTitleForm.Visible)
+            {
+                authorizedWindowTitleForm.Activate();
+            }
+            else
+            {
+                authorizedWindowTitleForm.ShowDialog(this);
+            }
+        }
+
+        private void btnRemoveAuthorizedWindowTitle_Click(object sender, EventArgs e)
+        {
+            var indexToRemove = lstAuthorizedWindowTitle.SelectedIndex;
+            if (indexToRemove >= 0)
+            {
+                lstAuthorizedWindowTitle.Items.RemoveAt(indexToRemove);
+                var authorizedWindowTitleList = new List<string>(MapAssistConfiguration.Loaded.AuthorizedWindowTitles);
+                authorizedWindowTitleList.RemoveAt(indexToRemove);
+                MapAssistConfiguration.Loaded.AuthorizedWindowTitles = authorizedWindowTitleList.ToArray();
             }
         }
 

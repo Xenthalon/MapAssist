@@ -170,6 +170,10 @@
             this.btnRemoveHidden = new System.Windows.Forms.Button();
             this.btnAddHidden = new System.Windows.Forms.Button();
             this.lstHidden = new System.Windows.Forms.ListBox();
+            this.groupBoxAuthorizedWindowTitle = new System.Windows.Forms.GroupBox();
+            this.btnRemoveAuthorizedWindowTitle = new System.Windows.Forms.Button();
+            this.btnAddAuthorizedWindowTitle = new System.Windows.Forms.Button();
+            this.lstAuthorizedWindowTitle = new System.Windows.Forms.ListBox();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
             this.chkDPIAware = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
@@ -207,6 +211,7 @@
             this.grpHotkeys.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBoxAuthorizedWindowTitle.SuspendLayout();
             this.groupBox8.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -1810,6 +1815,7 @@
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.groupBox2);
+            this.tabPage4.Controls.Add(this.groupBoxAuthorizedWindowTitle);
             this.tabPage4.Controls.Add(this.groupBox8);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
@@ -1825,7 +1831,7 @@
             this.groupBox2.Controls.Add(this.lstHidden);
             this.groupBox2.Location = new System.Drawing.Point(11, 9);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(335, 189);
+            this.groupBox2.Size = new System.Drawing.Size(335, 100);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Hidden Areas";
@@ -1855,15 +1861,55 @@
             this.lstHidden.FormattingEnabled = true;
             this.lstHidden.Location = new System.Drawing.Point(10, 19);
             this.lstHidden.Name = "lstHidden";
-            this.lstHidden.Size = new System.Drawing.Size(293, 160);
+            this.lstHidden.Size = new System.Drawing.Size(293, 71);
             this.lstHidden.TabIndex = 0;
+            // 
+            // groupBoxAuthorizedWindowTitle
+            // 
+            this.groupBoxAuthorizedWindowTitle.Controls.Add(this.btnRemoveAuthorizedWindowTitle);
+            this.groupBoxAuthorizedWindowTitle.Controls.Add(this.btnAddAuthorizedWindowTitle);
+            this.groupBoxAuthorizedWindowTitle.Controls.Add(this.lstAuthorizedWindowTitle);
+            this.groupBoxAuthorizedWindowTitle.Location = new System.Drawing.Point(11, 115);
+            this.groupBoxAuthorizedWindowTitle.Name = "groupBoxAuthorizedWindowTitle";
+            this.groupBoxAuthorizedWindowTitle.Size = new System.Drawing.Size(335, 100);
+            this.groupBoxAuthorizedWindowTitle.TabIndex = 2;
+            this.groupBoxAuthorizedWindowTitle.TabStop = false;
+            this.groupBoxAuthorizedWindowTitle.Text = "Authorized Window Titles";
+            // 
+            // btnRemoveAuthorizedWindowTitle
+            // 
+            this.btnRemoveAuthorizedWindowTitle.Location = new System.Drawing.Point(309, 48);
+            this.btnRemoveAuthorizedWindowTitle.Name = "btnRemoveAuthorizedWindowTitle";
+            this.btnRemoveAuthorizedWindowTitle.Size = new System.Drawing.Size(20, 23);
+            this.btnRemoveAuthorizedWindowTitle.TabIndex = 2;
+            this.btnRemoveAuthorizedWindowTitle.Text = "-";
+            this.btnRemoveAuthorizedWindowTitle.UseVisualStyleBackColor = true;
+            this.btnRemoveAuthorizedWindowTitle.Click += new System.EventHandler(this.btnRemoveAuthorizedWindowTitle_Click);
+            // 
+            // btnAddAuthorizedWindowTitle
+            // 
+            this.btnAddAuthorizedWindowTitle.Location = new System.Drawing.Point(309, 19);
+            this.btnAddAuthorizedWindowTitle.Name = "btnAddAuthorizedWindowTitle";
+            this.btnAddAuthorizedWindowTitle.Size = new System.Drawing.Size(20, 23);
+            this.btnAddAuthorizedWindowTitle.TabIndex = 1;
+            this.btnAddAuthorizedWindowTitle.Text = "+";
+            this.btnAddAuthorizedWindowTitle.UseVisualStyleBackColor = true;
+            this.btnAddAuthorizedWindowTitle.Click += new System.EventHandler(this.btnAddAuthorizedWindowTitle_Click);
+            // 
+            // lstAuthorizedWindowTitle
+            // 
+            this.lstAuthorizedWindowTitle.FormattingEnabled = true;
+            this.lstAuthorizedWindowTitle.Location = new System.Drawing.Point(10, 19);
+            this.lstAuthorizedWindowTitle.Name = "lstAuthorizedWindowTitle";
+            this.lstAuthorizedWindowTitle.Size = new System.Drawing.Size(293, 71);
+            this.lstAuthorizedWindowTitle.TabIndex = 0;
             // 
             // groupBox8
             // 
             this.groupBox8.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox8.Controls.Add(this.label3);
             this.groupBox8.Controls.Add(this.chkDPIAware);
-            this.groupBox8.Location = new System.Drawing.Point(11, 200);
+            this.groupBox8.Location = new System.Drawing.Point(11, 220);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(335, 58);
             this.groupBox8.TabIndex = 29;
@@ -2007,9 +2053,13 @@
         private System.Windows.Forms.Label lblLineArrowSizeValue;
         private System.Windows.Forms.CheckBox chkShowArea;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox groupBoxAuthorizedWindowTitle;
         private System.Windows.Forms.Button btnRemoveHidden;
         private System.Windows.Forms.Button btnAddHidden;
         private System.Windows.Forms.ListBox lstHidden;
+        private System.Windows.Forms.Button btnRemoveAuthorizedWindowTitle;
+        private System.Windows.Forms.Button btnAddAuthorizedWindowTitle;
+        private System.Windows.Forms.ListBox lstAuthorizedWindowTitle;
         private System.Windows.Forms.Button btnBrowseD2Location;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.Label lblSoundVolumeValue;
