@@ -6,8 +6,9 @@ HotkeyConfiguration:
   ZoomInKey: Num +
   ZoomOutKey: Num -
   ExportItemsKey: F9
-HiddenAreas: []
-AuthorizedWindowTitles:
+HiddenAreas:
+- Forgotten Tower
+AuthorizedWindowTitles: []
 RenderingConfiguration:
   Opacity: 0.5
   IconOpacity: 0.9
