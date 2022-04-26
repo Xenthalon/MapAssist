@@ -8,6 +8,7 @@ HotkeyConfiguration:
   ExportItemsKey: F9
 HiddenAreas:
 - Forgotten Tower
+AuthorizedWindowTitles:
 RenderingConfiguration:
   Opacity: 0.5
   IconOpacity: 0.9
