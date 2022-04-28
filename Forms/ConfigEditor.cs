@@ -156,12 +156,12 @@ namespace MapAssist
             {
                 lstHidden.Items.Add(AreaExtensions.Name(area));
             }
-            
+
             foreach (var authorizedWindowTitle in MapAssistConfiguration.Loaded.AuthorizedWindowTitles)
             {
                 lstAuthorizedWindowTitle.Items.Add(authorizedWindowTitle);
             }
-            
+
             chkDPIAware.Checked = MapAssistConfiguration.Loaded.DPIAware;
         }
 
@@ -359,6 +359,7 @@ namespace MapAssist
         {
             MapAssistConfiguration.Loaded.GameInfo.ShowArea = chkShowArea.Checked;
         }
+
         private void txtD2Path_TextChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.D2LoDPath = txtD2Path.Text;
@@ -571,8 +572,8 @@ namespace MapAssist
         private void btnFont_Click(object sender, EventArgs e)
         {
             dynamic labelProp = SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null);
-            var labelFont = (string) labelProp.LabelFont;
-            var labelSize = (float) labelProp.LabelFontSize;
+            var labelFont = (string)labelProp.LabelFont;
+            var labelSize = (float)labelProp.LabelFontSize;
             if (labelFont == null)
             {
                 labelFont = "Helvetica";
