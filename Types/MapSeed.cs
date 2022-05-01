@@ -20,8 +20,6 @@
 using MapAssist.Helpers;
 using MapAssist.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MapAssist.Types
 {
@@ -45,8 +43,9 @@ namespace MapAssist.Types
                     var pMapSeedData = processContext.Read<IntPtr>(_pMapSeed);
                     var mapSeedData = processContext.Read<Structs.MapSeed>(pMapSeedData);
 
-                    Seed = mapSeedData.mapSeed2;
-                    if (Seed == 0) Seed = mapSeedData.mapSeed1;
+                    Seed = mapSeedData.check > 0 ? mapSeedData.mapSeed1 : mapSeedData.mapSeed2; // Use this if check offset is 0x110
+                    //Seed = mapSeedData.check > 0 ? mapSeedData.mapSeed2 : mapSeedData.mapSeed1; // Use this if check offset is 0x124
+                    //Seed = mapSeedData.check > 0 ? mapSeedData.mapSeed1 : mapSeedData.mapSeed2; // Use this if check offset is 0x830
                 }
                 catch (Exception) { }
             }
