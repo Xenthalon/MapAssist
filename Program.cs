@@ -1,22 +1,3 @@
-/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
 using Gma.System.MouseKeyHook;
 using MapAssist.Helpers;
 using MapAssist.Settings;
@@ -70,14 +51,19 @@ namespace MapAssist
                     return;
                 }
 
-                var configurationOk = LoadLoggingConfiguration() && LoadMainConfiguration() && LoadLootLogConfiguration();
+                var logConfigurationOk = LoadLoggingConfiguration();
+                if (githubSha.Length == 40)
+                {
+                    _log.Info($"Running from commit {githubSha}");
+                }
+                else
+                {
+                    _log.Info($"Running a self-compiled build");
+                }
+
+                var configurationOk = logConfigurationOk && LoadMainConfiguration() && LoadLootLogConfiguration();
                 if (configurationOk)
                 {
-                    if (githubSha.Length == 40)
-                    {
-                        _log.Info($"Running from commit {githubSha}");
-                    }
-
                     if (MapAssistConfiguration.Loaded.DPIAware)
                     {
                         SetProcessDPIAware();
@@ -147,8 +133,8 @@ namespace MapAssist
                     GameManager.OnGameAccessDenied += (_, __) =>
                     {
                         var message = $"MapAssist could not read {GameManager.ProcessName} memory. Please reopen MapAssist as an administrator.";
-                        MessageBox.Show(message, $"{messageBoxTitle}: Error opening handle to {GameManager.ProcessName}", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                         Dispose();
+                        MessageBox.Show(message, $"{messageBoxTitle}: Error opening handle to {GameManager.ProcessName}", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
                         Application.Exit();
                         Environment.Exit(0);
                     };
@@ -306,17 +292,28 @@ namespace MapAssist
             _log.Info("Disposing");
 
             overlay.Dispose();
+            _log.Info("Disposed Overlay");
+
             GameManager.Dispose();
+            _log.Info("Disposed GameManager");
+
             MapApi.Dispose();
+            _log.Info("Disposed MapApi");
+
             globalHook.Dispose();
+            _log.Info("Disposed keyboard hook");
+
             trayIcon.Dispose();
+            _log.Info("Disposed tray icon");
 
             if (backWorkOverlay.IsBusy)
             {
                 backWorkOverlay.CancelAsync();
+                _log.Info("Cancelled overlay background worker");
             }
 
             mutex.Dispose();
+            _log.Info("Disposed mutex");
 
             _log.Info("Finished disposing");
             LogManager.Flush();

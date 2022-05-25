@@ -1,31 +1,11 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using GameOverlay.Drawing;
+﻿using GameOverlay.Drawing;
 using GameOverlay.Windows;
 using MapAssist.Helpers;
 using MapAssist.Settings;
+using MapAssist.Structs;
 using MapAssist.Types;
 using System;
 using System.Windows.Forms;
-
-//using WK.Libraries.HotkeyListenerNS;
 using Graphics = GameOverlay.Drawing.Graphics;
 
 namespace MapAssist
@@ -40,6 +20,7 @@ namespace MapAssist
         private Compositor _compositor = new Compositor();
         private bool _show = true;
         private static readonly object _lock = new object();
+        private bool frameDone = true;
 
         public Overlay()
         {
@@ -61,71 +42,80 @@ namespace MapAssist
         {
             if (disposed) return;
 
+            if (!frameDone) return;
+            frameDone = false;
+
             var gfx = e.Graphics;
 
             try
             {
                 lock (_lock)
                 {
-                    var (gameData, areaData, pointsOfInterest, changed) = _gameDataReader.Get();
+                    var (gameData, areaData, changed) = _gameDataReader.Get();
                     _gameData = gameData;
 
                     if (changed)
                     {
-                        _compositor.SetArea(areaData, pointsOfInterest);
+                        _compositor.SetArea(areaData);
                     }
 
                     gfx.ClearScene();
 
-                    if (_compositor != null && InGame() && _compositor != null && _gameData != null)
+                    if (_compositor != null && _gameData != null && InGame())
                     {
                         UpdateLocation();
 
-                        var errorLoadingAreaData = _compositor._areaData == null;
-
-                        var overlayHidden = !_show ||
-                            errorLoadingAreaData ||
-                            (MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGameMap && !_gameData.MenuOpen.Map) ||
-                            (MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGamePanels && _gameData.MenuPanelOpen > 0) ||
-                            (MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGamePanels && _gameData.MenuOpen.EscMenu) ||
-                            Array.Exists(MapAssistConfiguration.Loaded.HiddenAreas, area => area == _gameData.Area) ||
-                            _gameData.Area == Area.None ||
-                            gfx.Width == 1 ||
-                            gfx.Height == 1;
-
-                        var size = MapAssistConfiguration.Loaded.RenderingConfiguration.Size;
-
-                        var drawBounds = new Rectangle(0, 0, gfx.Width, gfx.Height * 0.78f);
-                        switch (MapAssistConfiguration.Loaded.RenderingConfiguration.Position)
+                        if (gfx.Width > 0 && gfx.Height > 0)
                         {
-                            case MapPosition.TopLeft:
-                                drawBounds = new Rectangle(PlayerIconWidth() + 40, PlayerIconWidth() + 100, 0, PlayerIconWidth() + 100 + size);
-                                break;
+                            var errorLoadingAreaData = _compositor._areaData == null;
 
-                            case MapPosition.TopRight:
-                                drawBounds = new Rectangle(0, 100, gfx.Width, 100 + size);
-                                break;
+                            var overlayHidden = !_show ||
+                                errorLoadingAreaData ||
+                                (MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGameMap && !_gameData.MenuOpen.Map) ||
+                                (MapAssistConfiguration.Loaded.RenderingConfiguration.ToggleViaInGamePanels && _gameData.MenuOpen.IsAnyMenuOpen()) ||
+                                Array.Exists(MapAssistConfiguration.Loaded.HiddenAreas, area => area == _gameData.Area) ||
+                                _gameData.Area == Area.None ||
+                                gfx.Width == 1 ||
+                                gfx.Height == 1;
+
+                            var size = MapAssistConfiguration.Loaded.RenderingConfiguration.Size;
+
+                            var drawBounds = new Rectangle(0, 0, gfx.Width, gfx.Height * 0.78f);
+                            switch (MapAssistConfiguration.Loaded.RenderingConfiguration.Position)
+                            {
+                                case MapPosition.TopLeft:
+                                    drawBounds = new Rectangle(PlayerIconWidth() + 40, PlayerIconWidth() + 100, 0, PlayerIconWidth() + 100 + size);
+                                    break;
+
+                                case MapPosition.TopRight:
+                                    drawBounds = new Rectangle(0, 100, gfx.Width, 100 + size);
+                                    break;
+                            }
+
+                            _compositor.Init(gfx, _gameData, drawBounds);
+
+                            if (!overlayHidden)
+                            {
+                                if (!errorLoadingAreaData)
+                                {
+                                    _compositor.DrawGamemap(gfx);
+                                    _compositor.DrawOverlay(gfx);
+                                }
+
+                                _compositor.DrawBuffs(gfx);
+                                _compositor.DrawMonsterBar(gfx);
+                            }
+
+                            _compositor.DrawPlayerInfo(gfx);
+
+                            var gameInfoAnchor = GameInfoAnchor(MapAssistConfiguration.Loaded.GameInfo.Position);
+                            var nextAnchor = _compositor.DrawGameInfo(gfx, gameInfoAnchor, e, errorLoadingAreaData);
+
+                            var itemLogAnchor = (MapAssistConfiguration.Loaded.ItemLog.Position == MapAssistConfiguration.Loaded.GameInfo.Position)
+                                ? nextAnchor.Add(0, GameInfoPadding())
+                                : GameInfoAnchor(MapAssistConfiguration.Loaded.ItemLog.Position);
+                            _compositor.DrawItemLog(gfx, itemLogAnchor);
                         }
-
-                        _compositor.Init(gfx, _gameData, drawBounds);
-
-                        if (!overlayHidden)
-                        {
-                            _compositor.DrawGamemap(gfx);
-                            _compositor.DrawOverlay(gfx);
-                            _compositor.DrawBuffs(gfx);
-                            _compositor.DrawMonsterBar(gfx);
-                        }
-
-                        _compositor.DrawPlayerInfo(gfx);
-
-                        var gameInfoAnchor = GameInfoAnchor(MapAssistConfiguration.Loaded.GameInfo.Position);
-                        var nextAnchor = _compositor.DrawGameInfo(gfx, gameInfoAnchor, e, errorLoadingAreaData);
-
-                        var itemLogAnchor = (MapAssistConfiguration.Loaded.ItemLog.Position == MapAssistConfiguration.Loaded.GameInfo.Position)
-                            ? nextAnchor.Add(0, GameInfoPadding())
-                            : GameInfoAnchor(MapAssistConfiguration.Loaded.ItemLog.Position);
-                        _compositor.DrawItemLog(gfx, itemLogAnchor);
                     }
                 }
             }
@@ -133,6 +123,8 @@ namespace MapAssist
             {
                 _log.Error(ex);
             }
+
+            frameDone = true;
         }
 
         public void Run()
@@ -148,7 +140,7 @@ namespace MapAssist
 
         public void KeyDownHandler(object sender, KeyEventArgs args)
         {
-            if (InGame() && GameManager.IsGameInForeground)
+            if (InGame() && GameManager.IsGameInForeground && !_gameData.MenuOpen.Chat)
             {
                 var keys = new Hotkey(args.Modifiers, args.KeyCode);
 
