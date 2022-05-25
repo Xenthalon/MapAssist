@@ -163,6 +163,7 @@ namespace MapAssist.Files
                     .WithTypeConverter(new PointOfInterestRenderingTypeConverter())
                     .WithTypeConverter(new PortalRenderingTypeConverter())
                     .WithTypeConverter(new MapColorConfigurationTypeConverter())
+                    .WithTypeConverter(new ColorConfigurationTypeConverter())
                     .Build();
                 serializer.Serialize(streamWriter, config);
             }

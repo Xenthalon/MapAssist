@@ -18,7 +18,7 @@ namespace MapAssist.Types
         public Point Position => new Point(X, Y);
         public ushort X => IsMovable ? (ushort)Path.DynamicX : Path.StaticX;
         public ushort Y => IsMovable ? (ushort)Path.DynamicY : Path.StaticY;
-        public StatListStruct StatsStruct { get; private set; }
+        public StatListExStruct StatsStruct { get; private set; }
         public Dictionary<Stat, Dictionary<ushort, int>> StatLayers { get; private set; }
         public Dictionary<Stat, int> Stats { get; private set; }
         protected uint[] StateFlags { get; set; }
@@ -74,7 +74,7 @@ namespace MapAssist.Types
                             var stats = new Dictionary<Stat, int>();
                             var statLayers = new Dictionary<Stat, Dictionary<ushort, int>>();
 
-                            StatsStruct = processContext.Read<StatListStruct>(Struct.pStatsListEx);
+                            StatsStruct = processContext.Read<StatListExStruct>(Struct.pStatsListEx);
                             StateFlags = StatsStruct.StateFlags;
 
                             var statValues = processContext.Read<StatValue>(StatsStruct.Stats.pFirstStat, Convert.ToInt32(StatsStruct.Stats.Size));

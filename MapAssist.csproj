@@ -49,12 +49,13 @@
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>3DB9B26A33D3BC5805AF01B7BC6B71FE986ABD87</ManifestCertificateThumbprint>
@@ -90,7 +91,7 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyName>XenBot-Three</AssemblyName>
+    <AssemblyName>XenBot-ThreeOne</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -163,13 +164,16 @@
     <Compile Include="Files\Font\ResourceFontFileStream.cs" />
     <Compile Include="Files\Font\ResourceFontLoader.cs" />
     <Compile Include="Helpers\AudioPlayer.cs" />
+    <Compile Include="Helpers\ExcelDataLoader.cs" />
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
     <Compile Include="Helpers\Hotkey.cs" />
     <Compile Include="Helpers\ItemExport.cs" />
     <Compile Include="Helpers\Localization.cs" />
     <Compile Include="Helpers\LootFilter.cs" />
+    <Compile Include="Helpers\Pattern.cs" />
     <Compile Include="Helpers\ProcessContext.cs" />
+    <Compile Include="Helpers\QualityLevels.cs" />
     <Compile Include="Helpers\YamlConverters.cs" />
     <Compile Include="Interfaces\IUpdatable.cs" />
     <Compile Include="Overlay.cs" />
@@ -202,6 +206,7 @@
     <Compile Include="Structs\RoomEx.cs" />
     <Compile Include="Structs\Session.cs" />
     <Compile Include="Structs\Skill.cs" />
+    <Compile Include="Structs\Pet.cs" />
     <Compile Include="Structs\UnitAny.cs" />
     <Compile Include="Structs\UnitHashTable.cs" />
     <Compile Include="Types\Chest.cs" />
@@ -240,6 +245,7 @@
     <Compile Include="Types\UnitPlayer.cs" />
     <Compile Include="Types\UnitMonster.cs" />
     <Compile Include="Types\UnitItem.cs" />
+    <Compile Include="Types\Pets.cs" />
     <Compile Include="Types\UnitType.cs" />
     <EmbeddedResource Include="Forms\AddAreaForm.resx">
       <DependentUpon>AddAreaForm.cs</DependentUpon>
@@ -319,6 +325,12 @@
     <EmbeddedResource Include="Resources\Localization.json" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\QualityLevels.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\SuperUniques.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Resources\Salvation.png" />
   </ItemGroup>
   <ItemGroup>
@@ -346,7 +358,7 @@
     <None Include="Resources\Stamina.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\SwordMastery.png" />
+    <None Include="Resources\BladeMastery.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Teleport.png" />

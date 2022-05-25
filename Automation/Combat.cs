@@ -98,14 +98,9 @@ namespace MapAssist.Automation
 
         public void Kill(string name, bool clearArea = false, bool reposition = true)
         {
-            foreach (var monster in _monsters.Where(x => (x.MonsterData.MonsterType & Structs.MonsterTypeFlags.SuperUnique) == Structs.MonsterTypeFlags.SuperUnique))
+            foreach (var monster in _monsters.Where(x => x.IsSuperUnique))
             {
-                var internalName = Types.NPC.SuperUniques.Where(y => y.Value == monster.MonsterStats.Name).First().Key;
-                _log.Info("Type: " + internalName);
-                var localizedName = NpcExtensions.LocalizedName(internalName);
-                _log.Info("Resolved: " + localizedName);
-
-                if (localizedName.Contains(name))
+                if (monster.SuperUniqueName.Contains(name))
                 {
                     _log.Info("Found " + name + ": " + monster.UnitId);
 

@@ -96,9 +96,9 @@ namespace MapAssist.Automation
 
             var itemsToHandle = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1);
 
-            ItemsToStash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && LootFilter.Filter(x).Item1);
+            ItemsToStash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && LootFilter.Filter(x, gameData.Area.Level(gameData.Difficulty), playerUnit.Level).Item1);
             ItemsToIdentify = ItemsToStash.Where(x => !x.IsIdentified && IdentificationFilter.HasEntry(x));
-            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && !LootFilter.Filter(x).Item1);
+            ItemsToTrash = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && !LootFilter.Filter(x, gameData.Area.Level(gameData.Difficulty), playerUnit.Level).Item1);
             ItemsToBelt = inventoryItems.Where(x => InventoryOpen[(int)x.Y][(int)x.X] == 1 && 
                 (x.ItemBaseName == "Full Rejuvenation Potion" || x.ItemBaseName == "Rejuvenation Potion"));
 

@@ -27,11 +27,13 @@ namespace MapAssist.Automation
         private Point _playerPosition;
         private bool _working = false;
         private bool _full = false;
+        private int _areaLevel = 0;
+        private int _playerLevel = 0;
 
         public bool Busy => _working;
         public bool Full => _full;
         public bool HasWork => _items.Any(x => x.IsDropped &&
-                                            (LootFilter.Filter(x).Item1 ||
+                                            (LootFilter.Filter(x, _areaLevel, _playerLevel).Item1 ||
                                             (!_inventory.IsBeltFull() && (
                                                 x.ItemBaseName == "Full Rejuvenation Potion" ||
                                                 x.ItemBaseName == "Rejuvenation Potion"
@@ -56,6 +58,8 @@ namespace MapAssist.Automation
             {
                 _items = gameData.AllItems;
                 _playerPosition = gameData.PlayerPosition;
+                _areaLevel = gameData.Area.Level(gameData.Difficulty);
+                _playerLevel = gameData.PlayerUnit.Level;
 
                 if (_working && !_worker.IsBusy)
                 {
@@ -91,7 +95,7 @@ namespace MapAssist.Automation
             var pickPotions = !_inventory.IsBeltFull();
 
             var itemsToPick = _items.Where(x => x.IsDropped &&
-                                                (LootFilter.Filter(x).Item1 ||
+                                                (LootFilter.Filter(x, _areaLevel, _playerLevel).Item1 ||
                                                 (pickPotions && (
                                                     x.ItemBaseName == "Full Rejuvenation Potion" ||
                                                     x.ItemBaseName == "Rejuvenation Potion"

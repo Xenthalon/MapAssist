@@ -97,14 +97,18 @@ namespace MapAssist.Automation
             _explorer.WorkerSupportsCancellation = true;
         }
 
-        public void Update(GameData gameData, AreaData areaData, List<PointOfInterest> pointsOfInterest, MapApi mapApi)
+        public void Update(GameData gameData, AreaData areaData, MapApi mapApi)
         {
             if (gameData != null && gameData.PlayerUnit.IsValidPointer && gameData.PlayerUnit.IsValidUnit)
             {
                 _gameData = gameData;
                 _currentArea = gameData.Area;
                 _areaData = areaData;
-                _pointsOfInterest = pointsOfInterest;
+
+                if (_areaData != null)
+                {
+                    _pointsOfInterest = _areaData.PointsOfInterest;
+                }
 
                 if (_gameData.MapSeed != _currentGameSeed && _gameData.MapSeed != _possiblyNewGameSeed)
                 {
@@ -155,7 +159,7 @@ namespace MapAssist.Automation
 
             if (_activeSpecialProfile != null)
             {
-                _activeSpecialProfile.Update(gameData, areaData, pointsOfInterest);
+                _activeSpecialProfile.Update(gameData, areaData, _pointsOfInterest);
 
                 if (!_goBotGo)
                 {

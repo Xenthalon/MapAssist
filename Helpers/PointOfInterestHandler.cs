@@ -1,28 +1,8 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using GameOverlay.Drawing;
+﻿using GameOverlay.Drawing;
 using MapAssist.Settings;
 using MapAssist.Types;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MapAssist.Helpers
 {
@@ -42,7 +22,6 @@ namespace MapAssist.Helpers
             [Area.RockyWaste] = Area.DryHills,
             [Area.DryHills] = Area.FarOasis,
             [Area.FarOasis] = Area.LostCity,
-            [Area.SpiderForest] = Area.GreatMarsh,
             [Area.FlayerJungle] = Area.LowerKurast,
             [Area.KurastBazaar] = Area.UpperKurast,
             [Area.UpperKurast] = Area.KurastCauseway,
@@ -60,7 +39,7 @@ namespace MapAssist.Helpers
             [Area.LostCity] = Area.ValleyOfSnakes,
             [Area.SpiderForest] = Area.SpiderCavern,
             [Area.FlayerJungle] = Area.FlayerDungeonLevel1,
-            [Area.KurastBazaar] = Area.RuinedTemple,
+            [Area.KurastBazaar] = Area.SewersLevel1Act3,
             [Area.CrystallinePassage] = Area.FrozenRiver,
         };
 
@@ -120,6 +99,35 @@ namespace MapAssist.Helpers
             GameObject.JungleShrine5,
         };
 
+        private static readonly HashSet<GameObject> Doors = new HashSet<GameObject>
+        {
+            GameObject.DoorCathedralLeft,
+            GameObject.DoorCathedralRight,
+            GameObject.DoorCourtyardLeft,
+            GameObject.DoorCourtyardRight,
+            GameObject.DoorGateLeft,
+            GameObject.DoorGateRight,
+            GameObject.DoorMonasteryDoubleRight,
+            GameObject.DoorWoodenLeft,
+            GameObject.DoorWoodenLeft2,
+            GameObject.DoorWoodenRight,
+            GameObject.IronGrateDoorLeft,
+            GameObject.IronGrateDoorRight,
+            GameObject.SlimeDoor1,
+            GameObject.SlimeDoor2,
+            GameObject.TombDoorLeft,
+            GameObject.TombDoorLeft2,
+            GameObject.TombDoorRight,
+            GameObject.TombDoorRight2,
+            GameObject.WoodenDoorLeft,
+            GameObject.WoodenDoorRight,
+            GameObject.WoodenGrateDoorLeft,
+            GameObject.WoodenGrateDoorRight,
+            GameObject.AndarielDoor,
+            GameObject.PenBreakableDoor,
+            GameObject.SecretDoor1
+        };
+
         public static void UpdateLocalizationNames()
         {
             QuestObjects = new Dictionary<GameObject, string>
@@ -161,25 +169,6 @@ namespace MapAssist.Helpers
 
         public static List<PointOfInterest> Get(MapApi mapApi, AreaData areaData, GameData gameData)
         {
-            var pointsOfInterest = GetArea(mapApi, areaData, gameData);
-
-            if (AreaExtensions.RequiresStitching(areaData.Area))
-            {
-                foreach (var adjacentArea in areaData.AdjacentAreas.Values.ToList())
-                {
-                    if (AreaExtensions.RequiresStitching(adjacentArea.Area))
-                    {
-                        var adjacentPoi = GetArea(mapApi, adjacentArea, gameData).Where(a => !pointsOfInterest.Any(b => a.Position.Subtract(b.Position).Length() < 5)).ToList(); // Prevent poi in an adjacent area from overlapping with poi in the current area
-                        pointsOfInterest.AddRange(adjacentPoi);
-                    }
-                }
-            }
-
-            return pointsOfInterest;
-        }
-
-        public static List<PointOfInterest> GetArea(MapApi mapApi, AreaData areaData, GameData gameData)
-        {
             var pointsOfInterest = new List<PointOfInterest>();
             var areaRenderDecided = new List<Area>();
 
@@ -188,197 +177,230 @@ namespace MapAssist.Helpers
             if (areaData.AdjacentLevels.Any())
             {
                 // Next Area Point of Interest
-                if (areaData.Area == Area.CanyonOfTheMagi)
+                switch (areaData.Area)
                 {
-                    // Work out which tomb is the right once.
-                    // Load the maps for all of the tombs, and check which one has the Orifice.
-                    // Declare that tomb as point of interest.
-                    Area[] tombs = new[]
-                    {
-                        Area.TalRashasTomb1, Area.TalRashasTomb2, Area.TalRashasTomb3, Area.TalRashasTomb4,
-                        Area.TalRashasTomb5, Area.TalRashasTomb6, Area.TalRashasTomb7
-                    };
-                    var realTomb = Area.None;
-                    Parallel.ForEach(tombs, tombArea =>
-                    {
-                        AreaData tombData = mapApi.GetMapData(tombArea);
-                        if (tombData.Objects.ContainsKey(GameObject.HoradricOrifice))
+                    case Area.CanyonOfTheMagi:
+                        // Work out which tomb is the right once.
+                        // Load the maps for all of the tombs, and check which one has the Orifice.
+                        // Declare that tomb as point of interest.
+                        Area[] tombs = new[]
                         {
-                            realTomb = tombArea;
-                        }
-                    });
+                            Area.TalRashasTomb1, Area.TalRashasTomb2, Area.TalRashasTomb3, Area.TalRashasTomb4,
+                            Area.TalRashasTomb5, Area.TalRashasTomb6, Area.TalRashasTomb7
+                        };
+                        var realTomb = tombs.FirstOrDefault(x => mapApi.GetMapData(x).Objects.ContainsKey(GameObject.HoradricOrifice));
 
-                    if (realTomb != Area.None && areaData.AdjacentLevels[realTomb].Exits.Any())
-                    {
+                        if (realTomb != Area.None && areaData.AdjacentLevels[realTomb].Exits.Any())
+                        {
+                            pointsOfInterest.Add(new PointOfInterest
+                            {
+                                Area = areaData.Area,
+                                NextArea = realTomb,
+                                Label = realTomb.MapLabel(gameData.Difficulty),
+                                Position = areaData.AdjacentLevels[realTomb].Exits[0],
+                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                Type = PoiType.NextArea
+                            });
+                            areaRenderDecided.Add(realTomb);
+                        }
+                        break;
+
+                    case Area.TamoeHighland:
+                        var monastery = areaData.AdjacentLevels.First(level => level.Key == Area.MonasteryGate).Value;
+
+                        var monasteryArea = mapApi.GetMapData(Area.MonasteryGate);
+                        var outerCloister = monasteryArea.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
+
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            NextArea = realTomb,
-                            Label = realTomb.MapLabel(gameData.Difficulty),
-                            Position = areaData.AdjacentLevels[realTomb].Exits[0],
+                            NextArea = Area.MonasteryGate,
+                            Label = Area.MonasteryGate.MapLabel(gameData.Difficulty),
+                            Position = new Point(outerCloister.Exits[0].X, monastery.Exits[0].Y),
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                             Type = PoiType.NextArea
                         });
-                        areaRenderDecided.Add(realTomb);
-                    }
-                }
-                else if (areaData.Area == Area.TamoeHighland)
-                {
-                    var monastery = areaData.AdjacentLevels.First(level => level.Key == Area.MonasteryGate).Value;
+                        areaRenderDecided.Add(Area.MonasteryGate);
+                        break;
 
-                    var monasteryArea = mapApi.GetMapData(Area.MonasteryGate);
-                    var outerCloister = monasteryArea.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
+                    case Area.OuterCloister:
+                        // Barracks Door is based on waypoint position
+                        var waypoint = areaData.Objects.First(obj => obj.Key == GameObject.WaypointPortal).Value.First();
+                        var poiPosition = new Point();
+                        switch (waypoint.X)
+                        {
+                            case 15129:
+                                // Waypoint = { X: 15129, Y: 4954 }
+                                // SE Door = { X: 15280, Y: 4940 }
+                                poiPosition = new Point(15280, 4940);
+                                break;
 
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        NextArea = Area.MonasteryGate,
-                        Label = Area.MonasteryGate.MapLabel(gameData.Difficulty),
-                        Position = new Point(outerCloister.Exits[0].X, monastery.Exits[0].Y),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                        Type = PoiType.NextArea
-                    });
-                    areaRenderDecided.Add(Area.MonasteryGate);
-                }
-                //------------------------------------------------------
-                // TODO: maybe we can get boss locations from MAServer?
-                else if (areaData.Area == Area.CatacombsLevel4)
-                {
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        Label = "",
-                        Position = new Point(22548, 9581),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
-                        Type = PoiType.AreaSpecificQuest
-                    });
-                }
-                else if (areaData.Area == Area.DuranceOfHateLevel3)
-                {
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        Label = "",
-                        Position = new Point(17565, 8070),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
-                        Type = PoiType.AreaSpecificQuest
-                    });
-                }
-                else if (areaData.Area == Area.NihlathaksTemple)
-                {
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        Label = "",
-                        Position = new Point(10058, 13234),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
-                        Type = PoiType.AreaSpecificQuest
-                    });
-                }
-                //------------------------------------------------------
-                else if (areaData.Area == Area.OuterCloister)
-                {
-                    // Barracks Door is based on waypoint position
-                    var waypoint = areaData.Objects.First(obj => obj.Key == GameObject.WaypointPortal).Value.First();
-                    switch (waypoint.X)
-                    {
-                        case 15129:
-                            // Waypoint = { X: 15129, Y: 4954 }
-                            // SE Door = { X: 15280, Y: 4940 }
-                            pointsOfInterest.Add(new PointOfInterest
-                            {
-                                Area = areaData.Area,
-                                NextArea = Area.Barracks,
-                                Label = Area.Barracks.MapLabel(gameData.Difficulty),
-                                Position = new Point(15280, 4940),
-                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                                Type = PoiType.NextArea
-                            });
-                            areaRenderDecided.Add(Area.OuterCloister);
-                            break;
+                            case 15154:
+                                // Waypoint = { X: 15154, Y: 4919 }
+                                // NE Door = { X: 15141, Y: 4802 }
+                                poiPosition = new Point(15141, 4802);
+                                break;
 
-                        case 15154:
-                            // Waypoint = { X: 15154, Y: 4919 }
-                            // NE Door = { X: 15141, Y: 4802 }
-                            pointsOfInterest.Add(new PointOfInterest
-                            {
-                                Area = areaData.Area,
-                                NextArea = Area.Barracks,
-                                Label = Area.Barracks.MapLabel(gameData.Difficulty),
-                                Position = new Point(15141, 4802),
-                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                                Type = PoiType.NextArea
-                            });
-                            areaRenderDecided.Add(Area.OuterCloister);
-                            break;
-
-                        case 15159:
-                            // Waypoint = { X: 15159, Y: 4934 }
-                            // NW Door = { X: 15002, Y: 4943 }
-                            pointsOfInterest.Add(new PointOfInterest
-                            {
-                                Area = areaData.Area,
-                                NextArea = Area.Barracks,
-                                Label = Area.Barracks.MapLabel(gameData.Difficulty),
-                                Position = new Point(15002, 4943),
-                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                                Type = PoiType.NextArea
-                            });
-                            areaRenderDecided.Add(Area.OuterCloister);
-                            break;
-                    }
-                }
-                else if (areaData.Area == Area.InnerCloister)
-                {
-                    // Cathedral door
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        NextArea = Area.Cathedral,
-                        Label = Area.Cathedral.MapLabel(gameData.Difficulty),
-                        Position = new Point(20053, 5000),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                        Type = PoiType.NextArea
-                    });
-                    areaRenderDecided.Add(Area.InnerCloister);
-                }
-                else if (AreaPreferredNextArea.TryGetValue(areaData.Area, out var nextArea))
-                {
-                    var nextLevel = areaData.AdjacentLevels[nextArea];
-                    if (nextLevel.Exits.Any())
-                    {
+                            case 15159:
+                                // Waypoint = { X: 15159, Y: 4934 }
+                                // NW Door = { X: 15002, Y: 4943 }
+                                poiPosition = new Point(15002, 4943);
+                                break;
+                        }
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            NextArea = nextArea,
-                            Label = nextArea.MapLabel(gameData.Difficulty),
-                            Position = nextLevel.Exits[0],
+                            NextArea = Area.Barracks,
+                            Label = Area.Barracks.MapLabel(gameData.Difficulty),
+                            Position = poiPosition,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
                             Type = PoiType.NextArea
                         });
-                        areaRenderDecided.Add(nextArea);
-                    }
-                }
-                else
-                {
-                    var maxAdjacentArea = areaData.AdjacentLevels.Keys.Max();
-                    if (maxAdjacentArea > areaData.Area)
-                    {
-                        var nextLevel = areaData.AdjacentLevels[maxAdjacentArea];
-                        if (nextLevel.Exits.Any())
+                        areaRenderDecided.Add(Area.OuterCloister);
+                        break;
+
+                    case Area.InnerCloister:
+                        // Cathedral door
+                        pointsOfInterest.Add(new PointOfInterest
                         {
-                            pointsOfInterest.Add(new PointOfInterest
+                            Area = areaData.Area,
+                            NextArea = Area.Cathedral,
+                            Label = Area.Cathedral.MapLabel(gameData.Difficulty),
+                            Position = new Point(20053, 5000),
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                            Type = PoiType.NextArea
+                        });
+                        areaRenderDecided.Add(Area.InnerCloister);
+                        break;
+
+                    //------------------------------------------------------
+                    // TODO: maybe we can get boss locations from MAServer?
+                    case Area.CatacombsLevel4:
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            Label = "",
+                            Position = new Point(22548, 9581),
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
+                            Type = PoiType.AreaSpecificQuest
+                        });
+                        break;
+                    //------------------------------------------------------
+
+                    case Area.SpiderForest:
+                        {
+                            if (areaData.AdjacentLevels.TryGetValue(Area.FlayerJungle, out var flayerJungleLevel))
                             {
-                                Area = areaData.Area,
-                                NextArea = maxAdjacentArea,
-                                Label = maxAdjacentArea.MapLabel(gameData.Difficulty),
-                                Position = nextLevel.Exits[0],
-                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
-                                Type = PoiType.NextArea
-                            });
-                            areaRenderDecided.Add(maxAdjacentArea);
+                                pointsOfInterest.Add(new PointOfInterest
+                                {
+                                    Area = areaData.Area,
+                                    NextArea = Area.FlayerJungle,
+                                    Label = Area.FlayerJungle.MapLabel(gameData.Difficulty),
+                                    Position = flayerJungleLevel.Exits[0],
+                                    RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                    Type = PoiType.NextArea
+                                });
+                                areaRenderDecided.Add(Area.FlayerJungle);
+                            }
+                            else if (areaData.AdjacentLevels.TryGetValue(Area.GreatMarsh, out var greatMarshLevel))
+                            {
+                                pointsOfInterest.Add(new PointOfInterest
+                                {
+                                    Area = areaData.Area,
+                                    NextArea = Area.GreatMarsh,
+                                    Label = Area.GreatMarsh.MapLabel(gameData.Difficulty),
+                                    Position = greatMarshLevel.Exits[0],
+                                    RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                    Type = PoiType.NextArea
+                                });
+                                areaRenderDecided.Add(Area.GreatMarsh);
+                            }
                         }
-                    }
+                        break;
+
+                    case Area.GreatMarsh:
+                        {
+                            if (areaData.AdjacentLevels.TryGetValue(Area.FlayerJungle, out var flayerJungleLevel))
+                            {
+                                pointsOfInterest.Add(new PointOfInterest
+                                {
+                                    Area = areaData.Area,
+                                    NextArea = Area.FlayerJungle,
+                                    Label = Area.FlayerJungle.MapLabel(gameData.Difficulty),
+                                    Position = flayerJungleLevel.Exits[0],
+                                    RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                    Type = PoiType.NextArea
+                                });
+                                areaRenderDecided.Add(Area.FlayerJungle);
+                            }
+                        }
+                        break;
+
+                    //------------------------------------------------------
+                    // TODO: maybe we can get boss locations from MAServer?
+                    case Area.DuranceOfHateLevel3:
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            Label = "",
+                            Position = new Point(17565, 8070),
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
+                            Type = PoiType.AreaSpecificQuest
+                        });
+                        break;
+
+                    case Area.NihlathaksTemple:
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            Label = "",
+                            Position = new Point(10058, 13234),
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
+                            Type = PoiType.AreaSpecificQuest
+                        });
+                        break;
+                    //------------------------------------------------------
+
+                    default:
+                        if (AreaPreferredNextArea.TryGetValue(areaData.Area, out var nextArea))
+                        {
+                            var nextLevel = areaData.AdjacentLevels[nextArea];
+                            if (nextLevel.Exits.Any())
+                            {
+                                pointsOfInterest.Add(new PointOfInterest
+                                {
+                                    Area = areaData.Area,
+                                    NextArea = nextArea,
+                                    Label = nextArea.MapLabel(gameData.Difficulty),
+                                    Position = nextLevel.Exits[0],
+                                    RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                    Type = PoiType.NextArea
+                                });
+                                areaRenderDecided.Add(nextArea);
+                            }
+                        }
+                        else
+                        {
+                            var maxAdjacentArea = areaData.AdjacentLevels.Keys.Max();
+                            if (maxAdjacentArea > areaData.Area)
+                            {
+                                var nextLevel = areaData.AdjacentLevels[maxAdjacentArea];
+                                if (nextLevel.Exits.Any())
+                                {
+                                    pointsOfInterest.Add(new PointOfInterest
+                                    {
+                                        Area = areaData.Area,
+                                        NextArea = maxAdjacentArea,
+                                        Label = maxAdjacentArea.MapLabel(gameData.Difficulty),
+                                        Position = nextLevel.Exits[0],
+                                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.NextArea,
+                                        Type = PoiType.NextArea
+                                    });
+                                    areaRenderDecided.Add(maxAdjacentArea);
+                                }
+                            }
+                        }
+                        break;
                 }
 
                 // Quest Area Point of Interest
@@ -401,60 +423,78 @@ namespace MapAssist.Helpers
                 }
 
                 // Previous Area Point of Interest
-                if (areaData.Area == Area.MonasteryGate)
+                switch (areaData.Area)
                 {
-                    var outerCloister = areaData.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
-                    var tamoe = areaData.AdjacentLevels.First(level => level.Key == Area.TamoeHighland).Value;
+                    case Area.MonasteryGate:
+                        var outerCloister = areaData.AdjacentLevels.First(level => level.Key == Area.OuterCloister).Value;
+                        var tamoe = areaData.AdjacentLevels.First(level => level.Key == Area.TamoeHighland).Value;
 
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        NextArea = tamoe.Area,
-                        Label = tamoe.Area.MapLabel(gameData.Difficulty),
-                        Position = new Point(outerCloister.Exits[0].X, tamoe.Exits[0].Y),
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
-                        Type = PoiType.PreviousArea
-                    });
-                }
-                else if (areaData.Area == Area.Barracks)
-                {
-                    var outerCloisterArea = mapApi.GetMapData(Area.OuterCloister);
-                    var barracksAreaData = GetArea(mapApi, outerCloisterArea, gameData);
-                    var barracks = barracksAreaData.FirstOrDefault(poi => poi.Type == PoiType.NextArea);
-
-                    pointsOfInterest.Add(new PointOfInterest
-                    {
-                        Area = areaData.Area,
-                        NextArea = Area.OuterCloister,
-                        Label = Area.OuterCloister.MapLabel(gameData.Difficulty),
-                        Position = barracks.Position,
-                        RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
-                        Type = PoiType.PreviousArea
-                    });
-                }
-                else
-                {
-                    foreach (var level in areaData.AdjacentLevels.Values)
-                    {
-                        // Already made render decision for this.
-                        if (areaRenderDecided.Contains(level.Area))
+                        pointsOfInterest.Add(new PointOfInterest
                         {
-                            continue;
-                        }
+                            Area = areaData.Area,
+                            NextArea = tamoe.Area,
+                            Label = tamoe.Area.MapLabel(gameData.Difficulty),
+                            Position = new Point(outerCloister.Exits[0].X, tamoe.Exits[0].Y),
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
+                            Type = PoiType.PreviousArea
+                        });
+                        break;
 
-                        foreach (var position in level.Exits)
+                    case Area.Barracks:
+                        var outerCloisterArea = mapApi.GetMapData(Area.OuterCloister);
+                        var barracksAreaData = Get(mapApi, outerCloisterArea, gameData);
+                        var barracks = barracksAreaData.FirstOrDefault(poi => poi.Type == PoiType.NextArea);
+
+                        pointsOfInterest.Add(new PointOfInterest
                         {
-                            pointsOfInterest.Add(new PointOfInterest
+                            Area = areaData.Area,
+                            NextArea = Area.OuterCloister,
+                            Label = Area.OuterCloister.MapLabel(gameData.Difficulty),
+                            Position = barracks.Position,
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
+                            Type = PoiType.PreviousArea
+                        });
+                        break;
+
+                    case Area.Cathedral:
+                        var innerCloisterArea = mapApi.GetMapData(Area.InnerCloister);
+                        var cathedralAreaData = Get(mapApi, innerCloisterArea, gameData);
+                        var cathedral = cathedralAreaData.FirstOrDefault(poi => poi.Type == PoiType.NextArea);
+
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            NextArea = Area.InnerCloister,
+                            Label = Area.InnerCloister.MapLabel(gameData.Difficulty),
+                            Position = cathedral.Position,
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
+                            Type = PoiType.PreviousArea
+                        });
+                        break;
+
+                    default:
+                        foreach (var level in areaData.AdjacentLevels.Values)
+                        {
+                            // Already made render decision for this.
+                            if (areaRenderDecided.Contains(level.Area))
                             {
-                                Area = areaData.Area,
-                                NextArea = level.Area,
-                                Label = level.Area.MapLabel(gameData.Difficulty),
-                                Position = position,
-                                RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
-                                Type = PoiType.PreviousArea
-                            });
+                                continue;
+                            }
+
+                            foreach (var position in level.Exits)
+                            {
+                                pointsOfInterest.Add(new PointOfInterest
+                                {
+                                    Area = areaData.Area,
+                                    NextArea = level.Area,
+                                    Label = level.Area.MapLabel(gameData.Difficulty),
+                                    Position = position,
+                                    RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.PreviousArea,
+                                    Type = PoiType.PreviousArea
+                                });
+                            }
                         }
-                    }
+                        break;
                 }
             }
 
@@ -466,22 +506,6 @@ namespace MapAssist.Helpers
                 if (!points.Any())
                 {
                     continue;
-                }
-
-                // Area-specific quest objects
-                if (AreaSpecificQuestObjects.ContainsKey(areaData.Area))
-                {
-                    if (AreaSpecificQuestObjects[areaData.Area].ContainsKey(obj))
-                    {
-                        pointsOfInterest.Add(new PointOfInterest
-                        {
-                            Area = areaData.Area,
-                            Label = AreaSpecificQuestObjects[areaData.Area][obj],
-                            Position = points[0],
-                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Quest,
-                            Type = PoiType.AreaSpecificQuest
-                        });
-                    }
                 }
 
                 // Area-specific quest objects
@@ -553,7 +577,7 @@ namespace MapAssist.Helpers
                         pointsOfInterest.Add(new PointOfInterest
                         {
                             Area = areaData.Area,
-                            Label = obj.ToString(),
+                            Label = "",
                             Position = point,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Shrine,
                             Type = PoiType.Shrine
@@ -590,6 +614,20 @@ namespace MapAssist.Helpers
                         });
                     }
                 }
+                else if (Doors.Contains(obj))
+                {
+                    foreach (var point in points)
+                    {
+                        pointsOfInterest.Add(new PointOfInterest
+                        {
+                            Area = areaData.Area,
+                            Label = obj.ToString(),
+                            Position = point,
+                            RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Door,
+                            Type = PoiType.Door
+                        });
+                    }
+                }
             }
 
             switch (areaData.Area)
@@ -608,7 +646,7 @@ namespace MapAssist.Helpers
                     break;
             }
 
-            return pointsOfInterest;
+            return pointsOfInterest.Where(poi => poi.Area == areaData.Area).ToList();
         }
     }
 }

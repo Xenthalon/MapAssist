@@ -47,10 +47,14 @@ namespace MapAssist
             _orchestrator = new Orchestrator(config, _buffBoy, _chicken, _combat, _input, _inventory, _movement, _menuMan, _pathing, _pickit, _townManager);
         }
 
-        public void Update(GameData gameData, List<PointOfInterest> pointsOfInterest, AreaData areaData, MapApi mapApi, Rectangle windowRect)
+        public void Update(GameData gameData, AreaData areaData, MapApi mapApi, Rectangle windowRect)
         {
             _currentGameData = gameData;
-            _pointsOfInterests = pointsOfInterest;
+
+            if (areaData != null)
+            {
+                _pointsOfInterests = areaData.PointsOfInterest;
+            }
 
             _inventory.Update(gameData);
             _input.Update(gameData, windowRect);
@@ -62,7 +66,7 @@ namespace MapAssist
             _movement.Update(gameData);
             _pickit.Update(gameData);
             _townManager.Update(gameData, areaData);
-            _orchestrator.Update(gameData, areaData, pointsOfInterest, mapApi);
+            _orchestrator.Update(gameData, areaData, mapApi);
         }
 
         public void Reset()
