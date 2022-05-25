@@ -99,8 +99,6 @@ namespace MapAssist
                     {
                         UpdateLocation();
 
-                        _automation.Update(_gameData, _pointsOfInterests, _areaData, mapApi, WindowRect());
-
                         var errorLoadingAreaData = _compositor._areaData == null;
 
                         var overlayHidden = !_show ||
@@ -146,7 +144,12 @@ namespace MapAssist
                             ? nextAnchor.Add(0, GameInfoPadding())
                             : GameInfoAnchor(MapAssistConfiguration.Loaded.ItemLog.Position);
                         _compositor.DrawItemLog(gfx, itemLogAnchor);
-                        _compositor.DrawESP(gfx, _gameData, WindowRect(), _automation.Pathing, _automation.Movement);
+
+                        if (!errorLoadingAreaData && _gameData.Area != Area.None)
+                        {
+                            _automation.Update(_gameData, _pointsOfInterests, _areaData, mapApi, WindowRect());
+                            _compositor.DrawESP(gfx, _gameData, WindowRect(), _automation.Pathing, _automation.Movement);
+                        }
                     }
                     else if (GameManager.MainWindowHandle != IntPtr.Zero && !InGame())
                     {

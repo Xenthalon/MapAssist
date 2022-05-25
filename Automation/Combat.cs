@@ -490,6 +490,11 @@ namespace MapAssist.Automation
                         CombatSkill skillToUse = COMBAT_SKILLS.Where(x => x.IsAoe && Now - x.LastUsage > x.Cooldown).First();
                         System.Threading.Thread.Sleep(SLEEP_SHORT);
                         _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
+                        // casting multiple times, just to be sure. maybe verify cast by projectiles later?
+                        System.Threading.Thread.Sleep(SLEEP_SHORT);
+                        _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
+                        System.Threading.Thread.Sleep(SLEEP_SHORT);
+                        _input.DoInputAtWorldPosition(skillToUse.Key, castLocation);
                         skillToUse.LastUsage = Now;
                         System.Threading.Thread.Sleep(SLEEP_SHORT);
                     }

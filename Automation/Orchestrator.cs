@@ -18,6 +18,8 @@ namespace MapAssist.Automation
         private string GAMBLE_ITEM;
         private int GAMBLE_STOP_AT;
         private int GAME_CHANGE_SAFETY_LIMIT;
+        private int CHANGE_AREA_SLEEP;
+        private int CHANGE_ACT_SLEEP;
         private bool AUTO_START;
 
         private static List<RunProfile> RUN_PROFILES = new List<RunProfile>();
@@ -66,6 +68,8 @@ namespace MapAssist.Automation
             TownManager townManager)
         {
             MAX_RETRIES = (short)config.Settings.MaxRetries;
+            CHANGE_AREA_SLEEP = config.Settings.ChangeAreaSleep;
+            CHANGE_ACT_SLEEP = config.Settings.ChangeActSleep;
             GAMBLE_ITEM = config.Character.GambleItem;
             GAMBLE_STOP_AT = config.Character.GambleGoldStop;
             GAME_CHANGE_SAFETY_LIMIT = config.Settings.GameChangeVerificationAttempts;
@@ -279,11 +283,11 @@ namespace MapAssist.Automation
                     // wait for load
                     if (isActChange)
                     {
-                        System.Threading.Thread.Sleep(5000);
+                        System.Threading.Thread.Sleep(CHANGE_ACT_SLEEP);
                     }
                     else
                     {
-                        System.Threading.Thread.Sleep(1500);
+                        System.Threading.Thread.Sleep(CHANGE_AREA_SLEEP);
                     }
                 }
                 else

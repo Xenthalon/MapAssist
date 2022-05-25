@@ -18,7 +18,29 @@ namespace MapAssist.Helpers
 
         public (GameData, AreaData, List<PointOfInterest>, MapApi, bool) Get()
         {
-            var gameData = GameMemory.GetGameData();
+            GameData gameData = null;
+
+            for (var i = 0; i < 50; i++)
+            {
+                try
+                {
+                    gameData = GameMemory.GetGameData();
+                    break;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message != "Level id out of bounds.")
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(100);
+                        _log.Debug($"Level id out of bounds {i}/50");
+                    }
+                }
+            }
+
             var changed = false;
 
             if (gameData != null)
