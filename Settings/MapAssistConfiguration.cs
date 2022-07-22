@@ -4,6 +4,7 @@ using MapAssist.Settings;
 using MapAssist.Types;
 using System.Drawing;
 using YamlDotNet.Serialization;
+using Drawing = GameOverlay.Drawing;
 
 namespace MapAssist.Settings
 {
@@ -14,9 +15,10 @@ namespace MapAssist.Settings
 
         public static void Load()
         {
-            Default = ConfigurationParser<MapAssistConfiguration>.ParseConfigurationMain(Properties.Resources.Config);
-            Loaded = ConfigurationParser<MapAssistConfiguration>.ParseConfigurationMain(Properties.Resources.Config, $"./Config.yaml");
-            Localization.LoadLocalizationFile();
+            var configParser = new ConfigurationParser<MapAssistConfiguration>();
+            Default = configParser.ParseConfigurationMain(Properties.Resources.Config);
+            Loaded = configParser.ParseConfigurationMain(Properties.Resources.Config, $"./Config.yaml");
+            Localization.LoadLocalizationData();
             PointOfInterestHandler.UpdateLocalizationNames();
             QualityLevels.LoadQualityLevelsFile();
         }
@@ -34,6 +36,7 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "AuthorizedWindowTitles", ApplyNamingConventions = false)]
         public string[] AuthorizedWindowTitles { get; set; } = new string[] { };
+
         [YamlMember(Alias = "RenderingConfiguration", ApplyNamingConventions = false)]
         public RenderingConfiguration RenderingConfiguration { get; set; }
 
@@ -48,6 +51,9 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "GameInfo", ApplyNamingConventions = false)]
         public GameInfoConfiguration GameInfo { get; set; }
+
+        [YamlMember(Alias = "Portraits", ApplyNamingConventions = false)]
+        public PortraitsConfiguration Portraits { get; set; }
 
         [YamlMember(Alias = "D2Path", ApplyNamingConventions = false)]
         public string D2LoDPath { get; set; }
@@ -66,6 +72,9 @@ namespace MapAssist.Settings
 
         [YamlMember(Alias = "Border", ApplyNamingConventions = false)]
         public Color? Border { get; set; }
+
+        [YamlMember(Alias = "ExpRange", ApplyNamingConventions = false)]
+        public Color? ExpRange { get; set; }
     }
 
     public class MapConfiguration
@@ -118,11 +127,26 @@ namespace MapAssist.Settings
         [YamlMember(Alias = "OtherMercs", ApplyNamingConventions = false)]
         public PointOfInterestRendering OtherMercs { get; set; }
 
+        [YamlMember(Alias = "MySummons", ApplyNamingConventions = false)]
+        public PointOfInterestRendering MySummons { get; set; }
+
+        [YamlMember(Alias = "OtherSummons", ApplyNamingConventions = false)]
+        public PointOfInterestRendering OtherSummons { get; set; }
+
         [YamlMember(Alias = "Corpse", ApplyNamingConventions = false)]
         public PointOfInterestRendering Corpse { get; set; }
 
-        [YamlMember(Alias = "Portal", ApplyNamingConventions = false)]
-        public PortalRendering Portal { get; set; }
+        [YamlMember(Alias = "MyPortal", ApplyNamingConventions = false)]
+        public PortalRendering MyPortal { get; set; }
+
+        [YamlMember(Alias = "PartyPortal", ApplyNamingConventions = false)]
+        public PortalRendering PartyPortal { get; set; }
+
+        [YamlMember(Alias = "NonPartyPortal", ApplyNamingConventions = false)]
+        public PortalRendering NonPartyPortal { get; set; }
+
+        [YamlMember(Alias = "GamePortal", ApplyNamingConventions = false)]
+        public PortalRendering GamePortal { get; set; }
 
         [YamlMember(Alias = "SuperChest", ApplyNamingConventions = false)]
         public PointOfInterestRendering SuperChest { get; set; }
@@ -216,6 +240,7 @@ public class RenderingConfiguration
     public int Size { get; set; }
 
     internal int InitialSize { get; set; }
+    internal Drawing.Point Offset { get; set; } = new Drawing.Point(0, 0);
 
     [YamlMember(Alias = "ZoomLevel", ApplyNamingConventions = false)]
     public double ZoomLevel { get; set; }
@@ -264,9 +289,6 @@ public class RenderingConfiguration
 
     [YamlMember(Alias = "ShowResistances", ApplyNamingConventions = false)]
     public bool ShowResistances { get; set; }
-
-    [YamlMember(Alias = "LinesMode", ApplyNamingConventions = false)]
-    public MapLinesMode LinesMode { get; set; }
 }
 
 public class HotkeyConfiguration
@@ -277,8 +299,8 @@ public class HotkeyConfiguration
     [YamlMember(Alias = "HideMapKey", ApplyNamingConventions = false)]
     public string HideMapKey { get; set; }
 
-    [YamlMember(Alias = "AreaLevelKey", ApplyNamingConventions = false)]
-    public string AreaLevelKey { get; set; }
+    [YamlMember(Alias = "MapPositionsKey", ApplyNamingConventions = false)]
+    public string MapPositionsKey { get; set; }
 
     [YamlMember(Alias = "ZoomInKey", ApplyNamingConventions = false)]
     public string ZoomInKey { get; set; }
@@ -288,6 +310,9 @@ public class HotkeyConfiguration
 
     [YamlMember(Alias = "ExportItemsKey", ApplyNamingConventions = false)]
     public string ExportItemsKey { get; set; }
+
+    [YamlMember(Alias = "ToggleConfigKey", ApplyNamingConventions = false)]
+    public string ToggleConfigKey { get; set; }
 }
 
 public class GameInfoConfiguration
@@ -387,4 +412,40 @@ public class ItemLogConfiguration
 
     [YamlMember(Alias = "CraftedColor", ApplyNamingConventions = false)]
     public Color CraftedColor { get; set; }
+}
+
+public class PortraitsConfiguration
+{
+    [YamlMember(Alias = "ShowArea", ApplyNamingConventions = false)]
+    public bool ShowArea { get; set; }
+
+    [YamlMember(Alias = "ShowAreaLevel", ApplyNamingConventions = false)]
+    public bool ShowAreaLevel { get; set; }
+
+    [YamlMember(Alias = "ShowPlayerLevel", ApplyNamingConventions = false)]
+    public bool ShowPlayerLevel { get; set; }
+
+    [YamlMember(Alias = "Area", ApplyNamingConventions = false)]
+    public PortraitsRendering Area { get; set; }
+
+    [YamlMember(Alias = "PlayerLevel", ApplyNamingConventions = false)]
+    public PortraitsRendering PlayerLevel { get; set; }
+}
+
+public class PortraitsRendering
+{
+    [YamlMember(Alias = "Font", ApplyNamingConventions = false)]
+    public string Font { get; set; }
+
+    [YamlMember(Alias = "FontSize", ApplyNamingConventions = false)]
+    public double FontSize { get; set; }
+
+    [YamlMember(Alias = "Opacity", ApplyNamingConventions = false)]
+    public float Opacity { get; set; }
+
+    [YamlMember(Alias = "TextColor", ApplyNamingConventions = false)]
+    public Color TextColor { get; set; }
+
+    [YamlMember(Alias = "TextShadow", ApplyNamingConventions = false)]
+    public bool TextShadow { get; set; }
 }

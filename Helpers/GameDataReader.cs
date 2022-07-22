@@ -10,6 +10,7 @@ namespace MapAssist.Helpers
         private volatile GameData _gameData;
         private AreaData _areaData;
         private MapApi _mapApi;
+        private Locale _language;
 
         public (GameData, AreaData, bool) Get()
         {
@@ -20,11 +21,22 @@ namespace MapAssist.Helpers
             {
                 if (gameData.HasGameChanged(_gameData))
                 {
-                    _log.Info($"Game changed to {gameData.Difficulty} with {gameData.MapSeed} seed");
+                    if (gameData.MapSeed == 0 && !gameData.MapSeedReady)
+                    {
+                        _log.Info($"Brute forcing first map seed");
+
+                        changed = true;
+                        _areaData = null;
+                    }
+                    else
+                    {
+                        _log.Info($"Game changed to {gameData.Difficulty} with {gameData.MapSeed} seed");
+                    }
+
                     _mapApi = new MapApi(gameData);
                 }
 
-                if (gameData.HasMapChanged(_gameData) && gameData.Area != Area.None)
+                if (gameData.HasMapChanged(_gameData) && gameData.MapSeed > 0 && gameData.Area != Area.None)
                 {
                     _log.Info($"Area changed to {gameData.Area}");
                     _areaData = _mapApi.GetMapData(gameData.Area);
@@ -36,10 +48,26 @@ namespace MapAssist.Helpers
                     else if (_areaData.PointsOfInterest == null)
                     {
                         _areaData.PointsOfInterest = PointOfInterestHandler.Get(_mapApi, _areaData, gameData);
+                        _language = MapAssistConfiguration.Loaded.LanguageCode;
                         _log.Info($"Found {_areaData.PointsOfInterest.Count} points of interest");
                     }
 
                     changed = true;
+                }
+
+                if (_language != MapAssistConfiguration.Loaded.LanguageCode)
+                {
+                    var areaDatas = new[] { _areaData }.Concat(_areaData.AdjacentAreas.Values).ToArray();
+
+                    foreach (var areaData in areaDatas)
+                    {
+                        if (_areaData.PointsOfInterest != null)
+                        {
+                            areaData.PointsOfInterest = PointOfInterestHandler.Get(_mapApi, areaData, gameData);
+                        }
+                    }
+
+                    _language = MapAssistConfiguration.Loaded.LanguageCode;
                 }
             }
 
@@ -64,14 +92,14 @@ namespace MapAssist.Helpers
 
                     if (existingPoint != null)
                     {
-                        existingPoint.Label = Shrine.ShrineDisplayName(gameObject);
+                        existingPoint.Label = gameObject.Name();
                     }
                     else
                     {
                         _areaData.PointsOfInterest.Add(new PointOfInterest()
                         {
                             Area = _areaData.Area,
-                            Label = Shrine.ShrineDisplayName(gameObject),
+                            Label = gameObject.Name(),
                             Position = gameObject.Position,
                             RenderingSettings = MapAssistConfiguration.Loaded.MapConfiguration.Shrine,
                             Type = PoiType.Shrine

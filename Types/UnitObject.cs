@@ -41,13 +41,17 @@ namespace MapAssist.Types
             }
         }
 
+        public string ObjectType => ObjectText.ObjectType;
+
         public bool IsWaypoint => GameObject.IsWaypoint();
 
         public bool IsShrine => UnitType == UnitType.Object && ObjectData.pShrineTxt != IntPtr.Zero && ObjectData.InteractType <= (byte)ShrineType.Poison;
 
-        public bool IsWell => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && ObjectText.ObjectType == "Well";
+        public bool IsWell => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && ObjectType == "Well";
 
         public bool IsChest => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && Struct.Mode == 0 && Chest.NormalChests.Contains(GameObject);
+
+        public bool IsArmorWeapRack => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && Struct.Mode == 0 && Chest.ArmorWeapRacks.Contains(GameObject);
 
         public override string HashString => GameObject + "/" + Position.X + "/" + Position.Y;
     }

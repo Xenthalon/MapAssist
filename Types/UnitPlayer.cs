@@ -12,9 +12,9 @@ namespace MapAssist.Types
         public string Name { get; private set; }
         public Act Act { get; private set; }
         public Skills Skills { get; private set; }
-        public bool InParty { get; private set; }
-        public bool IsHostile { get; private set; }
         public RosterEntry RosterEntry { get; private set; }
+        public ulong InitSeedHash { get; private set; }
+        public uint EndSeedHash { get; private set; }
 
         public UnitPlayer(IntPtr ptrUnit) : base(ptrUnit)
         {
@@ -31,6 +31,8 @@ namespace MapAssist.Types
                     //Inventory = processContext.Read<Inventory>(Struct.ptrInventory);
                     Skills = new Skills(Struct.pSkills);
                     StateList = GetStateList();
+                    InitSeedHash = Act.InitSeedHash;
+                    EndSeedHash = Act.EndSeedHash;
                 }
 
                 return this;
@@ -44,25 +46,6 @@ namespace MapAssist.Types
             if (rosterData.EntriesByUnitId.TryGetValue(UnitId, out var rosterEntry))
             {
                 RosterEntry = rosterEntry;
-            }
-
-            return this;
-        }
-
-        public UnitPlayer UpdateParties(RosterEntry player)
-        {
-            if (player != null)
-            {
-                if (player.PartyID != ushort.MaxValue && PartyID == player.PartyID)
-                {
-                    InParty = true;
-                    IsHostile = false;
-                }
-                else
-                {
-                    InParty = false;
-                    IsHostile = IsHostileTo(player);
-                }
             }
 
             return this;
@@ -95,37 +78,8 @@ namespace MapAssist.Types
             }
         }
 
-        private ushort PartyID => RosterEntry != null ? RosterEntry.PartyID : ushort.MaxValue;
-
-        private bool IsHostileTo(RosterEntry otherUnit)
-        {
-            if (UnitId == otherUnit.UnitId)
-            {
-                return false;
-            }
-
-            if (RosterEntry != null)
-            {
-                using (var processContext = GameManager.GetProcessContext())
-                {
-                    var hostileInfo = RosterEntry.HostileInfo;
-
-                    while (true)
-                    {
-                        if (hostileInfo.UnitId == otherUnit.UnitId)
-                        {
-                            return hostileInfo.HostileFlag > 0;
-                        }
-
-                        if (hostileInfo.NextHostileInfo == IntPtr.Zero) break;
-                        hostileInfo = processContext.Read<HostileInfo>(hostileInfo.NextHostileInfo);
-                    }
-                }
-            }
-
-            return false;
-        }
-
+        public UnitItem[] WearingItems { get; set; } = new UnitItem[] { };
+        public bool IsActiveInfinity => WearingItems.Any(item => item.IsRuneWord && item.Prefixes[0] == 20566 && (item.ItemData.ItemFlags & ItemFlags.IFLAG_SWITCHOUT) == 0); // When joining a game IFLAG_SWITCHIN/IFLAG_SWITCHOUT isn't set, so need to check whether IFLAG_SWITCHOUT doesn't exist
         public UnitItem[][] BeltItems { get; set; } = new UnitItem[][] { };
         public int BeltSize => BeltItems.Length > 0 ? BeltItems[0].Length : 0;
         public float Life => Stats.TryGetValue(Types.Stats.Stat.Life, out var val) && Types.Stats.StatShifts.TryGetValue(Types.Stats.Stat.Life, out var shift) ? val >> shift : 0;

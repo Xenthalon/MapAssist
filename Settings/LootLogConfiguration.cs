@@ -15,7 +15,10 @@ namespace MapAssist.Settings
 
         public static void Load()
         {
-            Filters = ConfigurationParser<Dictionary<Item, List<ItemFilter>>>.ParseConfigurationFile($"./{MapAssistConfiguration.Loaded.ItemLog.FilterFileName}");
+            var configParser = new ConfigurationParser<Dictionary<Item, List<ItemFilter>>>();
+            Filters = configParser.ParseConfigurationFile($"./{MapAssistConfiguration.Loaded.ItemLog.FilterFileName}");
+
+            _log.Info($"Parsed {Filters.Count()} item filter entries in {MapAssistConfiguration.Loaded.ItemLog.FilterFileName}");
 
             _log.Info($"Parsed {Filters.Count()} item filter entries in {MapAssistConfiguration.Loaded.ItemLog.FilterFileName}");
 
@@ -70,6 +73,10 @@ namespace MapAssist.Settings
 
         public ItemTier[] Tiers { get; set; }
         public bool PlaySoundOnDrop { get; set; } = true;
+        public bool CheckVendor { get; set; } = true;
+        public bool ShowInLog { get; set; } = true;
+        public string SoundFile { get; set; }
+        public PointOfInterestRendering Rendering { get; set; }
         public ItemQuality[] Qualities { get; set; }
         public int[] Sockets { get; set; }
         public bool? Ethereal { get; set; }
@@ -260,7 +267,7 @@ namespace MapAssist.Settings
         {
             foreach (var property in GetType().GetProperties())
             {
-                if (property.Name == "Defense") continue;
+                if (SkipPropsForUnidItemCheck.Contains(property.Name)) continue;
 
                 var propType = property.PropertyType;
                 if (propType == typeof(object)) continue;
@@ -279,5 +286,18 @@ namespace MapAssist.Settings
 
             return true;
         }
+
+        private List<string> SkipPropsForUnidItemCheck = new List<string>()
+        {
+            "Defense",
+            "MinDamage",
+            "MaxDamage",
+            "MinAreaLevel",
+            "MaxAreaLevel",
+            "MinPlayerLevel",
+            "MaxPlayerLevel",
+            "MinQualityLevel",
+            "MaxQualityLevel"
+        };
     }
 }

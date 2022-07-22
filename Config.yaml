@@ -2,10 +2,11 @@
 HotkeyConfiguration:
   ToggleKey: '|'
   HideMapKey: ''
-  AreaLevelKey: '['
+  MapPositionsKey: ''
   ZoomInKey: Num +
   ZoomOutKey: Num -
   ExportItemsKey: F9
+  ToggleConfigKey: F12
 HiddenAreas:
 - Forgotten Tower
 AuthorizedWindowTitles: []
@@ -35,7 +36,6 @@ RenderingConfiguration:
   ShowExpProgress: true
   ShowPotionBelt: true
   ShowResistances: false
-  LinesMode: All
 MapConfiguration:
   SuperUniqueMonster:
     IconOutlineColor: Yellow
@@ -151,6 +151,16 @@ MapConfiguration:
     IconShape: Cross
     IconSize: 6
     IconThickness: 1
+  MySummons:
+    IconOutlineColor: 77, 120, 124
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 0
+  OtherSummons:
+    IconOutlineColor: 81, 167, 60
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 0
   Corpse:
     IconOutlineColor: Magenta
     IconShape: Cross
@@ -163,12 +173,39 @@ MapConfiguration:
     LabelFontSize: 14
     LabelFont: Formal 436
     LabelTextShadow: true
-  Portal:
+  MyPortal:
     IconOutlineColor: Yellow
     IconShape: Portal
     IconSize: 3
     IconThickness: 2
     LabelColor: Yellow
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  PartyPortal:
+    IconOutlineColor: Yellow
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: Yellow
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  NonPartyPortal:
+    IconOutlineColor: Orange
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: Orange
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  GamePortal:
+    IconOutlineColor: 225, 30, 30
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: 225, 30, 30
     LabelFontSize: 14
     LabelFont: Formal 436
     LabelTextShadow: true
@@ -268,7 +305,7 @@ ItemLog:
   PlaySoundOnDrop: true
   ShowDistanceToItem: true
   ShowDirectionToItem: true
-  SoundFile: ''
+  SoundFile: 'Ching.wav'
   SoundVolume: 100
   DisplayForSeconds: 45
   LabelFont: Exocet Blizzard Mixed Caps
@@ -294,6 +331,22 @@ GameInfo:
   LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 16
   LabelTextShadow: true
+Portraits:
+  ShowArea: true
+  ShowAreaLevel: false
+  ShowPlayerLevel: true
+  Area:
+    Font: Formal 436
+    FontSize: 10
+    Opacity: 0.8
+    TextColor: 185, 126, 0
+    TextShadow: true
+  PlayerLevel:
+    Font: Exocet Blizzard Mixed Caps
+    FontSize: 12
+    Opacity: 0.7
+    TextColor: 196, 196, 196
+    TextShadow: true
 D2Path: ''
 LanguageCode: enUS
 DPIAware: false

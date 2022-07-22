@@ -1,6 +1,7 @@
 ﻿using MapAssist.Settings;
 using MapAssist.Structs;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -15,24 +16,25 @@ namespace MapAssist.Helpers
         private static IntPtr _winHook;
         private static int _foregroundProcessId = 0;
 
-        private static IntPtr _lastGameHwnd = IntPtr.Zero;
-        private static Process _lastGameProcess;
-        private static int _lastGameProcessId = 0;
-        private static ProcessContext _processContext;
+        public static IntPtr MainWindowHandle { get; private set; } = IntPtr.Zero;
+        private static Process LastGameProcess { get; set; }
+        private static int LastGameProcessId { get; set; }
+        public static DateTime LastGameProcessForegroundTime { get; private set; } = DateTime.MinValue;
+        private static ProcessContext ProcessContext { get; set; }
+        public static bool IsGameInForeground { get => LastGameProcessId == _foregroundProcessId; }
 
         public delegate void StatusUpdateHandler(object sender, EventArgs e);
 
         public static event StatusUpdateHandler OnGameAccessDenied;
 
-        private static IntPtr _UnitHashTableOffset;
-        private static IntPtr _ExpansionCheckOffset;
-        private static IntPtr _GameNameOffset;
-        private static IntPtr _MenuDataOffset;
-        private static IntPtr _MapSeedOffset;
-        private static IntPtr _RosterDataOffset;
-        private static IntPtr _InteractedNpcOffset;
-        private static IntPtr _LastHoverDataOffset;
-        private static IntPtr _PetsOffsetOffset;
+        private static Dictionary<int, IntPtr> _UnitHashTableOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _ExpansionCheckOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _GameNameOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _MenuDataOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _RosterDataOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _InteractedNpcOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _LastHoverDataOffset = new Dictionary<int, IntPtr>();
+        private static Dictionary<int, IntPtr> _PetsOffsetOffset = new Dictionary<int, IntPtr>();
 
         private static WindowsExternal.WinEventDelegate _eventDelegate = null;
 
@@ -51,18 +53,19 @@ namespace MapAssist.Helpers
 
         private static void SetActiveWindow(IntPtr hwnd)
         {
+            LastGameProcessForegroundTime = DateTime.Now;
+
             if (!WindowsExternal.HandleExists(hwnd)) // Handle doesn't exist
             {
                 _log.Info($"Active window changed to another process (handle: {hwnd})");
                 return;
             }
 
-            uint processId;
-            WindowsExternal.GetWindowThreadProcessId(hwnd, out processId);
+            WindowsExternal.GetWindowThreadProcessId(hwnd, out var processId);
 
             _foregroundProcessId = (int)processId;
 
-            if (_lastGameProcessId == _foregroundProcessId) // Process is the last found valid game process
+            if (LastGameProcessId == _foregroundProcessId) // Process is the last found valid game process
             {
                 _log.Info($"Active window changed to last game process (handle: {hwnd})");
                 return;
@@ -122,32 +125,31 @@ namespace MapAssist.Helpers
             // is a new game process
             _log.Info($"Active window changed to a game window (handle: {hwnd})");
 
-            _UnitHashTableOffset = IntPtr.Zero;
-            _ExpansionCheckOffset = IntPtr.Zero;
-            _GameNameOffset = IntPtr.Zero;
-            _MenuDataOffset = IntPtr.Zero;
-            _MapSeedOffset = IntPtr.Zero;
-            _RosterDataOffset = IntPtr.Zero;
-            _InteractedNpcOffset = IntPtr.Zero;
-            _LastHoverDataOffset = IntPtr.Zero;
-            _PetsOffsetOffset = IntPtr.Zero;
+            MainWindowHandle = hwnd;
+            LastGameProcess = process;
+            LastGameProcessId = _foregroundProcessId;
 
-            _lastGameHwnd = hwnd;
-            _lastGameProcess = process;
-            _lastGameProcessId = _foregroundProcessId;
+            if (!_UnitHashTableOffset.ContainsKey(process.Id)) _UnitHashTableOffset[process.Id] = IntPtr.Zero;
+            if (!_ExpansionCheckOffset.ContainsKey(process.Id)) _ExpansionCheckOffset[process.Id] = IntPtr.Zero;
+            if (!_GameNameOffset.ContainsKey(process.Id)) _GameNameOffset[process.Id] = IntPtr.Zero;
+            if (!_MenuDataOffset.ContainsKey(process.Id)) _MenuDataOffset[process.Id] = IntPtr.Zero;
+            if (!_RosterDataOffset.ContainsKey(process.Id)) _RosterDataOffset[process.Id] = IntPtr.Zero;
+            if (!_InteractedNpcOffset.ContainsKey(process.Id)) _InteractedNpcOffset[process.Id] = IntPtr.Zero;
+            if (!_LastHoverDataOffset.ContainsKey(process.Id)) _LastHoverDataOffset[process.Id] = IntPtr.Zero;
+            if (!_PetsOffsetOffset.ContainsKey(process.Id)) _PetsOffsetOffset[process.Id] = IntPtr.Zero;
         }
 
         public static ProcessContext GetProcessContext()
         {
-            if (_processContext != null && _processContext.OpenContextCount > 0)
+            if (ProcessContext != null && ProcessContext.OpenContextCount > 0)
             {
-                _processContext.OpenContextCount += 1;
-                return _processContext;
+                ProcessContext.OpenContextCount += 1;
+                return ProcessContext;
             }
-            else if (_lastGameProcess != null && WindowsExternal.HandleExists(_lastGameHwnd))
+            else if (LastGameProcess != null && WindowsExternal.HandleExists(MainWindowHandle))
             {
-                _processContext = new ProcessContext(_lastGameProcess); // Rarely, the VirtualMemoryRead will cause an error, in that case return a null instead of a runtime error. The next frame will try again.
-                return _processContext;
+                ProcessContext = new ProcessContext(LastGameProcess); // Rarely, the VirtualMemoryRead will cause an error, in that case return a null instead of a runtime error. The next frame will try again.
+                return ProcessContext;
             }
 
             return null;
@@ -157,29 +159,29 @@ namespace MapAssist.Helpers
         {
             if (MapAssistConfiguration.Loaded.RenderingConfiguration.StickToLastGameWindow) return;
 
-            if (_processContext != null && _processContext.OpenContextCount == 0 && _lastGameProcess != null) // Prevent disposing the process when the context is open
+            if (ProcessContext != null && ProcessContext.OpenContextCount == 0 && LastGameProcess != null) // Prevent disposing the process when the context is open
             {
-                _lastGameProcess.Dispose();
+                LastGameProcess.Dispose();
             }
 
-            _lastGameHwnd = IntPtr.Zero;
-            _lastGameProcess = null;
-            _lastGameProcessId = 0;
+            MainWindowHandle = IntPtr.Zero;
+            LastGameProcessForegroundTime = DateTime.MinValue;
+            LastGameProcess = null;
+            LastGameProcessId = 0;
         }
-
-        public static IntPtr MainWindowHandle { get => _lastGameHwnd; }
-        public static bool IsGameInForeground { get => _lastGameProcessId == _foregroundProcessId; }
 
         public static UnitHashTable UnitHashTable(int offset = 0)
         {
             using (var processContext = GetProcessContext())
             {
-                if (_UnitHashTableOffset == IntPtr.Zero)
+                var pid = processContext.ProcessId;
+
+                if (_UnitHashTableOffset[pid] == IntPtr.Zero)
                 {
                     PopulateMissingOffsets();
                 }
 
-                return processContext.Read<UnitHashTable>(IntPtr.Add(_UnitHashTableOffset, offset));
+                return processContext.Read<UnitHashTable>(IntPtr.Add(_UnitHashTableOffset[pid], offset));
             }
         }
 
@@ -187,14 +189,14 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_ExpansionCheckOffset != IntPtr.Zero)
+                if (_ExpansionCheckOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _ExpansionCheckOffset;
+                    return _ExpansionCheckOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _ExpansionCheckOffset;
+                return _ExpansionCheckOffset[LastGameProcessId];
             }
         }
 
@@ -202,14 +204,14 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_GameNameOffset != IntPtr.Zero)
+                if (_GameNameOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _GameNameOffset;
+                    return _GameNameOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _GameNameOffset;
+                return _GameNameOffset[LastGameProcessId];
             }
         }
 
@@ -217,29 +219,14 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_MenuDataOffset != IntPtr.Zero)
+                if (_MenuDataOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _MenuDataOffset;
+                    return _MenuDataOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _MenuDataOffset;
-            }
-        }
-
-        public static IntPtr MapSeedOffset
-        {
-            get
-            {
-                if (_MapSeedOffset != IntPtr.Zero)
-                {
-                    return _MapSeedOffset;
-                }
-
-                PopulateMissingOffsets();
-
-                return _MapSeedOffset;
+                return _MenuDataOffset[LastGameProcessId];
             }
         }
 
@@ -247,14 +234,14 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_RosterDataOffset != IntPtr.Zero)
+                if (_RosterDataOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _RosterDataOffset;
+                    return _RosterDataOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _RosterDataOffset;
+                return _RosterDataOffset[LastGameProcessId];
             }
         }
 
@@ -262,14 +249,14 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_LastHoverDataOffset != IntPtr.Zero)
+                if (_LastHoverDataOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _LastHoverDataOffset;
+                    return _LastHoverDataOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _LastHoverDataOffset;
+                return _LastHoverDataOffset[LastGameProcessId];
             }
         }
 
@@ -277,14 +264,29 @@ namespace MapAssist.Helpers
         {
             get
             {
-                if (_InteractedNpcOffset != IntPtr.Zero)
+                if (_InteractedNpcOffset[LastGameProcessId] != IntPtr.Zero)
                 {
-                    return _InteractedNpcOffset;
+                    return _InteractedNpcOffset[LastGameProcessId];
                 }
 
                 PopulateMissingOffsets();
 
-                return _InteractedNpcOffset;
+                return _InteractedNpcOffset[LastGameProcessId];
+            }
+        }
+
+        public static IntPtr PetsOffset
+        {
+            get
+            {
+                if (_PetsOffsetOffset[LastGameProcessId] != IntPtr.Zero)
+                {
+                    return _PetsOffsetOffset[LastGameProcessId];
+                }
+
+                PopulateMissingOffsets();
+
+                return _PetsOffsetOffset[LastGameProcessId];
             }
         }
 
@@ -309,54 +311,55 @@ namespace MapAssist.Helpers
             // which means we will need the buffer.
             using (var processContext = GetProcessContext())
             {
+                var pid = processContext.ProcessId;
                 var buffer = processContext.Read<byte>(processContext.BaseAddr, processContext.ModuleSize);
 
-                if (_UnitHashTableOffset == IntPtr.Zero)
+                if (_UnitHashTableOffset[pid] == IntPtr.Zero)
                 {
-                    _UnitHashTableOffset = processContext.GetUnitHashtableOffset(buffer);
-                    _log.Info($"Found offset {nameof(_UnitHashTableOffset)} 0x{_UnitHashTableOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _UnitHashTableOffset[pid] = processContext.GetUnitHashtableOffset(buffer);
+                    _log.Info($"Found offset {nameof(_UnitHashTableOffset)} 0x{_UnitHashTableOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_ExpansionCheckOffset == IntPtr.Zero)
+                if (_ExpansionCheckOffset[pid] == IntPtr.Zero)
                 {
-                    _ExpansionCheckOffset = processContext.GetExpansionOffset(buffer);
-                    _log.Info($"Found offset {nameof(_ExpansionCheckOffset)} 0x{_ExpansionCheckOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _ExpansionCheckOffset[pid] = processContext.GetExpansionOffset(buffer);
+                    _log.Info($"Found offset {nameof(_ExpansionCheckOffset)} 0x{_ExpansionCheckOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_GameNameOffset == IntPtr.Zero)
+                if (_GameNameOffset[pid] == IntPtr.Zero)
                 {
-                    _GameNameOffset = processContext.GetGameNameOffset(buffer);
-                    _log.Info($"Found offset {nameof(_GameNameOffset)} 0x{_GameNameOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _GameNameOffset[pid] = processContext.GetGameNameOffset(buffer);
+                    _log.Info($"Found offset {nameof(_GameNameOffset)} 0x{_GameNameOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_MenuDataOffset == IntPtr.Zero)
+                if (_MenuDataOffset[pid] == IntPtr.Zero)
                 {
-                    _MenuDataOffset = processContext.GetMenuDataOffset(buffer);
-                    _log.Info($"Found offset {nameof(_MenuDataOffset)} 0x{_MenuDataOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _MenuDataOffset[pid] = processContext.GetMenuDataOffset(buffer);
+                    _log.Info($"Found offset {nameof(_MenuDataOffset)} 0x{_MenuDataOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_MapSeedOffset == IntPtr.Zero)
+                if (_RosterDataOffset[pid] == IntPtr.Zero)
                 {
-                    _MapSeedOffset = processContext.GetMapSeedOffset(buffer);
-                    _log.Info($"Found offset {nameof(_MapSeedOffset)} 0x{_MapSeedOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _RosterDataOffset[pid] = processContext.GetRosterDataOffset(buffer);
+                    _log.Info($"Found offset {nameof(_RosterDataOffset)} 0x{_RosterDataOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_RosterDataOffset == IntPtr.Zero)
+                if (_LastHoverDataOffset[pid] == IntPtr.Zero)
                 {
-                    _RosterDataOffset = processContext.GetRosterDataOffset(buffer);
-                    _log.Info($"Found offset {nameof(_RosterDataOffset)} 0x{_RosterDataOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _LastHoverDataOffset[pid] = processContext.GetLastHoverObjectOffset(buffer);
+                    _log.Info($"Found offset {nameof(_LastHoverDataOffset)} 0x{_LastHoverDataOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_LastHoverDataOffset == IntPtr.Zero)
+                if (_InteractedNpcOffset[pid] == IntPtr.Zero)
                 {
-                    _LastHoverDataOffset = processContext.GetLastHoverObjectOffset(buffer);
-                    _log.Info($"Found offset {nameof(_LastHoverDataOffset)} 0x{_LastHoverDataOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _InteractedNpcOffset[pid] = processContext.GetInteractedNpcOffset(buffer);
+                    _log.Info($"Found offset {nameof(_InteractedNpcOffset)} 0x{_InteractedNpcOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
-                if (_InteractedNpcOffset == IntPtr.Zero)
+                if (_PetsOffsetOffset[pid] == IntPtr.Zero)
                 {
-                    _InteractedNpcOffset = processContext.GetInteractedNpcOffset(buffer);
-                    _log.Info($"Found offset {nameof(_InteractedNpcOffset)} 0x{_InteractedNpcOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
+                    _PetsOffsetOffset[pid] = processContext.GetPetsOffset(buffer);
+                    _log.Info($"Found offset {nameof(_PetsOffsetOffset)} 0x{_PetsOffsetOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
 
                 if (_PetsOffsetOffset == IntPtr.Zero)
@@ -369,9 +372,9 @@ namespace MapAssist.Helpers
 
         public static void Dispose()
         {
-            if (_lastGameProcess != null)
+            if (LastGameProcess != null)
             {
-                _lastGameProcess.Dispose();
+                LastGameProcess.Dispose();
             }
             WindowsExternal.UnhookWinEvent(_winHook);
         }

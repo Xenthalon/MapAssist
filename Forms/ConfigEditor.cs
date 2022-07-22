@@ -4,19 +4,27 @@ using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MapAssist
 {
     public partial class ConfigEditor : Form
     {
+        private bool formReady = false;
+        private bool formShown = false;
+        private CancellationTokenSource formShownCancelToken;
+
         private PropertyInfo SelectedProperty;
         private AddAreaForm areaForm;
 
         public ConfigEditor()
         {
+            formReady = false;
             InitializeComponent();
 
             var propertyList = MapAssistConfiguration.Loaded.MapConfiguration.GetType().GetProperties();
@@ -45,11 +53,6 @@ namespace MapAssist
                 cboLanguage.Items.Add(LocaleExtensions.Name(element));
             }
 
-            foreach (var element in Enum.GetNames(typeof(MapLinesMode)))
-            {
-                cboMapLinesMode.Items.Add(element);
-            }
-
             foreach (var element in Enum.GetNames(typeof(GameInfoPosition)))
             {
                 cboGameInfoPosition.Items.Add(element.ToProperCase());
@@ -61,8 +64,8 @@ namespace MapAssist
             opacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.Opacity * 100d / 5);
             lblOpacityValue.Text = (opacity.Value * 5).ToString();
 
-            iconOpacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.IconOpacity * 100d / 5);
-            lblIconOpacityValue.Text = (iconOpacity.Value * 5).ToString();
+            allIconOpacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.IconOpacity * 100d / 5);
+            lblAllIconOpacityValue.Text = (allIconOpacity.Value * 5).ToString();
 
             mapSize.Value = (int)Math.Round(MapAssistConfiguration.Loaded.RenderingConfiguration.Size / 100d);
             lblMapSizeValue.Text = (mapSize.Value * 100).ToString();
@@ -85,7 +88,13 @@ namespace MapAssist
             chkDebuffs.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.ShowBuffBarDebuffs;
             chkAlertLowerRes.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.BuffAlertLowRes;
             cboBuffPosition.SelectedIndex = cboBuffPosition.FindStringExact(MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition.ToString().ToProperCase());
-            cboMapLinesMode.SelectedIndex = cboMapLinesMode.FindStringExact(MapAssistConfiguration.Loaded.RenderingConfiguration.LinesMode.ToString().ToProperCase());
+
+            chkLinesHostiles.Checked = MapAssistConfiguration.Loaded.MapConfiguration.HostilePlayer.CanDrawLine();
+            chkLinesCorpse.Checked = MapAssistConfiguration.Loaded.MapConfiguration.Corpse.CanDrawLine();
+            chkLinesNextArea.Checked = MapAssistConfiguration.Loaded.MapConfiguration.NextArea.CanDrawLine();
+            chkLinesQuest.Checked = MapAssistConfiguration.Loaded.MapConfiguration.Quest.CanDrawLine();
+            chkLinesWaypoint.Checked = MapAssistConfiguration.Loaded.MapConfiguration.Waypoint.CanDrawLine();
+            chkLinesShrines.Checked = MapAssistConfiguration.Loaded.MapConfiguration.Shrine.CanDrawLine();
 
             chkLife.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.ShowLife;
             chkMana.Checked = MapAssistConfiguration.Loaded.RenderingConfiguration.ShowMana;
@@ -112,10 +121,11 @@ namespace MapAssist
 
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleKey.ToString()).Monitor(txtToggleMapKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.HideMapKey.ToString()).Monitor(txtHideMapKey);
-            new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.AreaLevelKey.ToString()).Monitor(txtAreaLevelKey);
+            new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.MapPositionsKey.ToString()).Monitor(txtMapPositionsKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomInKey.ToString()).Monitor(txtZoomInKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ZoomOutKey.ToString()).Monitor(txtZoomOutKey);
             new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ExportItemsKey.ToString()).Monitor(txtExportItemsKey);
+            new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleConfigKey.ToString()).Monitor(txtToggleConfigKey);
 
             cboItemLogPosition.SelectedIndex = cboItemLogPosition.FindStringExact(MapAssistConfiguration.Loaded.ItemLog.Position.ToString().ToProperCase());
             chkItemLogEnabled.Checked = MapAssistConfiguration.Loaded.ItemLog.Enabled;
@@ -125,7 +135,6 @@ namespace MapAssist
             chkShowDirectionToItem.Checked = MapAssistConfiguration.Loaded.ItemLog.ShowDirectionToItem;
             chkPlaySound.Checked = MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop;
             txtFilterFile.Text = MapAssistConfiguration.Loaded.ItemLog.FilterFileName;
-            txtSoundFile.Text = MapAssistConfiguration.Loaded.ItemLog.SoundFile;
             soundVolume.Value = (int)Math.Round(MapAssistConfiguration.Loaded.ItemLog.SoundVolume / 5d);
             lblSoundVolumeValue.Text = $"{soundVolume.Value * 5}";
             itemDisplayForSeconds.Value = (int)Math.Round(MapAssistConfiguration.Loaded.ItemLog.DisplayForSeconds / 5d);
@@ -158,6 +167,27 @@ namespace MapAssist
             btnCraftedColor.ForeColor = ContrastTextColor(btnCraftedColor.BackColor);
             btnClearCraftedColor.Visible = MapAssistConfiguration.Loaded.ItemLog.CraftedColor != MapAssistConfiguration.Default.ItemLog.CraftedColor;
 
+            chkPortraitsArea.Checked = MapAssistConfiguration.Loaded.Portraits.ShowArea;
+            chkPortraitsAreaLevel.Checked = MapAssistConfiguration.Loaded.Portraits.ShowAreaLevel;
+            btnAreaTextColor.BackColor = MapAssistConfiguration.Loaded.Portraits.Area.TextColor;
+            btnAreaTextColor.ForeColor = ContrastTextColor(btnSetColor.BackColor);
+            btnClearAreaTextColor.Visible = MapAssistConfiguration.Loaded.Portraits.Area.TextColor != MapAssistConfiguration.Default.Portraits.Area.TextColor;
+            chkPortraitsAreaTextShadow.Checked = MapAssistConfiguration.Loaded.Portraits.Area.TextShadow;
+            btnClearAreaFont.Visible = MapAssistConfiguration.Loaded.Portraits.Area.Font != MapAssistConfiguration.Default.Portraits.Area.Font ||
+                MapAssistConfiguration.Loaded.Portraits.Area.FontSize != MapAssistConfiguration.Default.Portraits.Area.FontSize;
+            portraitsAreaOpacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.Portraits.Area.Opacity * 100d / 5);
+            lblPortraitsAreaOpacity.Text = (portraitsAreaOpacity.Value * 5).ToString();
+
+            chkPortraitsPlayerLevel.Checked = MapAssistConfiguration.Loaded.Portraits.ShowPlayerLevel;
+            btnPlayerLevelTextColor.BackColor = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextColor;
+            btnPlayerLevelTextColor.ForeColor = ContrastTextColor(btnSetColor.BackColor);
+            btnClearPlayerLevelTextColor.Visible = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextColor != MapAssistConfiguration.Default.Portraits.PlayerLevel.TextColor;
+            chkPortraitsPlayerLevelTextShadow.Checked = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextShadow;
+            btnClearPlayerLevelFont.Visible = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Font != MapAssistConfiguration.Default.Portraits.PlayerLevel.Font ||
+                MapAssistConfiguration.Loaded.Portraits.PlayerLevel.FontSize != MapAssistConfiguration.Default.Portraits.PlayerLevel.FontSize;
+            portraitsPlayerLevelOpacity.Value = (int)Math.Round(MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Opacity * 100d / 5);
+            lblPortraitsPlayerLevelOpacity.Text = (portraitsPlayerLevelOpacity.Value * 5).ToString();
+
             if (MapAssistConfiguration.Loaded.MapColorConfiguration.Walkable != null)
             {
                 var color = (Color)MapAssistConfiguration.Loaded.MapColorConfiguration.Walkable;
@@ -182,9 +212,21 @@ namespace MapAssist
                 btnClearBorderColor.Visible = false;
             }
 
+            if (MapAssistConfiguration.Loaded.MapColorConfiguration.ExpRange != null)
+            {
+                var color = (Color)MapAssistConfiguration.Loaded.MapColorConfiguration.ExpRange;
+                btnExpRangeColor.BackColor = color;
+                btnExpRangeColor.ForeColor = ContrastTextColor(color);
+                btnClearExpRangeColor.Visible = color.A > 0;
+            }
+            else
+            {
+                btnClearExpRangeColor.Visible = false;
+            }
+
             foreach (var area in MapAssistConfiguration.Loaded.HiddenAreas)
             {
-                lstHidden.Items.Add(AreaExtensions.Name(area));
+                lstHidden.Items.Add(area.Name());
             }
 
             foreach (var authorizedWindowTitle in MapAssistConfiguration.Loaded.AuthorizedWindowTitles)
@@ -193,11 +235,73 @@ namespace MapAssist
             }
 
             chkDPIAware.Checked = MapAssistConfiguration.Loaded.DPIAware;
+
+            var filePaths = Directory.GetFiles(System.IO.Path.Combine(Application.StartupPath, "Sounds"), @"*.wav");
+            foreach (var filePath in filePaths)
+            {
+                var fileName = System.IO.Path.GetFileName(filePath);
+                cboItemLogSound.Items.Add(fileName);
+            }
+            cboItemLogSound.Text = MapAssistConfiguration.Loaded.ItemLog.SoundFile;
+
+            if (cboRenderOption.Items.Count > 0)
+            {
+                cboRenderOption.SelectedIndex = 0;
+            }
+
+            void RemoveTabStop(Control container)
+            {
+                foreach (Control control in container.Controls)
+                {
+                    control.TabStop = false;
+                    RemoveTabStop(control);
+                }
+            }
+
+            RemoveTabStop(this);
+
+            formReady = true;
+        }
+
+        private void ConfigEditor_Shown(object sender, EventArgs e)
+        {
+            Activate();
+
+            formShownCancelToken = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Task.Delay(500).Wait(); // Allow a timeout if holding down the hotkey for too long
+                if (!formShownCancelToken.IsCancellationRequested) formShown = true;
+            }, formShownCancelToken.Token);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            var keys = new Hotkey(Keys.None, keyData);
+
+            if (keyData == Keys.Escape)
+            {
+                formShownCancelToken.Cancel();
+                Close();
+                return true;
+            }
+            else if (keys == new Hotkey(MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleConfigKey))
+            {
+                if (!formShown) return false;
+
+                formShownCancelToken.Cancel();
+                Close();
+                return true;
+            }
+
+            // Call the base class
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             MapAssistConfiguration.Loaded.Save();
+            formShown = false;
             base.OnFormClosing(e);
         }
 
@@ -223,17 +327,17 @@ namespace MapAssist
             lblOpacityValue.Text = (opacity.Value * 5).ToString();
         }
 
-        private void iconOpacity_Scroll(object sender, EventArgs e)
+        private void allIconOpacity_Scroll(object sender, EventArgs e)
         {
-            if (iconOpacity.Value > 0)
+            if (allIconOpacity.Value > 0)
             {
-                MapAssistConfiguration.Loaded.RenderingConfiguration.IconOpacity = Math.Round(iconOpacity.Value * 5 / 100d, 2);
+                MapAssistConfiguration.Loaded.RenderingConfiguration.IconOpacity = Math.Round(allIconOpacity.Value * 5 / 100d, 2);
             }
             else
             {
                 MapAssistConfiguration.Loaded.RenderingConfiguration.IconOpacity = 0;
             }
-            lblIconOpacityValue.Text = (iconOpacity.Value * 5).ToString();
+            lblAllIconOpacityValue.Text = (allIconOpacity.Value * 5).ToString();
         }
 
         private void mapSize_Scroll(object sender, EventArgs e)
@@ -375,11 +479,6 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.RenderingConfiguration.BuffPosition = (BuffPosition)cboBuffPosition.SelectedIndex;
         }
 
-        private void cboMapLinesMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            MapAssistConfiguration.Loaded.RenderingConfiguration.LinesMode = (MapLinesMode)cboMapLinesMode.SelectedIndex;
-        }
-
         private void chkShowGameName_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.GameInfo.ShowGameName = chkShowGameName.Checked;
@@ -485,8 +584,10 @@ namespace MapAssist
             cboIconShape.SelectedIndex = cboIconShape.FindStringExact(Enum.GetName(typeof(Shape), iconProp.IconShape));
             iconSize.Value = (int)iconProp.IconSize;
             iconThickness.Value = (int)iconProp.IconThickness;
+            iconOpacity.Value = (int)Math.Round(iconProp.IconOpacity * 100d / 5);
             lblIconSizeValue.Text = iconSize.Value.ToString();
             lblIconThicknessValue.Text = iconThickness.Value.ToString();
+            lblIconOpacityValue.Text = (iconOpacity.Value * 5).ToString();
             if (SelectedProperty.PropertyType != typeof(PointOfInterestRendering) && SelectedProperty.PropertyType != typeof(PortalRendering))
             {
                 tabDrawing.TabPages.Remove(tabLabel);
@@ -520,8 +621,8 @@ namespace MapAssist
 
         private void btnIconColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnIconColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 var iconProp = SelectedProperty.PropertyType.GetProperty("IconColor");
                 iconProp.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), colorDlg.Color, null);
@@ -544,8 +645,8 @@ namespace MapAssist
 
         private void btnIconOutlineColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnIconOutlineColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 var iconProp = SelectedProperty.PropertyType.GetProperty("IconOutlineColor");
                 iconProp.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), colorDlg.Color, null);
@@ -586,6 +687,20 @@ namespace MapAssist
             lblIconThicknessValue.Text = iconThickness.Value.ToString();
         }
 
+        private void iconOpacity_Scroll(object sender, EventArgs e)
+        {
+            var iconProp = SelectedProperty.PropertyType.GetProperty("IconOpacity");
+            if (iconOpacity.Value > 0)
+            {
+                iconProp.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), (float)Math.Round(iconOpacity.Value * 5 / 100d, 2), null);
+            }
+            else
+            {
+                iconProp.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), 0, null);
+            }
+            lblIconOpacityValue.Text = (iconOpacity.Value * 5).ToString();
+        }
+
         private void tabDrawing_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabDrawing.SelectedIndex > 0 && (SelectedProperty.PropertyType != typeof(PointOfInterestRendering) && SelectedProperty.PropertyType != typeof(PortalRendering)))
@@ -597,8 +712,8 @@ namespace MapAssist
 
         private void btnLabelColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnLabelColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 var labelPropColor = SelectedProperty.PropertyType.GetProperty("LabelColor");
                 labelPropColor.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), colorDlg.Color, null);
@@ -658,8 +773,8 @@ namespace MapAssist
 
         private void btnLineColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnLineColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 var linePropColor = SelectedProperty.PropertyType.GetProperty("LineColor");
                 linePropColor.SetValue(SelectedProperty.GetValue(MapAssistConfiguration.Loaded.MapConfiguration, null), colorDlg.Color, null);
@@ -741,19 +856,15 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.ItemLog.FilterFileName = txtFilterFile.Text;
         }
 
+        private void soundSelect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.ItemLog.SoundFile = cboItemLogSound.SelectedItem.ToString();
+            if (formReady) AudioPlayer.PlayItemAlert(MapAssistConfiguration.Loaded.ItemLog.SoundFile, stopPreviousAlert: true);
+        }
+
         private void chkPlaySound_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop = chkPlaySound.Checked;
-        }
-
-        private void txtSoundFile_TextChanged(object sender, EventArgs e)
-        {
-            MapAssistConfiguration.Loaded.ItemLog.SoundFile = txtSoundFile.Text;
-        }
-
-        private void txtSoundFile_LostFocus(object sender, EventArgs e)
-        {
-            AudioPlayer.LoadNewSound(true);
         }
 
         private void soundVolume_Scroll(object sender, EventArgs e)
@@ -804,8 +915,8 @@ namespace MapAssist
 
         private void btnSuperiorColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnSuperiorColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.SuperiorColor = colorDlg.Color;
                 btnSuperiorColor.BackColor = colorDlg.Color;
@@ -817,8 +928,8 @@ namespace MapAssist
 
         private void btnMagicColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnMagicColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.MagicColor = colorDlg.Color;
                 btnMagicColor.BackColor = colorDlg.Color;
@@ -830,8 +941,8 @@ namespace MapAssist
 
         private void btnRareColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnRareColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.RareColor = colorDlg.Color;
                 btnRareColor.BackColor = colorDlg.Color;
@@ -843,8 +954,8 @@ namespace MapAssist
 
         private void btnSetColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnSetColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.SetColor = colorDlg.Color;
                 btnSetColor.BackColor = colorDlg.Color;
@@ -856,8 +967,8 @@ namespace MapAssist
 
         private void btnUniqueColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnUniqueColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.UniqueColor = colorDlg.Color;
                 btnUniqueColor.BackColor = colorDlg.Color;
@@ -869,8 +980,8 @@ namespace MapAssist
 
         private void btnCraftedColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnCraftedColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.ItemLog.CraftedColor = colorDlg.Color;
                 btnCraftedColor.BackColor = colorDlg.Color;
@@ -950,9 +1061,9 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.HotkeyConfiguration.HideMapKey = txtHideMapKey.Text;
         }
 
-        private void txtAreaLevelKey_TextChanged(object sender, EventArgs e)
+        private void txtMapPositionsKey_TextChanged(object sender, EventArgs e)
         {
-            MapAssistConfiguration.Loaded.HotkeyConfiguration.AreaLevelKey = txtAreaLevelKey.Text;
+            MapAssistConfiguration.Loaded.HotkeyConfiguration.MapPositionsKey = txtMapPositionsKey.Text;
         }
 
         private void txtZoomInKey_TextChanged(object sender, EventArgs e)
@@ -970,10 +1081,15 @@ namespace MapAssist
             MapAssistConfiguration.Loaded.HotkeyConfiguration.ExportItemsKey = txtExportItemsKey.Text;
         }
 
+        private void txtToggleConfigKey_TextChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.HotkeyConfiguration.ToggleConfigKey = txtToggleConfigKey.Text;
+        }
+
         private void btnWalkableColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnWalkableColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.MapColorConfiguration.Walkable = colorDlg.Color;
                 btnWalkableColor.BackColor = colorDlg.Color;
@@ -994,8 +1110,8 @@ namespace MapAssist
 
         private void btnBorderColor_Click(object sender, EventArgs e)
         {
-            var colorDlg = new ColorDialog();
-            if (colorDlg.ShowDialog() == DialogResult.OK)
+            var (colorDlg, colorResult) = SelectColor(btnBorderColor.BackColor);
+            if (colorResult == DialogResult.OK)
             {
                 MapAssistConfiguration.Loaded.MapColorConfiguration.Border = colorDlg.Color;
                 btnBorderColor.BackColor = colorDlg.Color;
@@ -1012,6 +1128,28 @@ namespace MapAssist
             btnBorderColor.ForeColor = ContrastTextColor(btnBorderColor.BackColor);
 
             btnClearBorderColor.Visible = false;
+        }
+
+        private void btnExpRangeColor_Click(object sender, EventArgs e)
+        {
+            var (colorDlg, colorResult) = SelectColor(btnExpRangeColor.BackColor);
+            if (colorResult == DialogResult.OK)
+            {
+                MapAssistConfiguration.Loaded.MapColorConfiguration.ExpRange = colorDlg.Color;
+                btnExpRangeColor.BackColor = colorDlg.Color;
+                btnExpRangeColor.ForeColor = ContrastTextColor(btnExpRangeColor.BackColor);
+
+                btnClearExpRangeColor.Visible = true;
+            }
+        }
+
+        private void btnClearExpRangeColor_Click(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.MapColorConfiguration.ExpRange = null;
+            btnExpRangeColor.BackColor = Color.Empty;
+            btnExpRangeColor.ForeColor = ContrastTextColor(btnExpRangeColor.BackColor);
+
+            btnClearExpRangeColor.Visible = false;
         }
 
         private void btnAddHidden_Click(object sender, EventArgs e)
@@ -1099,6 +1237,212 @@ namespace MapAssist
         private void chkDPIAware_CheckedChanged(object sender, EventArgs e)
         {
             MapAssistConfiguration.Loaded.DPIAware = chkDPIAware.Checked;
+        }
+
+        private List<Color> customColors = new List<Color>();
+
+        private (ColorDialog, DialogResult) SelectColor(Color presetColor)
+        {
+            var colorDlg = new ColorDialog();
+            colorDlg.FullOpen = true;
+            colorDlg.Color = presetColor;
+            if (customColors.Count > 0)
+            {
+                colorDlg.CustomColors = customColors.Select(color => ColorTranslator.ToOle(color)).ToArray();
+            }
+            var result = colorDlg.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                customColors = colorDlg.CustomColors.Select(color => ColorTranslator.FromOle(color)).Where(color => color != Color.White).ToList();
+                customColors.Remove(colorDlg.Color);
+                customColors.Insert(0, colorDlg.Color);
+            }
+            return (colorDlg, result);
+        }
+
+        private void linkWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(linkWebsite.Text);
+        }
+
+        private void HandleLineToggle(CheckBox input, PointOfInterestRendering rendering)
+        {
+            if (input.Checked == rendering.CanDrawLine())
+            {
+                return;
+            }
+            rendering.ToggleLine();
+        }
+
+        private void chkLinesHostiles_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesHostiles, MapAssistConfiguration.Loaded.MapConfiguration.HostilePlayer);
+        }
+
+        private void chkLinesCorpse_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesCorpse, MapAssistConfiguration.Loaded.MapConfiguration.Corpse);
+        }
+
+        private void chkLinesNextArea_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesNextArea, MapAssistConfiguration.Loaded.MapConfiguration.NextArea);
+        }
+
+        private void chkLinesQuest_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesQuest, MapAssistConfiguration.Loaded.MapConfiguration.Quest);
+        }
+
+        private void chkLinesWaypoint_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesWaypoint, MapAssistConfiguration.Loaded.MapConfiguration.Waypoint);
+        }
+
+        private void chkLinesShrines_CheckedChanged(object sender, EventArgs e)
+        {
+            HandleLineToggle(chkLinesShrines, MapAssistConfiguration.Loaded.MapConfiguration.Shrine);
+        }
+
+        private void portraitsAreaOpacity_Scroll(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.Area.Opacity = portraitsAreaOpacity.Value > 0
+                ? (float)Math.Round(portraitsAreaOpacity.Value * 5 / 100d, 2) : 0;
+            lblPortraitsAreaOpacity.Text = (portraitsAreaOpacity.Value * 5).ToString();
+        }
+
+        private void portraitsPlayerLevelOpacity_Scroll(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Opacity = portraitsPlayerLevelOpacity.Value > 0
+                ? (float)Math.Round(portraitsPlayerLevelOpacity.Value * 5 / 100d, 2) : 0;
+            lblPortraitsPlayerLevelOpacity.Text = (portraitsPlayerLevelOpacity.Value * 5).ToString();
+        }
+
+        private void chkPortraitsArea_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.ShowArea = chkPortraitsArea.Checked;
+        }
+
+        private void chkPortraitsAreaLevel_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.ShowAreaLevel = chkPortraitsAreaLevel.Checked;
+        }
+
+        private void chkPortraitsPlayerLevel_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.ShowPlayerLevel = chkPortraitsPlayerLevel.Checked;
+        }
+
+        private void chkPortraitsAreaTextShadow_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.Area.TextShadow = chkPortraitsAreaTextShadow.Checked;
+        }
+
+        private void chkPortraitsPlayerLevelTextShadow_CheckedChanged(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextShadow = chkPortraitsPlayerLevelTextShadow.Checked;
+        }
+
+        private void btnAreaTextColor_Click(object sender, EventArgs e)
+        {
+            var (colorDlg, colorResult) = SelectColor(btnAreaTextColor.BackColor);
+            if (colorResult == DialogResult.OK)
+            {
+                MapAssistConfiguration.Loaded.Portraits.Area.TextColor = colorDlg.Color;
+                btnAreaTextColor.BackColor = colorDlg.Color;
+                btnAreaTextColor.ForeColor = ContrastTextColor(btnAreaTextColor.BackColor);
+
+                btnClearAreaTextColor.Visible = true;
+            }
+        }
+
+        private void btnClearAreaTextColor_Click(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.Area.TextColor = MapAssistConfiguration.Default.Portraits.Area.TextColor;
+            btnAreaTextColor.BackColor = MapAssistConfiguration.Loaded.Portraits.Area.TextColor;
+            btnAreaTextColor.ForeColor = ContrastTextColor(btnAreaTextColor.BackColor);
+
+            btnClearWalkableColor.Visible = false;
+        }
+
+        private void btnPlayerLevelTextColor_Click(object sender, EventArgs e)
+        {
+            var (colorDlg, colorResult) = SelectColor(btnPlayerLevelTextColor.BackColor);
+            if (colorResult == DialogResult.OK)
+            {
+                MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextColor = colorDlg.Color;
+                btnPlayerLevelTextColor.BackColor = colorDlg.Color;
+                btnPlayerLevelTextColor.ForeColor = ContrastTextColor(btnPlayerLevelTextColor.BackColor);
+
+                btnClearPlayerLevelTextColor.Visible = true;
+            }
+        }
+
+        private void btnClearPlayerLevelTextColor_Click(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextColor = MapAssistConfiguration.Default.Portraits.PlayerLevel.TextColor;
+            btnPlayerLevelTextColor.BackColor = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.TextColor;
+            btnPlayerLevelTextColor.ForeColor = ContrastTextColor(btnPlayerLevelTextColor.BackColor);
+
+            btnClearPlayerLevelTextColor.Visible = false;
+        }
+
+        private void btnAreaFont_Click(object sender, EventArgs e)
+        {
+            var labelFont = MapAssistConfiguration.Loaded.Portraits.Area.Font;
+            var labelSize = (float)MapAssistConfiguration.Loaded.Portraits.Area.FontSize;
+            if (labelFont == null)
+            {
+                labelFont = "Helvetica";
+                labelSize = 16;
+            }
+            var fontDlg = new FontDialog();
+            fontDlg.Font = new Font(labelFont, labelSize, FontStyle.Regular);
+            fontDlg.ShowEffects = false;
+            if (fontDlg.ShowDialog() == DialogResult.OK)
+            {
+                MapAssistConfiguration.Loaded.Portraits.Area.Font = fontDlg.Font.Name;
+                MapAssistConfiguration.Loaded.Portraits.Area.FontSize = fontDlg.Font.Size;
+
+                btnClearAreaFont.Visible = true;
+            }
+        }
+
+        private void btnClearAreaFont_Click(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.Area.Font = MapAssistConfiguration.Default.Portraits.Area.Font;
+            MapAssistConfiguration.Loaded.Portraits.Area.FontSize = MapAssistConfiguration.Default.Portraits.Area.FontSize;
+
+            btnClearAreaFont.Visible = false;
+        }
+
+        private void btnPlayerLevelFont_Click(object sender, EventArgs e)
+        {
+            var labelFont = MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Font;
+            var labelSize = (float)MapAssistConfiguration.Loaded.Portraits.PlayerLevel.FontSize;
+            if (labelFont == null)
+            {
+                labelFont = "Helvetica";
+                labelSize = 16;
+            }
+            var fontDlg = new FontDialog();
+            fontDlg.Font = new Font(labelFont, labelSize, FontStyle.Regular);
+            fontDlg.ShowEffects = false;
+            if (fontDlg.ShowDialog() == DialogResult.OK)
+            {
+                MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Font = fontDlg.Font.Name;
+                MapAssistConfiguration.Loaded.Portraits.PlayerLevel.FontSize = fontDlg.Font.Size;
+
+                btnClearPlayerLevelFont.Visible = true;
+            }
+        }
+
+        private void btnClearPlayerLevelFont_Click(object sender, EventArgs e)
+        {
+            MapAssistConfiguration.Loaded.Portraits.PlayerLevel.Font = MapAssistConfiguration.Default.Portraits.PlayerLevel.Font;
+            MapAssistConfiguration.Loaded.Portraits.PlayerLevel.FontSize = MapAssistConfiguration.Default.Portraits.PlayerLevel.FontSize;
+
+            btnClearPlayerLevelFont.Visible = false;
         }
     }
 }

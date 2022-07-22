@@ -53,6 +53,8 @@
             this.chkShowGameName = new System.Windows.Forms.CheckBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnClearExpRangeColor = new System.Windows.Forms.Button();
+            this.btnExpRangeColor = new System.Windows.Forms.Button();
             this.chkMonsterHealthBar = new System.Windows.Forms.CheckBox();
             this.btnClearBorderColor = new System.Windows.Forms.Button();
             this.btnClearWalkableColor = new System.Windows.Forms.Button();
@@ -67,14 +69,14 @@
             this.lblMapZoomValue = new System.Windows.Forms.Label();
             this.lblZoom = new System.Windows.Forms.Label();
             this.lblMapSizeValue = new System.Windows.Forms.Label();
-            this.iconOpacity = new System.Windows.Forms.TrackBar();
+            this.allIconOpacity = new System.Windows.Forms.TrackBar();
             this.lblMapSize = new System.Windows.Forms.Label();
-            this.lblIconOpacityValue = new System.Windows.Forms.Label();
+            this.lblAllIconOpacityValue = new System.Windows.Forms.Label();
             this.lblOpacityValue = new System.Windows.Forms.Label();
             this.opacity = new System.Windows.Forms.TrackBar();
             this.lblOpacity = new System.Windows.Forms.Label();
             this.chkToggleViaMap = new System.Windows.Forms.CheckBox();
-            this.lblIconOpacity = new System.Windows.Forms.Label();
+            this.lblAllIconOpacity = new System.Windows.Forms.Label();
             this.chkToggleViaPanels = new System.Windows.Forms.CheckBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
@@ -86,9 +88,13 @@
             this.chkMana = new System.Windows.Forms.CheckBox();
             this.chkLifePerc = new System.Windows.Forms.CheckBox();
             this.chkLife = new System.Windows.Forms.CheckBox();
-            this.grpPresets = new System.Windows.Forms.GroupBox();
-            this.lblMapLinesMode = new System.Windows.Forms.Label();
-            this.cboMapLinesMode = new System.Windows.Forms.ComboBox();
+            this.grpLines = new System.Windows.Forms.GroupBox();
+            this.chkLinesShrines = new System.Windows.Forms.CheckBox();
+            this.chkLinesWaypoint = new System.Windows.Forms.CheckBox();
+            this.chkLinesQuest = new System.Windows.Forms.CheckBox();
+            this.chkLinesNextArea = new System.Windows.Forms.CheckBox();
+            this.chkLinesCorpse = new System.Windows.Forms.CheckBox();
+            this.chkLinesHostiles = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chkDebuffs = new System.Windows.Forms.CheckBox();
             this.chkPassives = new System.Windows.Forms.CheckBox();
@@ -103,6 +109,9 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabDrawing = new System.Windows.Forms.TabControl();
             this.tabIcon = new System.Windows.Forms.TabPage();
+            this.lblIconOpacityValue = new System.Windows.Forms.Label();
+            this.lblIconOpacity = new System.Windows.Forms.Label();
+            this.iconOpacity = new System.Windows.Forms.TrackBar();
             this.btnIconColor = new System.Windows.Forms.Button();
             this.btnIconOutlineColor = new System.Windows.Forms.Button();
             this.btnClearOutlineColor = new System.Windows.Forms.Button();
@@ -134,6 +143,7 @@
             this.cboRenderOption = new System.Windows.Forms.ComboBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cboItemLogSound = new System.Windows.Forms.ComboBox();
             this.btnClearSuperiorColor = new System.Windows.Forms.Button();
             this.btnSuperiorColor = new System.Windows.Forms.Button();
             this.btnClearUniqueColor = new System.Windows.Forms.Button();
@@ -163,19 +173,20 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.txtSoundFile = new System.Windows.Forms.TextBox();
             this.cboItemLogPosition = new System.Windows.Forms.ComboBox();
             this.txtFilterFile = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
             this.chkItemLogItemsOnIdentify = new System.Windows.Forms.CheckBox();
             this.label21 = new System.Windows.Forms.Label();
+            this.tabPage8 = new System.Windows.Forms.TabPage();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.grpHotkeys = new System.Windows.Forms.GroupBox();
+            this.txtToggleConfigKey = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.txtHideMapKey = new System.Windows.Forms.TextBox();
             this.lblHideMapKey = new System.Windows.Forms.Label();
             this.txtZoomOutKey = new System.Windows.Forms.TextBox();
             this.txtZoomInKey = new System.Windows.Forms.TextBox();
-            this.txtAreaLevelKey = new System.Windows.Forms.TextBox();
+            this.txtMapPositionsKey = new System.Windows.Forms.TextBox();
             this.txtToggleMapKey = new System.Windows.Forms.TextBox();
             this.txtExportItemsKey = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -196,7 +207,33 @@
             this.groupBox8 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.chkDPIAware = new System.Windows.Forms.CheckBox();
+            this.chkLinesMagicFindArea = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.groupBox9 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.linkWebsite = new System.Windows.Forms.LinkLabel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.grpPortraitArea = new System.Windows.Forms.GroupBox();
+            this.chkPortraitsAreaTextShadow = new System.Windows.Forms.CheckBox();
+            this.btnClearAreaFont = new System.Windows.Forms.Button();
+            this.btnAreaFont = new System.Windows.Forms.Button();
+            this.chkPortraitsAreaLevel = new System.Windows.Forms.CheckBox();
+            this.chkPortraitsArea = new System.Windows.Forms.CheckBox();
+            this.lblPortraitsAreaOpacity = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.portraitsAreaOpacity = new System.Windows.Forms.TrackBar();
+            this.btnClearAreaTextColor = new System.Windows.Forms.Button();
+            this.btnAreaTextColor = new System.Windows.Forms.Button();
+            this.groupBox10 = new System.Windows.Forms.GroupBox();
+            this.btnClearPlayerLevelTextColor = new System.Windows.Forms.Button();
+            this.btnPlayerLevelTextColor = new System.Windows.Forms.Button();
+            this.lblPortraitsPlayerLevelOpacity = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.portraitsPlayerLevelOpacity = new System.Windows.Forms.TrackBar();
+            this.chkPortraitsPlayerLevelTextShadow = new System.Windows.Forms.CheckBox();
+            this.btnClearPlayerLevelFont = new System.Windows.Forms.Button();
+            this.btnPlayerLevelFont = new System.Windows.Forms.Button();
+            this.chkPortraitsPlayerLevel = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage5.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -206,16 +243,17 @@
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mapZoom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.mapSize)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.iconOpacity)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.allIconOpacity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.opacity)).BeginInit();
             this.tabPage3.SuspendLayout();
             this.groupBox7.SuspendLayout();
-            this.grpPresets.SuspendLayout();
+            this.grpLines.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.buffSize)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.tabDrawing.SuspendLayout();
             this.tabIcon.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.iconOpacity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iconThickness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iconSize)).BeginInit();
             this.tabLabel.SuspendLayout();
@@ -226,12 +264,19 @@
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.itemDisplayForSeconds)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.soundVolume)).BeginInit();
+            this.tabPage8.SuspendLayout();
             this.tabPage7.SuspendLayout();
             this.grpHotkeys.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBoxAuthorizedWindowTitle.SuspendLayout();
             this.groupBox8.SuspendLayout();
+            this.groupBox9.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.grpPortraitArea.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portraitsAreaOpacity)).BeginInit();
+            this.groupBox10.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portraitsPlayerLevelOpacity)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -244,12 +289,13 @@
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage6);
+            this.tabControl1.Controls.Add(this.tabPage8);
             this.tabControl1.Controls.Add(this.tabPage7);
             this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Location = new System.Drawing.Point(12, 12);
+            this.tabControl1.Location = new System.Drawing.Point(12, 135);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(420, 351);
+            this.tabControl1.Size = new System.Drawing.Size(420, 353);
             this.tabControl1.TabIndex = 0;
             this.tabControl1.TabStop = false;
             // 
@@ -260,7 +306,7 @@
             this.tabPage5.Controls.Add(this.grpGameInfo);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Size = new System.Drawing.Size(412, 325);
+            this.tabPage5.Size = new System.Drawing.Size(412, 327);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Main";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -275,7 +321,7 @@
             this.groupBox5.Controls.Add(this.label11);
             this.groupBox5.Location = new System.Drawing.Point(11, 256);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(388, 58);
+            this.groupBox5.Size = new System.Drawing.Size(388, 60);
             this.groupBox5.TabIndex = 25;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Translation";
@@ -521,7 +567,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(412, 325);
+            this.tabPage1.Size = new System.Drawing.Size(412, 327);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Map";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -531,6 +577,8 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.btnClearExpRangeColor);
+            this.groupBox1.Controls.Add(this.btnExpRangeColor);
             this.groupBox1.Controls.Add(this.chkMonsterHealthBar);
             this.groupBox1.Controls.Add(this.btnClearBorderColor);
             this.groupBox1.Controls.Add(this.btnClearWalkableColor);
@@ -545,21 +593,45 @@
             this.groupBox1.Controls.Add(this.lblMapZoomValue);
             this.groupBox1.Controls.Add(this.lblZoom);
             this.groupBox1.Controls.Add(this.lblMapSizeValue);
-            this.groupBox1.Controls.Add(this.iconOpacity);
+            this.groupBox1.Controls.Add(this.allIconOpacity);
             this.groupBox1.Controls.Add(this.lblMapSize);
-            this.groupBox1.Controls.Add(this.lblIconOpacityValue);
+            this.groupBox1.Controls.Add(this.lblAllIconOpacityValue);
             this.groupBox1.Controls.Add(this.lblOpacityValue);
             this.groupBox1.Controls.Add(this.opacity);
             this.groupBox1.Controls.Add(this.lblOpacity);
             this.groupBox1.Controls.Add(this.chkToggleViaMap);
-            this.groupBox1.Controls.Add(this.lblIconOpacity);
+            this.groupBox1.Controls.Add(this.lblAllIconOpacity);
             this.groupBox1.Controls.Add(this.chkToggleViaPanels);
             this.groupBox1.Location = new System.Drawing.Point(11, 9);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(388, 305);
+            this.groupBox1.Size = new System.Drawing.Size(388, 308);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Rendering";
+            // 
+            // btnClearExpRangeColor
+            // 
+            this.btnClearExpRangeColor.FlatAppearance.BorderSize = 0;
+            this.btnClearExpRangeColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearExpRangeColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.btnClearExpRangeColor.Location = new System.Drawing.Point(360, 273);
+            this.btnClearExpRangeColor.Name = "btnClearExpRangeColor";
+            this.btnClearExpRangeColor.Size = new System.Drawing.Size(23, 23);
+            this.btnClearExpRangeColor.TabIndex = 27;
+            this.btnClearExpRangeColor.Text = "X";
+            this.btnClearExpRangeColor.UseVisualStyleBackColor = true;
+            this.btnClearExpRangeColor.Click += new System.EventHandler(this.btnClearExpRangeColor_Click);
+            // 
+            // btnExpRangeColor
+            // 
+            this.btnExpRangeColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExpRangeColor.Location = new System.Drawing.Point(262, 273);
+            this.btnExpRangeColor.Name = "btnExpRangeColor";
+            this.btnExpRangeColor.Size = new System.Drawing.Size(97, 23);
+            this.btnExpRangeColor.TabIndex = 28;
+            this.btnExpRangeColor.Text = "Exp Range Color";
+            this.btnExpRangeColor.UseVisualStyleBackColor = true;
+            this.btnExpRangeColor.Click += new System.EventHandler(this.btnExpRangeColor_Click);
             // 
             // chkMonsterHealthBar
             // 
@@ -577,7 +649,7 @@
             this.btnClearBorderColor.FlatAppearance.BorderSize = 0;
             this.btnClearBorderColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearBorderColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
-            this.btnClearBorderColor.Location = new System.Drawing.Point(232, 273);
+            this.btnClearBorderColor.Location = new System.Drawing.Point(229, 273);
             this.btnClearBorderColor.Name = "btnClearBorderColor";
             this.btnClearBorderColor.Size = new System.Drawing.Size(23, 23);
             this.btnClearBorderColor.TabIndex = 23;
@@ -612,7 +684,7 @@
             // btnBorderColor
             // 
             this.btnBorderColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnBorderColor.Location = new System.Drawing.Point(140, 273);
+            this.btnBorderColor.Location = new System.Drawing.Point(137, 273);
             this.btnBorderColor.Name = "btnBorderColor";
             this.btnBorderColor.Size = new System.Drawing.Size(91, 23);
             this.btnBorderColor.TabIndex = 23;
@@ -731,20 +803,20 @@
             this.lblMapSizeValue.Text = "1000";
             this.lblMapSizeValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // iconOpacity
+            // allIconOpacity
             // 
-            this.iconOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.allIconOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.iconOpacity.AutoSize = false;
-            this.iconOpacity.BackColor = System.Drawing.Color.White;
-            this.iconOpacity.LargeChange = 1;
-            this.iconOpacity.Location = new System.Drawing.Point(79, 52);
-            this.iconOpacity.Maximum = 20;
-            this.iconOpacity.Name = "iconOpacity";
-            this.iconOpacity.Size = new System.Drawing.Size(266, 27);
-            this.iconOpacity.TabIndex = 3;
-            this.iconOpacity.Scroll += new System.EventHandler(this.iconOpacity_Scroll);
-            this.iconOpacity.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.IgnoreMouseWheel);
+            this.allIconOpacity.AutoSize = false;
+            this.allIconOpacity.BackColor = System.Drawing.Color.White;
+            this.allIconOpacity.LargeChange = 1;
+            this.allIconOpacity.Location = new System.Drawing.Point(79, 52);
+            this.allIconOpacity.Maximum = 20;
+            this.allIconOpacity.Name = "allIconOpacity";
+            this.allIconOpacity.Size = new System.Drawing.Size(266, 27);
+            this.allIconOpacity.TabIndex = 3;
+            this.allIconOpacity.Scroll += new System.EventHandler(this.allIconOpacity_Scroll);
+            this.allIconOpacity.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.IgnoreMouseWheel);
             // 
             // lblMapSize
             // 
@@ -756,17 +828,17 @@
             this.lblMapSize.TabIndex = 11;
             this.lblMapSize.Text = "Map Size";
             // 
-            // lblIconOpacityValue
+            // lblAllIconOpacityValue
             // 
-            this.lblIconOpacityValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblIconOpacityValue.AutoSize = true;
-            this.lblIconOpacityValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconOpacityValue.Location = new System.Drawing.Point(351, 55);
-            this.lblIconOpacityValue.Name = "lblIconOpacityValue";
-            this.lblIconOpacityValue.Size = new System.Drawing.Size(31, 13);
-            this.lblIconOpacityValue.TabIndex = 5;
-            this.lblIconOpacityValue.Text = "1000";
-            this.lblIconOpacityValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblAllIconOpacityValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAllIconOpacityValue.AutoSize = true;
+            this.lblAllIconOpacityValue.BackColor = System.Drawing.Color.Transparent;
+            this.lblAllIconOpacityValue.Location = new System.Drawing.Point(351, 55);
+            this.lblAllIconOpacityValue.Name = "lblAllIconOpacityValue";
+            this.lblAllIconOpacityValue.Size = new System.Drawing.Size(31, 13);
+            this.lblAllIconOpacityValue.TabIndex = 5;
+            this.lblAllIconOpacityValue.Text = "1000";
+            this.lblAllIconOpacityValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblOpacityValue
             // 
@@ -816,15 +888,15 @@
             this.chkToggleViaMap.UseVisualStyleBackColor = true;
             this.chkToggleViaMap.CheckedChanged += new System.EventHandler(this.chkToggleViaMap_CheckedChanged);
             // 
-            // lblIconOpacity
+            // lblAllIconOpacity
             // 
-            this.lblIconOpacity.AutoSize = true;
-            this.lblIconOpacity.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconOpacity.Location = new System.Drawing.Point(6, 55);
-            this.lblIconOpacity.Name = "lblIconOpacity";
-            this.lblIconOpacity.Size = new System.Drawing.Size(67, 13);
-            this.lblIconOpacity.TabIndex = 4;
-            this.lblIconOpacity.Text = "Icon Opacity";
+            this.lblAllIconOpacity.AutoSize = true;
+            this.lblAllIconOpacity.BackColor = System.Drawing.Color.Transparent;
+            this.lblAllIconOpacity.Location = new System.Drawing.Point(6, 55);
+            this.lblAllIconOpacity.Name = "lblAllIconOpacity";
+            this.lblAllIconOpacity.Size = new System.Drawing.Size(67, 13);
+            this.lblAllIconOpacity.TabIndex = 4;
+            this.lblAllIconOpacity.Text = "Icon Opacity";
             // 
             // chkToggleViaPanels
             // 
@@ -840,12 +912,12 @@
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.groupBox7);
-            this.tabPage3.Controls.Add(this.grpPresets);
+            this.tabPage3.Controls.Add(this.grpLines);
             this.tabPage3.Controls.Add(this.groupBox3);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(412, 325);
+            this.tabPage3.Size = new System.Drawing.Size(412, 327);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Overlay";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -862,7 +934,7 @@
             this.groupBox7.Controls.Add(this.chkMana);
             this.groupBox7.Controls.Add(this.chkLifePerc);
             this.groupBox7.Controls.Add(this.chkLife);
-            this.groupBox7.Location = new System.Drawing.Point(11, 153);
+            this.groupBox7.Location = new System.Drawing.Point(11, 145);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(388, 90);
             this.groupBox7.TabIndex = 25;
@@ -883,7 +955,7 @@
             // chkResistances
             // 
             this.chkResistances.AutoSize = true;
-            this.chkResistances.Location = new System.Drawing.Point(102, 65);
+            this.chkResistances.Location = new System.Drawing.Point(116, 65);
             this.chkResistances.Name = "chkResistances";
             this.chkResistances.Size = new System.Drawing.Size(84, 17);
             this.chkResistances.TabIndex = 24;
@@ -894,7 +966,7 @@
             // chkExpProgress
             // 
             this.chkExpProgress.AutoSize = true;
-            this.chkExpProgress.Location = new System.Drawing.Point(240, 42);
+            this.chkExpProgress.Location = new System.Drawing.Point(233, 42);
             this.chkExpProgress.Name = "chkExpProgress";
             this.chkExpProgress.Size = new System.Drawing.Size(88, 17);
             this.chkExpProgress.TabIndex = 5;
@@ -905,7 +977,7 @@
             // chkCurrentLevel
             // 
             this.chkCurrentLevel.AutoSize = true;
-            this.chkCurrentLevel.Location = new System.Drawing.Point(240, 19);
+            this.chkCurrentLevel.Location = new System.Drawing.Point(233, 19);
             this.chkCurrentLevel.Name = "chkCurrentLevel";
             this.chkCurrentLevel.Size = new System.Drawing.Size(89, 17);
             this.chkCurrentLevel.TabIndex = 4;
@@ -916,7 +988,7 @@
             // chkManaPerc
             // 
             this.chkManaPerc.AutoSize = true;
-            this.chkManaPerc.Location = new System.Drawing.Point(102, 42);
+            this.chkManaPerc.Location = new System.Drawing.Point(116, 42);
             this.chkManaPerc.Name = "chkManaPerc";
             this.chkManaPerc.Size = new System.Drawing.Size(93, 17);
             this.chkManaPerc.TabIndex = 3;
@@ -938,7 +1010,7 @@
             // chkLifePerc
             // 
             this.chkLifePerc.AutoSize = true;
-            this.chkLifePerc.Location = new System.Drawing.Point(102, 19);
+            this.chkLifePerc.Location = new System.Drawing.Point(116, 19);
             this.chkLifePerc.Name = "chkLifePerc";
             this.chkLifePerc.Size = new System.Drawing.Size(83, 17);
             this.chkLifePerc.TabIndex = 1;
@@ -957,40 +1029,89 @@
             this.chkLife.UseVisualStyleBackColor = true;
             this.chkLife.CheckedChanged += new System.EventHandler(this.chkLife_CheckedChanged);
             // 
-            // grpPresets
+            // grpLines
             // 
-            this.grpPresets.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.grpLines.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.grpPresets.Controls.Add(this.lblMapLinesMode);
-            this.grpPresets.Controls.Add(this.cboMapLinesMode);
-            this.grpPresets.Location = new System.Drawing.Point(11, 263);
-            this.grpPresets.Name = "grpPresets";
-            this.grpPresets.Size = new System.Drawing.Size(388, 51);
-            this.grpPresets.TabIndex = 24;
-            this.grpPresets.TabStop = false;
-            this.grpPresets.Text = "Presets";
+            this.grpLines.Controls.Add(this.chkLinesShrines);
+            this.grpLines.Controls.Add(this.chkLinesWaypoint);
+            this.grpLines.Controls.Add(this.chkLinesQuest);
+            this.grpLines.Controls.Add(this.chkLinesNextArea);
+            this.grpLines.Controls.Add(this.chkLinesCorpse);
+            this.grpLines.Controls.Add(this.chkLinesHostiles);
+            this.grpLines.Location = new System.Drawing.Point(11, 245);
+            this.grpLines.Name = "grpLines";
+            this.grpLines.Size = new System.Drawing.Size(388, 71);
+            this.grpLines.TabIndex = 24;
+            this.grpLines.TabStop = false;
+            this.grpLines.Text = "Toggle Map Lines";
             // 
-            // lblMapLinesMode
+            // chkLinesShrines
             // 
-            this.lblMapLinesMode.AutoSize = true;
-            this.lblMapLinesMode.Location = new System.Drawing.Point(6, 24);
-            this.lblMapLinesMode.Name = "lblMapLinesMode";
-            this.lblMapLinesMode.Size = new System.Drawing.Size(86, 13);
-            this.lblMapLinesMode.TabIndex = 21;
-            this.lblMapLinesMode.Text = "Map Lines Mode";
-            this.lblMapLinesMode.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.chkLinesShrines.AutoSize = true;
+            this.chkLinesShrines.Location = new System.Drawing.Point(233, 23);
+            this.chkLinesShrines.Name = "chkLinesShrines";
+            this.chkLinesShrines.Size = new System.Drawing.Size(61, 17);
+            this.chkLinesShrines.TabIndex = 7;
+            this.chkLinesShrines.Text = "Shrines";
+            this.chkLinesShrines.UseVisualStyleBackColor = true;
+            this.chkLinesShrines.CheckedChanged += new System.EventHandler(this.chkLinesShrines_CheckedChanged);
             // 
-            // cboMapLinesMode
+            // chkLinesWaypoint
             // 
-            this.cboMapLinesMode.AllowDrop = true;
-            this.cboMapLinesMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cboMapLinesMode.FormattingEnabled = true;
-            this.cboMapLinesMode.Location = new System.Drawing.Point(117, 21);
-            this.cboMapLinesMode.Name = "cboMapLinesMode";
-            this.cboMapLinesMode.Size = new System.Drawing.Size(124, 21);
-            this.cboMapLinesMode.TabIndex = 20;
-            this.cboMapLinesMode.SelectedIndexChanged += new System.EventHandler(this.cboMapLinesMode_SelectedIndexChanged);
+            this.chkLinesWaypoint.AutoSize = true;
+            this.chkLinesWaypoint.Location = new System.Drawing.Point(233, 46);
+            this.chkLinesWaypoint.Name = "chkLinesWaypoint";
+            this.chkLinesWaypoint.Size = new System.Drawing.Size(76, 17);
+            this.chkLinesWaypoint.TabIndex = 6;
+            this.chkLinesWaypoint.Text = "Waypoints";
+            this.chkLinesWaypoint.UseVisualStyleBackColor = true;
+            this.chkLinesWaypoint.CheckedChanged += new System.EventHandler(this.chkLinesWaypoint_CheckedChanged);
+            // 
+            // chkLinesQuest
+            // 
+            this.chkLinesQuest.AutoSize = true;
+            this.chkLinesQuest.Location = new System.Drawing.Point(116, 46);
+            this.chkLinesQuest.Name = "chkLinesQuest";
+            this.chkLinesQuest.Size = new System.Drawing.Size(54, 17);
+            this.chkLinesQuest.TabIndex = 4;
+            this.chkLinesQuest.Text = "Quest";
+            this.chkLinesQuest.UseVisualStyleBackColor = true;
+            this.chkLinesQuest.CheckedChanged += new System.EventHandler(this.chkLinesQuest_CheckedChanged);
+            // 
+            // chkLinesNextArea
+            // 
+            this.chkLinesNextArea.AutoSize = true;
+            this.chkLinesNextArea.Location = new System.Drawing.Point(116, 23);
+            this.chkLinesNextArea.Name = "chkLinesNextArea";
+            this.chkLinesNextArea.Size = new System.Drawing.Size(73, 17);
+            this.chkLinesNextArea.TabIndex = 3;
+            this.chkLinesNextArea.Text = "Next Area";
+            this.chkLinesNextArea.UseVisualStyleBackColor = true;
+            this.chkLinesNextArea.CheckedChanged += new System.EventHandler(this.chkLinesNextArea_CheckedChanged);
+            // 
+            // chkLinesCorpse
+            // 
+            this.chkLinesCorpse.AutoSize = true;
+            this.chkLinesCorpse.Location = new System.Drawing.Point(9, 46);
+            this.chkLinesCorpse.Name = "chkLinesCorpse";
+            this.chkLinesCorpse.Size = new System.Drawing.Size(59, 17);
+            this.chkLinesCorpse.TabIndex = 2;
+            this.chkLinesCorpse.Text = "Corpse";
+            this.chkLinesCorpse.UseVisualStyleBackColor = true;
+            this.chkLinesCorpse.CheckedChanged += new System.EventHandler(this.chkLinesCorpse_CheckedChanged);
+            // 
+            // chkLinesHostiles
+            // 
+            this.chkLinesHostiles.AutoSize = true;
+            this.chkLinesHostiles.Location = new System.Drawing.Point(9, 23);
+            this.chkLinesHostiles.Name = "chkLinesHostiles";
+            this.chkLinesHostiles.Size = new System.Drawing.Size(95, 17);
+            this.chkLinesHostiles.TabIndex = 1;
+            this.chkLinesHostiles.Text = "Hostile Players";
+            this.chkLinesHostiles.UseVisualStyleBackColor = true;
+            this.chkLinesHostiles.CheckedChanged += new System.EventHandler(this.chkLinesHostiles_CheckedChanged);
             // 
             // groupBox3
             // 
@@ -1133,7 +1254,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(412, 325);
+            this.tabPage2.Size = new System.Drawing.Size(412, 327);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Drawing";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1146,16 +1267,19 @@
             this.tabDrawing.Controls.Add(this.tabIcon);
             this.tabDrawing.Controls.Add(this.tabLabel);
             this.tabDrawing.Controls.Add(this.tabLine);
-            this.tabDrawing.Location = new System.Drawing.Point(3, 33);
+            this.tabDrawing.Location = new System.Drawing.Point(9, 33);
             this.tabDrawing.Name = "tabDrawing";
             this.tabDrawing.SelectedIndex = 0;
-            this.tabDrawing.Size = new System.Drawing.Size(406, 286);
+            this.tabDrawing.Size = new System.Drawing.Size(397, 286);
             this.tabDrawing.TabIndex = 10;
             this.tabDrawing.Visible = false;
             this.tabDrawing.SelectedIndexChanged += new System.EventHandler(this.tabDrawing_SelectedIndexChanged);
             // 
             // tabIcon
             // 
+            this.tabIcon.Controls.Add(this.lblIconOpacityValue);
+            this.tabIcon.Controls.Add(this.lblIconOpacity);
+            this.tabIcon.Controls.Add(this.iconOpacity);
             this.tabIcon.Controls.Add(this.btnIconColor);
             this.tabIcon.Controls.Add(this.btnIconOutlineColor);
             this.tabIcon.Controls.Add(this.btnClearOutlineColor);
@@ -1171,10 +1295,47 @@
             this.tabIcon.Location = new System.Drawing.Point(4, 22);
             this.tabIcon.Name = "tabIcon";
             this.tabIcon.Padding = new System.Windows.Forms.Padding(3);
-            this.tabIcon.Size = new System.Drawing.Size(398, 260);
+            this.tabIcon.Size = new System.Drawing.Size(389, 260);
             this.tabIcon.TabIndex = 0;
             this.tabIcon.Text = "Icon";
             this.tabIcon.UseVisualStyleBackColor = true;
+            // 
+            // lblIconOpacityValue
+            // 
+            this.lblIconOpacityValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblIconOpacityValue.AutoSize = true;
+            this.lblIconOpacityValue.BackColor = System.Drawing.Color.Transparent;
+            this.lblIconOpacityValue.Location = new System.Drawing.Point(352, 211);
+            this.lblIconOpacityValue.Name = "lblIconOpacityValue";
+            this.lblIconOpacityValue.Size = new System.Drawing.Size(31, 13);
+            this.lblIconOpacityValue.TabIndex = 29;
+            this.lblIconOpacityValue.Text = "1000";
+            this.lblIconOpacityValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblIconOpacity
+            // 
+            this.lblIconOpacity.AutoSize = true;
+            this.lblIconOpacity.BackColor = System.Drawing.Color.Transparent;
+            this.lblIconOpacity.Location = new System.Drawing.Point(8, 211);
+            this.lblIconOpacity.Name = "lblIconOpacity";
+            this.lblIconOpacity.Size = new System.Drawing.Size(43, 13);
+            this.lblIconOpacity.TabIndex = 28;
+            this.lblIconOpacity.Text = "Opacity";
+            // 
+            // iconOpacity
+            // 
+            this.iconOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.iconOpacity.AutoSize = false;
+            this.iconOpacity.BackColor = System.Drawing.Color.White;
+            this.iconOpacity.LargeChange = 1;
+            this.iconOpacity.Location = new System.Drawing.Point(75, 209);
+            this.iconOpacity.Maximum = 20;
+            this.iconOpacity.Name = "iconOpacity";
+            this.iconOpacity.Size = new System.Drawing.Size(271, 27);
+            this.iconOpacity.TabIndex = 27;
+            this.iconOpacity.Value = 1;
+            this.iconOpacity.Scroll += new System.EventHandler(this.iconOpacity_Scroll);
             // 
             // btnIconColor
             // 
@@ -1231,7 +1392,7 @@
             this.lblIconThicknessValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblIconThicknessValue.AutoSize = true;
             this.lblIconThicknessValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconThicknessValue.Location = new System.Drawing.Point(361, 161);
+            this.lblIconThicknessValue.Location = new System.Drawing.Point(352, 161);
             this.lblIconThicknessValue.Name = "lblIconThicknessValue";
             this.lblIconThicknessValue.Size = new System.Drawing.Size(31, 13);
             this.lblIconThicknessValue.TabIndex = 24;
@@ -1243,7 +1404,7 @@
             this.lblIconSizeValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblIconSizeValue.AutoSize = true;
             this.lblIconSizeValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblIconSizeValue.Location = new System.Drawing.Point(361, 111);
+            this.lblIconSizeValue.Location = new System.Drawing.Point(352, 111);
             this.lblIconSizeValue.Name = "lblIconSizeValue";
             this.lblIconSizeValue.Size = new System.Drawing.Size(31, 13);
             this.lblIconSizeValue.TabIndex = 23;
@@ -1270,7 +1431,7 @@
             this.iconThickness.Location = new System.Drawing.Point(75, 159);
             this.iconThickness.Maximum = 20;
             this.iconThickness.Name = "iconThickness";
-            this.iconThickness.Size = new System.Drawing.Size(280, 27);
+            this.iconThickness.Size = new System.Drawing.Size(271, 27);
             this.iconThickness.TabIndex = 16;
             this.iconThickness.Value = 1;
             this.iconThickness.Scroll += new System.EventHandler(this.iconThickness_Scroll);
@@ -1296,7 +1457,7 @@
             this.iconSize.Location = new System.Drawing.Point(75, 109);
             this.iconSize.Maximum = 20;
             this.iconSize.Name = "iconSize";
-            this.iconSize.Size = new System.Drawing.Size(280, 27);
+            this.iconSize.Size = new System.Drawing.Size(271, 27);
             this.iconSize.TabIndex = 14;
             this.iconSize.Value = 1;
             this.iconSize.Scroll += new System.EventHandler(this.iconSize_Scroll);
@@ -1331,7 +1492,7 @@
             this.tabLabel.Location = new System.Drawing.Point(4, 22);
             this.tabLabel.Name = "tabLabel";
             this.tabLabel.Padding = new System.Windows.Forms.Padding(3);
-            this.tabLabel.Size = new System.Drawing.Size(398, 260);
+            this.tabLabel.Size = new System.Drawing.Size(389, 260);
             this.tabLabel.TabIndex = 1;
             this.tabLabel.Text = "Label";
             this.tabLabel.UseVisualStyleBackColor = true;
@@ -1409,7 +1570,7 @@
             this.tabLine.Controls.Add(this.btnLineColor);
             this.tabLine.Location = new System.Drawing.Point(4, 22);
             this.tabLine.Name = "tabLine";
-            this.tabLine.Size = new System.Drawing.Size(398, 260);
+            this.tabLine.Size = new System.Drawing.Size(389, 260);
             this.tabLine.TabIndex = 2;
             this.tabLine.Text = "Line";
             this.tabLine.UseVisualStyleBackColor = true;
@@ -1432,7 +1593,7 @@
             this.lblLineThicknessSizeValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblLineThicknessSizeValue.AutoSize = true;
             this.lblLineThicknessSizeValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblLineThicknessSizeValue.Location = new System.Drawing.Point(352, 111);
+            this.lblLineThicknessSizeValue.Location = new System.Drawing.Point(343, 111);
             this.lblLineThicknessSizeValue.Name = "lblLineThicknessSizeValue";
             this.lblLineThicknessSizeValue.Size = new System.Drawing.Size(31, 13);
             this.lblLineThicknessSizeValue.TabIndex = 27;
@@ -1444,7 +1605,7 @@
             this.lblLineArrowSizeValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblLineArrowSizeValue.AutoSize = true;
             this.lblLineArrowSizeValue.BackColor = System.Drawing.Color.Transparent;
-            this.lblLineArrowSizeValue.Location = new System.Drawing.Point(352, 61);
+            this.lblLineArrowSizeValue.Location = new System.Drawing.Point(343, 61);
             this.lblLineArrowSizeValue.Name = "lblLineArrowSizeValue";
             this.lblLineArrowSizeValue.Size = new System.Drawing.Size(31, 13);
             this.lblLineArrowSizeValue.TabIndex = 26;
@@ -1471,7 +1632,7 @@
             this.lineThicknessSize.Location = new System.Drawing.Point(73, 109);
             this.lineThicknessSize.Maximum = 30;
             this.lineThicknessSize.Name = "lineThicknessSize";
-            this.lineThicknessSize.Size = new System.Drawing.Size(273, 27);
+            this.lineThicknessSize.Size = new System.Drawing.Size(264, 27);
             this.lineThicknessSize.TabIndex = 22;
             this.lineThicknessSize.Value = 1;
             this.lineThicknessSize.Scroll += new System.EventHandler(this.lineThicknessSize_Scroll);
@@ -1497,7 +1658,7 @@
             this.lineArrowSize.Location = new System.Drawing.Point(73, 59);
             this.lineArrowSize.Maximum = 20;
             this.lineArrowSize.Name = "lineArrowSize";
-            this.lineArrowSize.Size = new System.Drawing.Size(273, 27);
+            this.lineArrowSize.Size = new System.Drawing.Size(264, 27);
             this.lineArrowSize.TabIndex = 20;
             this.lineArrowSize.Value = 1;
             this.lineArrowSize.Scroll += new System.EventHandler(this.lineArrowSize_Scroll);
@@ -1541,7 +1702,7 @@
             this.tabPage6.Controls.Add(this.groupBox6);
             this.tabPage6.Location = new System.Drawing.Point(4, 22);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Size = new System.Drawing.Size(412, 325);
+            this.tabPage6.Size = new System.Drawing.Size(412, 327);
             this.tabPage6.TabIndex = 5;
             this.tabPage6.Text = "Item Log";
             this.tabPage6.UseVisualStyleBackColor = true;
@@ -1550,6 +1711,7 @@
             // 
             this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox6.Controls.Add(this.cboItemLogSound);
             this.groupBox6.Controls.Add(this.btnClearSuperiorColor);
             this.groupBox6.Controls.Add(this.btnSuperiorColor);
             this.groupBox6.Controls.Add(this.btnClearUniqueColor);
@@ -1579,10 +1741,8 @@
             this.groupBox6.Controls.Add(this.label10);
             this.groupBox6.Controls.Add(this.label17);
             this.groupBox6.Controls.Add(this.label18);
-            this.groupBox6.Controls.Add(this.txtSoundFile);
             this.groupBox6.Controls.Add(this.cboItemLogPosition);
             this.groupBox6.Controls.Add(this.txtFilterFile);
-            this.groupBox6.Controls.Add(this.label20);
             this.groupBox6.Controls.Add(this.chkItemLogItemsOnIdentify);
             this.groupBox6.Controls.Add(this.label21);
             this.groupBox6.Location = new System.Drawing.Point(11, 9);
@@ -1591,6 +1751,16 @@
             this.groupBox6.TabIndex = 0;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Item Log";
+            // 
+            // cboItemLogSound
+            // 
+            this.cboItemLogSound.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboItemLogSound.FormattingEnabled = true;
+            this.cboItemLogSound.Location = new System.Drawing.Point(256, 88);
+            this.cboItemLogSound.Name = "cboItemLogSound";
+            this.cboItemLogSound.Size = new System.Drawing.Size(121, 21);
+            this.cboItemLogSound.TabIndex = 55;
+            this.cboItemLogSound.SelectedIndexChanged += new System.EventHandler(this.soundSelect_SelectedIndexChanged);
             // 
             // btnClearSuperiorColor
             // 
@@ -1930,17 +2100,6 @@
             this.label18.TabIndex = 6;
             this.label18.Text = "Hide item after";
             // 
-            // txtSoundFile
-            // 
-            this.txtSoundFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSoundFile.Location = new System.Drawing.Point(256, 88);
-            this.txtSoundFile.Name = "txtSoundFile";
-            this.txtSoundFile.Size = new System.Drawing.Size(122, 20);
-            this.txtSoundFile.TabIndex = 5;
-            this.txtSoundFile.TextChanged += new System.EventHandler(this.txtSoundFile_TextChanged);
-            this.txtSoundFile.LostFocus += new System.EventHandler(this.txtSoundFile_LostFocus);
-            // 
             // cboItemLogPosition
             // 
             this.cboItemLogPosition.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -1962,17 +2121,6 @@
             this.txtFilterFile.Size = new System.Drawing.Size(122, 20);
             this.txtFilterFile.TabIndex = 2;
             this.txtFilterFile.TextChanged += new System.EventHandler(this.txtFilterFile_TextChanged);
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F);
-            this.label20.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label20.Location = new System.Drawing.Point(255, 111);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(115, 13);
-            this.label20.TabIndex = 25;
-            this.label20.Text = "Leave blank for default";
             // 
             // chkItemLogItemsOnIdentify
             // 
@@ -1996,13 +2144,25 @@
             this.label21.TabIndex = 26;
             this.label21.Text = "Requires restart";
             // 
+            // tabPage8
+            // 
+            this.tabPage8.Controls.Add(this.groupBox10);
+            this.tabPage8.Controls.Add(this.grpPortraitArea);
+            this.tabPage8.Location = new System.Drawing.Point(4, 22);
+            this.tabPage8.Name = "tabPage8";
+            this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage8.Size = new System.Drawing.Size(412, 327);
+            this.tabPage8.TabIndex = 7;
+            this.tabPage8.Text = "Portraits";
+            this.tabPage8.UseVisualStyleBackColor = true;
+            // 
             // tabPage7
             // 
             this.tabPage7.Controls.Add(this.grpHotkeys);
             this.tabPage7.Location = new System.Drawing.Point(4, 22);
             this.tabPage7.Name = "tabPage7";
             this.tabPage7.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage7.Size = new System.Drawing.Size(412, 325);
+            this.tabPage7.Size = new System.Drawing.Size(412, 327);
             this.tabPage7.TabIndex = 6;
             this.tabPage7.Text = "Hotkeys";
             this.tabPage7.UseVisualStyleBackColor = true;
@@ -2011,11 +2171,13 @@
             // 
             this.grpHotkeys.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpHotkeys.Controls.Add(this.txtToggleConfigKey);
+            this.grpHotkeys.Controls.Add(this.label4);
             this.grpHotkeys.Controls.Add(this.txtHideMapKey);
             this.grpHotkeys.Controls.Add(this.lblHideMapKey);
             this.grpHotkeys.Controls.Add(this.txtZoomOutKey);
             this.grpHotkeys.Controls.Add(this.txtZoomInKey);
-            this.grpHotkeys.Controls.Add(this.txtAreaLevelKey);
+            this.grpHotkeys.Controls.Add(this.txtMapPositionsKey);
             this.grpHotkeys.Controls.Add(this.txtToggleMapKey);
             this.grpHotkeys.Controls.Add(this.txtExportItemsKey);
             this.grpHotkeys.Controls.Add(this.label15);
@@ -2029,6 +2191,25 @@
             this.grpHotkeys.TabIndex = 9;
             this.grpHotkeys.TabStop = false;
             this.grpHotkeys.Text = "Hotkeys";
+            // 
+            // txtToggleConfigKey
+            // 
+            this.txtToggleConfigKey.Location = new System.Drawing.Point(160, 180);
+            this.txtToggleConfigKey.MaxLength = 1;
+            this.txtToggleConfigKey.Name = "txtToggleConfigKey";
+            this.txtToggleConfigKey.Size = new System.Drawing.Size(94, 20);
+            this.txtToggleConfigKey.TabIndex = 20;
+            this.txtToggleConfigKey.TabStop = false;
+            this.txtToggleConfigKey.TextChanged += new System.EventHandler(this.txtToggleConfigKey_TextChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 183);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(136, 13);
+            this.label4.TabIndex = 21;
+            this.label4.Text = "Toggle Config Window Key";
             // 
             // txtHideMapKey
             // 
@@ -2069,15 +2250,15 @@
             this.txtZoomInKey.TabStop = false;
             this.txtZoomInKey.TextChanged += new System.EventHandler(this.txtZoomInKey_TextChanged);
             // 
-            // txtAreaLevelKey
+            // txtMapPositionsKey
             // 
-            this.txtAreaLevelKey.Location = new System.Drawing.Point(160, 73);
-            this.txtAreaLevelKey.MaxLength = 1;
-            this.txtAreaLevelKey.Name = "txtAreaLevelKey";
-            this.txtAreaLevelKey.Size = new System.Drawing.Size(94, 20);
-            this.txtAreaLevelKey.TabIndex = 13;
-            this.txtAreaLevelKey.TabStop = false;
-            this.txtAreaLevelKey.TextChanged += new System.EventHandler(this.txtAreaLevelKey_TextChanged);
+            this.txtMapPositionsKey.Location = new System.Drawing.Point(160, 73);
+            this.txtMapPositionsKey.MaxLength = 1;
+            this.txtMapPositionsKey.Name = "txtMapPositionsKey";
+            this.txtMapPositionsKey.Size = new System.Drawing.Size(94, 20);
+            this.txtMapPositionsKey.TabIndex = 13;
+            this.txtMapPositionsKey.TabStop = false;
+            this.txtMapPositionsKey.TextChanged += new System.EventHandler(this.txtMapPositionsKey_TextChanged);
             // 
             // txtToggleMapKey
             // 
@@ -2122,9 +2303,9 @@
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(6, 76);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(115, 13);
+            this.label13.Size = new System.Drawing.Size(123, 13);
             this.label13.TabIndex = 9;
-            this.label13.Text = "Toggle Area Level Key";
+            this.label13.Text = "Cycle Map Positions Key";
             // 
             // label12
             // 
@@ -2151,7 +2332,7 @@
             this.tabPage4.Controls.Add(this.groupBox8);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(412, 325);
+            this.tabPage4.Size = new System.Drawing.Size(412, 327);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Advanced";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -2210,7 +2391,7 @@
             this.groupBoxAuthorizedWindowTitle.Controls.Add(this.btnRemoveAuthorizedWindowTitle);
             this.groupBoxAuthorizedWindowTitle.Controls.Add(this.btnAddAuthorizedWindowTitle);
             this.groupBoxAuthorizedWindowTitle.Controls.Add(this.lstAuthorizedWindowTitle);
-            this.groupBoxAuthorizedWindowTitle.Location = new System.Drawing.Point(11, 115);
+            this.groupBoxAuthorizedWindowTitle.Location = new System.Drawing.Point(11, 123);
             this.groupBoxAuthorizedWindowTitle.Name = "groupBoxAuthorizedWindowTitle";
             this.groupBoxAuthorizedWindowTitle.Size = new System.Drawing.Size(388, 124);
             this.groupBoxAuthorizedWindowTitle.TabIndex = 2;
@@ -2265,7 +2446,7 @@
             this.groupBox8.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox8.Controls.Add(this.label3);
             this.groupBox8.Controls.Add(this.chkDPIAware);
-            this.groupBox8.Location = new System.Drawing.Point(11, 245);
+            this.groupBox8.Location = new System.Drawing.Point(11, 258);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(388, 58);
             this.groupBox8.TabIndex = 29;
@@ -2290,11 +2471,341 @@
             this.chkDPIAware.UseVisualStyleBackColor = true;
             this.chkDPIAware.CheckedChanged += new System.EventHandler(this.chkDPIAware_CheckedChanged);
             // 
+            // chkLinesMagicFindArea
+            // 
+            this.chkLinesMagicFindArea.AutoSize = true;
+            this.chkLinesMagicFindArea.Location = new System.Drawing.Point(116, 23);
+            this.chkLinesMagicFindArea.Name = "chkLinesMagicFindArea";
+            this.chkLinesMagicFindArea.Size = new System.Drawing.Size(103, 17);
+            this.chkLinesMagicFindArea.TabIndex = 5;
+            this.chkLinesMagicFindArea.Text = "Magic Find Area";
+            this.chkLinesMagicFindArea.UseVisualStyleBackColor = true;
+            // 
+            // groupBox9
+            // 
+            this.groupBox9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox9.Controls.Add(this.label6);
+            this.groupBox9.Controls.Add(this.linkWebsite);
+            this.groupBox9.Location = new System.Drawing.Point(12, 494);
+            this.groupBox9.Name = "groupBox9";
+            this.groupBox9.Size = new System.Drawing.Size(418, 64);
+            this.groupBox9.TabIndex = 5;
+            this.groupBox9.TabStop = false;
+            // 
+            // label6
+            // 
+            this.label6.Location = new System.Drawing.Point(6, 34);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(400, 23);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "100% Free Software and Support. If you paid for anything, you got scammed.";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // linkWebsite
+            // 
+            this.linkWebsite.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+            this.linkWebsite.Location = new System.Drawing.Point(6, 12);
+            this.linkWebsite.Name = "linkWebsite";
+            this.linkWebsite.Size = new System.Drawing.Size(400, 23);
+            this.linkWebsite.TabIndex = 5;
+            this.linkWebsite.TabStop = true;
+            this.linkWebsite.Text = "https://mapassist.github.io/";
+            this.linkWebsite.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.linkWebsite.VisitedLinkColor = System.Drawing.Color.Blue;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::MapAssist.Properties.Resources.Banner;
+            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(416, 117);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            // 
+            // grpPortraitArea
+            // 
+            this.grpPortraitArea.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpPortraitArea.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.grpPortraitArea.Controls.Add(this.btnClearAreaTextColor);
+            this.grpPortraitArea.Controls.Add(this.btnAreaTextColor);
+            this.grpPortraitArea.Controls.Add(this.lblPortraitsAreaOpacity);
+            this.grpPortraitArea.Controls.Add(this.label19);
+            this.grpPortraitArea.Controls.Add(this.portraitsAreaOpacity);
+            this.grpPortraitArea.Controls.Add(this.chkPortraitsAreaTextShadow);
+            this.grpPortraitArea.Controls.Add(this.btnClearAreaFont);
+            this.grpPortraitArea.Controls.Add(this.btnAreaFont);
+            this.grpPortraitArea.Controls.Add(this.chkPortraitsAreaLevel);
+            this.grpPortraitArea.Controls.Add(this.chkPortraitsArea);
+            this.grpPortraitArea.Location = new System.Drawing.Point(11, 9);
+            this.grpPortraitArea.Name = "grpPortraitArea";
+            this.grpPortraitArea.Size = new System.Drawing.Size(388, 120);
+            this.grpPortraitArea.TabIndex = 24;
+            this.grpPortraitArea.TabStop = false;
+            this.grpPortraitArea.Text = "Area";
+            // 
+            // chkPortraitsAreaTextShadow
+            // 
+            this.chkPortraitsAreaTextShadow.AutoSize = true;
+            this.chkPortraitsAreaTextShadow.Location = new System.Drawing.Point(128, 50);
+            this.chkPortraitsAreaTextShadow.Name = "chkPortraitsAreaTextShadow";
+            this.chkPortraitsAreaTextShadow.Size = new System.Drawing.Size(89, 17);
+            this.chkPortraitsAreaTextShadow.TabIndex = 34;
+            this.chkPortraitsAreaTextShadow.Text = "Text Shadow";
+            this.chkPortraitsAreaTextShadow.UseVisualStyleBackColor = true;
+            this.chkPortraitsAreaTextShadow.CheckedChanged += new System.EventHandler(this.chkPortraitsAreaTextShadow_CheckedChanged);
+            // 
+            // btnClearAreaFont
+            // 
+            this.btnClearAreaFont.FlatAppearance.BorderSize = 0;
+            this.btnClearAreaFont.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearAreaFont.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.btnClearAreaFont.Location = new System.Drawing.Point(202, 19);
+            this.btnClearAreaFont.Name = "btnClearAreaFont";
+            this.btnClearAreaFont.Size = new System.Drawing.Size(23, 23);
+            this.btnClearAreaFont.TabIndex = 33;
+            this.btnClearAreaFont.Text = "X";
+            this.btnClearAreaFont.UseVisualStyleBackColor = true;
+            this.btnClearAreaFont.Click += new System.EventHandler(this.btnClearAreaFont_Click);
+            // 
+            // btnAreaFont
+            // 
+            this.btnAreaFont.BackColor = System.Drawing.Color.Transparent;
+            this.btnAreaFont.Location = new System.Drawing.Point(127, 19);
+            this.btnAreaFont.Name = "btnAreaFont";
+            this.btnAreaFont.Size = new System.Drawing.Size(75, 23);
+            this.btnAreaFont.TabIndex = 32;
+            this.btnAreaFont.Text = "Font";
+            this.btnAreaFont.UseVisualStyleBackColor = false;
+            this.btnAreaFont.Click += new System.EventHandler(this.btnAreaFont_Click);
+            // 
+            // chkPortraitsAreaLevel
+            // 
+            this.chkPortraitsAreaLevel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkPortraitsAreaLevel.AutoSize = true;
+            this.chkPortraitsAreaLevel.Location = new System.Drawing.Point(11, 50);
+            this.chkPortraitsAreaLevel.Name = "chkPortraitsAreaLevel";
+            this.chkPortraitsAreaLevel.Size = new System.Drawing.Size(77, 17);
+            this.chkPortraitsAreaLevel.TabIndex = 41;
+            this.chkPortraitsAreaLevel.Text = "Area Level";
+            this.chkPortraitsAreaLevel.UseVisualStyleBackColor = true;
+            this.chkPortraitsAreaLevel.CheckedChanged += new System.EventHandler(this.chkPortraitsAreaLevel_CheckedChanged);
+            // 
+            // chkPortraitsArea
+            // 
+            this.chkPortraitsArea.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkPortraitsArea.AutoSize = true;
+            this.chkPortraitsArea.Location = new System.Drawing.Point(11, 23);
+            this.chkPortraitsArea.Name = "chkPortraitsArea";
+            this.chkPortraitsArea.Size = new System.Drawing.Size(59, 17);
+            this.chkPortraitsArea.TabIndex = 16;
+            this.chkPortraitsArea.Text = "Enable";
+            this.chkPortraitsArea.UseVisualStyleBackColor = true;
+            this.chkPortraitsArea.CheckedChanged += new System.EventHandler(this.chkPortraitsArea_CheckedChanged);
+            // 
+            // lblPortraitsAreaOpacity
+            // 
+            this.lblPortraitsAreaOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPortraitsAreaOpacity.AutoSize = true;
+            this.lblPortraitsAreaOpacity.BackColor = System.Drawing.Color.Transparent;
+            this.lblPortraitsAreaOpacity.Location = new System.Drawing.Point(351, 79);
+            this.lblPortraitsAreaOpacity.Name = "lblPortraitsAreaOpacity";
+            this.lblPortraitsAreaOpacity.Size = new System.Drawing.Size(31, 13);
+            this.lblPortraitsAreaOpacity.TabIndex = 44;
+            this.lblPortraitsAreaOpacity.Text = "1000";
+            this.lblPortraitsAreaOpacity.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.BackColor = System.Drawing.Color.Transparent;
+            this.label19.Location = new System.Drawing.Point(7, 79);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(43, 13);
+            this.label19.TabIndex = 43;
+            this.label19.Text = "Opacity";
+            // 
+            // portraitsAreaOpacity
+            // 
+            this.portraitsAreaOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.portraitsAreaOpacity.AutoSize = false;
+            this.portraitsAreaOpacity.BackColor = System.Drawing.Color.White;
+            this.portraitsAreaOpacity.LargeChange = 1;
+            this.portraitsAreaOpacity.Location = new System.Drawing.Point(74, 77);
+            this.portraitsAreaOpacity.Maximum = 20;
+            this.portraitsAreaOpacity.Name = "portraitsAreaOpacity";
+            this.portraitsAreaOpacity.Size = new System.Drawing.Size(271, 27);
+            this.portraitsAreaOpacity.TabIndex = 42;
+            this.portraitsAreaOpacity.Value = 1;
+            this.portraitsAreaOpacity.Scroll += new System.EventHandler(this.portraitsAreaOpacity_Scroll);
+            // 
+            // btnClearAreaTextColor
+            // 
+            this.btnClearAreaTextColor.FlatAppearance.BorderSize = 0;
+            this.btnClearAreaTextColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearAreaTextColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.btnClearAreaTextColor.Location = new System.Drawing.Point(355, 19);
+            this.btnClearAreaTextColor.Name = "btnClearAreaTextColor";
+            this.btnClearAreaTextColor.Size = new System.Drawing.Size(23, 23);
+            this.btnClearAreaTextColor.TabIndex = 45;
+            this.btnClearAreaTextColor.Text = "X";
+            this.btnClearAreaTextColor.UseVisualStyleBackColor = true;
+            this.btnClearAreaTextColor.Click += new System.EventHandler(this.btnClearAreaTextColor_Click);
+            // 
+            // btnAreaTextColor
+            // 
+            this.btnAreaTextColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAreaTextColor.Location = new System.Drawing.Point(263, 19);
+            this.btnAreaTextColor.Name = "btnAreaTextColor";
+            this.btnAreaTextColor.Size = new System.Drawing.Size(91, 23);
+            this.btnAreaTextColor.TabIndex = 46;
+            this.btnAreaTextColor.Text = "Text Color";
+            this.btnAreaTextColor.UseVisualStyleBackColor = true;
+            this.btnAreaTextColor.Click += new System.EventHandler(this.btnAreaTextColor_Click);
+            // 
+            // groupBox10
+            // 
+            this.groupBox10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox10.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox10.Controls.Add(this.btnClearPlayerLevelTextColor);
+            this.groupBox10.Controls.Add(this.btnPlayerLevelTextColor);
+            this.groupBox10.Controls.Add(this.lblPortraitsPlayerLevelOpacity);
+            this.groupBox10.Controls.Add(this.label23);
+            this.groupBox10.Controls.Add(this.portraitsPlayerLevelOpacity);
+            this.groupBox10.Controls.Add(this.chkPortraitsPlayerLevelTextShadow);
+            this.groupBox10.Controls.Add(this.btnClearPlayerLevelFont);
+            this.groupBox10.Controls.Add(this.btnPlayerLevelFont);
+            this.groupBox10.Controls.Add(this.chkPortraitsPlayerLevel);
+            this.groupBox10.Location = new System.Drawing.Point(11, 138);
+            this.groupBox10.Name = "groupBox10";
+            this.groupBox10.Size = new System.Drawing.Size(388, 120);
+            this.groupBox10.TabIndex = 25;
+            this.groupBox10.TabStop = false;
+            this.groupBox10.Text = "Player Level";
+            // 
+            // btnClearPlayerLevelTextColor
+            // 
+            this.btnClearPlayerLevelTextColor.FlatAppearance.BorderSize = 0;
+            this.btnClearPlayerLevelTextColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearPlayerLevelTextColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.btnClearPlayerLevelTextColor.Location = new System.Drawing.Point(355, 19);
+            this.btnClearPlayerLevelTextColor.Name = "btnClearPlayerLevelTextColor";
+            this.btnClearPlayerLevelTextColor.Size = new System.Drawing.Size(23, 23);
+            this.btnClearPlayerLevelTextColor.TabIndex = 45;
+            this.btnClearPlayerLevelTextColor.Text = "X";
+            this.btnClearPlayerLevelTextColor.UseVisualStyleBackColor = true;
+            this.btnClearPlayerLevelTextColor.Click += new System.EventHandler(this.btnClearPlayerLevelTextColor_Click);
+            // 
+            // btnPlayerLevelTextColor
+            // 
+            this.btnPlayerLevelTextColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPlayerLevelTextColor.Location = new System.Drawing.Point(263, 19);
+            this.btnPlayerLevelTextColor.Name = "btnPlayerLevelTextColor";
+            this.btnPlayerLevelTextColor.Size = new System.Drawing.Size(91, 23);
+            this.btnPlayerLevelTextColor.TabIndex = 46;
+            this.btnPlayerLevelTextColor.Text = "Text Color";
+            this.btnPlayerLevelTextColor.UseVisualStyleBackColor = true;
+            this.btnPlayerLevelTextColor.Click += new System.EventHandler(this.btnPlayerLevelTextColor_Click);
+            // 
+            // lblPortraitsPlayerLevelOpacity
+            // 
+            this.lblPortraitsPlayerLevelOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPortraitsPlayerLevelOpacity.AutoSize = true;
+            this.lblPortraitsPlayerLevelOpacity.BackColor = System.Drawing.Color.Transparent;
+            this.lblPortraitsPlayerLevelOpacity.Location = new System.Drawing.Point(351, 79);
+            this.lblPortraitsPlayerLevelOpacity.Name = "lblPortraitsPlayerLevelOpacity";
+            this.lblPortraitsPlayerLevelOpacity.Size = new System.Drawing.Size(31, 13);
+            this.lblPortraitsPlayerLevelOpacity.TabIndex = 44;
+            this.lblPortraitsPlayerLevelOpacity.Text = "1000";
+            this.lblPortraitsPlayerLevelOpacity.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.BackColor = System.Drawing.Color.Transparent;
+            this.label23.Location = new System.Drawing.Point(7, 79);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(43, 13);
+            this.label23.TabIndex = 43;
+            this.label23.Text = "Opacity";
+            // 
+            // portraitsPlayerLevelOpacity
+            // 
+            this.portraitsPlayerLevelOpacity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.portraitsPlayerLevelOpacity.AutoSize = false;
+            this.portraitsPlayerLevelOpacity.BackColor = System.Drawing.Color.White;
+            this.portraitsPlayerLevelOpacity.LargeChange = 1;
+            this.portraitsPlayerLevelOpacity.Location = new System.Drawing.Point(74, 77);
+            this.portraitsPlayerLevelOpacity.Maximum = 20;
+            this.portraitsPlayerLevelOpacity.Name = "portraitsPlayerLevelOpacity";
+            this.portraitsPlayerLevelOpacity.Size = new System.Drawing.Size(271, 27);
+            this.portraitsPlayerLevelOpacity.TabIndex = 42;
+            this.portraitsPlayerLevelOpacity.Value = 1;
+            this.portraitsPlayerLevelOpacity.Scroll += new System.EventHandler(this.portraitsPlayerLevelOpacity_Scroll);
+            // 
+            // chkPortraitsPlayerLevelTextShadow
+            // 
+            this.chkPortraitsPlayerLevelTextShadow.AutoSize = true;
+            this.chkPortraitsPlayerLevelTextShadow.Location = new System.Drawing.Point(128, 50);
+            this.chkPortraitsPlayerLevelTextShadow.Name = "chkPortraitsPlayerLevelTextShadow";
+            this.chkPortraitsPlayerLevelTextShadow.Size = new System.Drawing.Size(89, 17);
+            this.chkPortraitsPlayerLevelTextShadow.TabIndex = 34;
+            this.chkPortraitsPlayerLevelTextShadow.Text = "Text Shadow";
+            this.chkPortraitsPlayerLevelTextShadow.UseVisualStyleBackColor = true;
+            this.chkPortraitsPlayerLevelTextShadow.CheckedChanged += new System.EventHandler(this.chkPortraitsPlayerLevelTextShadow_CheckedChanged);
+            // 
+            // btnClearPlayerLevelFont
+            // 
+            this.btnClearPlayerLevelFont.FlatAppearance.BorderSize = 0;
+            this.btnClearPlayerLevelFont.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClearPlayerLevelFont.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F);
+            this.btnClearPlayerLevelFont.Location = new System.Drawing.Point(202, 19);
+            this.btnClearPlayerLevelFont.Name = "btnClearPlayerLevelFont";
+            this.btnClearPlayerLevelFont.Size = new System.Drawing.Size(23, 23);
+            this.btnClearPlayerLevelFont.TabIndex = 33;
+            this.btnClearPlayerLevelFont.Text = "X";
+            this.btnClearPlayerLevelFont.UseVisualStyleBackColor = true;
+            this.btnClearPlayerLevelFont.Click += new System.EventHandler(this.btnClearPlayerLevelFont_Click);
+            // 
+            // btnPlayerLevelFont
+            // 
+            this.btnPlayerLevelFont.BackColor = System.Drawing.Color.Transparent;
+            this.btnPlayerLevelFont.Location = new System.Drawing.Point(127, 19);
+            this.btnPlayerLevelFont.Name = "btnPlayerLevelFont";
+            this.btnPlayerLevelFont.Size = new System.Drawing.Size(75, 23);
+            this.btnPlayerLevelFont.TabIndex = 32;
+            this.btnPlayerLevelFont.Text = "Font";
+            this.btnPlayerLevelFont.UseVisualStyleBackColor = false;
+            this.btnPlayerLevelFont.Click += new System.EventHandler(this.btnPlayerLevelFont_Click);
+            // 
+            // chkPortraitsPlayerLevel
+            // 
+            this.chkPortraitsPlayerLevel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkPortraitsPlayerLevel.AutoSize = true;
+            this.chkPortraitsPlayerLevel.Location = new System.Drawing.Point(11, 23);
+            this.chkPortraitsPlayerLevel.Name = "chkPortraitsPlayerLevel";
+            this.chkPortraitsPlayerLevel.Size = new System.Drawing.Size(59, 17);
+            this.chkPortraitsPlayerLevel.TabIndex = 16;
+            this.chkPortraitsPlayerLevel.Text = "Enable";
+            this.chkPortraitsPlayerLevel.UseVisualStyleBackColor = true;
+            this.chkPortraitsPlayerLevel.CheckedChanged += new System.EventHandler(this.chkPortraitsPlayerLevel_CheckedChanged);
+            // 
             // ConfigEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(442, 374);
+            this.ClientSize = new System.Drawing.Size(442, 570);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.groupBox9);
             this.Controls.Add(this.tabControl1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -2302,7 +2813,9 @@
             this.MinimizeBox = false;
             this.Name = "ConfigEditor";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Configuration - MapAssist";
+            this.Text = "MapAssist - Configuration";
+            this.TopMost = true;
+            this.Shown += new System.EventHandler(this.ConfigEditor_Shown);
             this.tabControl1.ResumeLayout(false);
             this.tabPage5.ResumeLayout(false);
             this.groupBox5.ResumeLayout(false);
@@ -2316,13 +2829,13 @@
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mapZoom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.mapSize)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.iconOpacity)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.allIconOpacity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.opacity)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
-            this.grpPresets.ResumeLayout(false);
-            this.grpPresets.PerformLayout();
+            this.grpLines.ResumeLayout(false);
+            this.grpLines.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.buffSize)).EndInit();
@@ -2331,6 +2844,7 @@
             this.tabDrawing.ResumeLayout(false);
             this.tabIcon.ResumeLayout(false);
             this.tabIcon.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.iconOpacity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.iconThickness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.iconSize)).EndInit();
             this.tabLabel.ResumeLayout(false);
@@ -2344,6 +2858,7 @@
             this.groupBox6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.itemDisplayForSeconds)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.soundVolume)).EndInit();
+            this.tabPage8.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
             this.grpHotkeys.ResumeLayout(false);
             this.grpHotkeys.PerformLayout();
@@ -2353,6 +2868,14 @@
             this.groupBoxAuthorizedWindowTitle.PerformLayout();
             this.groupBox8.ResumeLayout(false);
             this.groupBox8.PerformLayout();
+            this.groupBox9.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.grpPortraitArea.ResumeLayout(false);
+            this.grpPortraitArea.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portraitsAreaOpacity)).EndInit();
+            this.groupBox10.ResumeLayout(false);
+            this.groupBox10.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portraitsPlayerLevelOpacity)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2389,13 +2912,11 @@
         private System.Windows.Forms.TabPage tabPage6;
         private System.Windows.Forms.Button btnLogFont;
         private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.TextBox txtSoundFile;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox chkPlaySound;
         private System.Windows.Forms.TextBox txtFilterFile;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.CheckBox chkItemLogEnabled;
-        private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lblItemDisplayForSecondsValue;
@@ -2460,18 +2981,16 @@
         private System.Windows.Forms.Label lblMapZoomValue;
         private System.Windows.Forms.Label lblZoom;
         private System.Windows.Forms.Label lblMapSizeValue;
-        private System.Windows.Forms.TrackBar iconOpacity;
+        private System.Windows.Forms.TrackBar allIconOpacity;
         private System.Windows.Forms.Label lblMapSize;
-        private System.Windows.Forms.Label lblIconOpacityValue;
+        private System.Windows.Forms.Label lblAllIconOpacityValue;
         private System.Windows.Forms.Label lblOpacityValue;
         private System.Windows.Forms.TrackBar opacity;
         private System.Windows.Forms.Label lblOpacity;
         private System.Windows.Forms.CheckBox chkToggleViaMap;
-        private System.Windows.Forms.Label lblIconOpacity;
+        private System.Windows.Forms.Label lblAllIconOpacity;
         private System.Windows.Forms.CheckBox chkToggleViaPanels;
-        private System.Windows.Forms.GroupBox grpPresets;
-        private System.Windows.Forms.Label lblMapLinesMode;
-        private System.Windows.Forms.ComboBox cboMapLinesMode;
+        private System.Windows.Forms.GroupBox grpLines;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label lblBuffSizeValue;
         private System.Windows.Forms.Label label5;
@@ -2482,7 +3001,7 @@
         private System.Windows.Forms.GroupBox grpHotkeys;
         private System.Windows.Forms.TextBox txtZoomOutKey;
         private System.Windows.Forms.TextBox txtZoomInKey;
-        private System.Windows.Forms.TextBox txtAreaLevelKey;
+        private System.Windows.Forms.TextBox txtMapPositionsKey;
         private System.Windows.Forms.TextBox txtToggleMapKey;
         private System.Windows.Forms.TextBox txtExportItemsKey;
         private System.Windows.Forms.Label label15;
@@ -2527,5 +3046,46 @@
         private System.Windows.Forms.CheckBox chkDebuffs;
         private System.Windows.Forms.CheckBox chkPassives;
         private System.Windows.Forms.CheckBox chkAuras;
+        private System.Windows.Forms.ComboBox cboItemLogSound;
+        private System.Windows.Forms.Button btnClearExpRangeColor;
+        private System.Windows.Forms.Button btnExpRangeColor;
+        private System.Windows.Forms.TextBox txtToggleConfigKey;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.GroupBox groupBox9;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.LinkLabel linkWebsite;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.CheckBox chkLinesWaypoint;
+        private System.Windows.Forms.CheckBox chkLinesMagicFindArea;
+        private System.Windows.Forms.CheckBox chkLinesQuest;
+        private System.Windows.Forms.CheckBox chkLinesNextArea;
+        private System.Windows.Forms.CheckBox chkLinesCorpse;
+        private System.Windows.Forms.CheckBox chkLinesHostiles;
+        private System.Windows.Forms.CheckBox chkLinesShrines;
+        private System.Windows.Forms.Label lblIconOpacityValue;
+        private System.Windows.Forms.Label lblIconOpacity;
+        private System.Windows.Forms.TrackBar iconOpacity;
+        private System.Windows.Forms.TabPage tabPage8;
+        private System.Windows.Forms.GroupBox grpPortraitArea;
+        private System.Windows.Forms.Label lblPortraitsAreaOpacity;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TrackBar portraitsAreaOpacity;
+        private System.Windows.Forms.CheckBox chkPortraitsAreaTextShadow;
+        private System.Windows.Forms.Button btnClearAreaFont;
+        private System.Windows.Forms.Button btnAreaFont;
+        private System.Windows.Forms.CheckBox chkPortraitsAreaLevel;
+        private System.Windows.Forms.CheckBox chkPortraitsArea;
+        private System.Windows.Forms.GroupBox groupBox10;
+        private System.Windows.Forms.Button btnClearPlayerLevelTextColor;
+        private System.Windows.Forms.Button btnPlayerLevelTextColor;
+        private System.Windows.Forms.Label lblPortraitsPlayerLevelOpacity;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TrackBar portraitsPlayerLevelOpacity;
+        private System.Windows.Forms.CheckBox chkPortraitsPlayerLevelTextShadow;
+        private System.Windows.Forms.Button btnClearPlayerLevelFont;
+        private System.Windows.Forms.Button btnPlayerLevelFont;
+        private System.Windows.Forms.CheckBox chkPortraitsPlayerLevel;
+        private System.Windows.Forms.Button btnClearAreaTextColor;
+        private System.Windows.Forms.Button btnAreaTextColor;
     }
 }

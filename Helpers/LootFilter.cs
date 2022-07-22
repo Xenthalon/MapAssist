@@ -32,9 +32,12 @@ namespace MapAssist.Helpers
                 // Skip generic unid rules for identified items on ground or in inventory
                 if (item.IsIdentified && (item.IsDropped || item.IsAnyPlayerHolding) && rule.TargetsUnidItem()) continue;
 
+                if (item.IsInStore && !rule.CheckVendor) continue;
+
                 // Requirement check functions
                 var requirementsFunctions = new Dictionary<string, Func<bool>>()
                 {
+                    ["Tiers"] = () => rule.Tiers.Contains(item.ItemTier),
                     ["Qualities"] = () => rule.Qualities.Contains(item.ItemData.ItemQuality),
                     ["Sockets"] = () => rule.Sockets.Contains(Items.GetItemStat(item, Stats.Stat.NumSockets)),
                     ["Ethereal"] = () => item.IsEthereal == rule.Ethereal,

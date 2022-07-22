@@ -77,6 +77,11 @@ namespace MapAssist.Helpers
                 emitter.Emit(new Scalar(null, "Border"));
                 emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)node.Border)));
             }
+            if (node.ExpRange != null)
+            {
+                emitter.Emit(new Scalar(null, "ExpRange"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)node.ExpRange)));
+            }
 
             emitter.Emit(new MappingEnd());
         }
@@ -214,11 +219,8 @@ namespace MapAssist.Helpers
         {
             if (parser.TryConsume<Scalar>(out var scalar))
             {
-                if (Enum.TryParse("Class" + scalar.Value.Replace(" ", "").Replace("-", ""), true, out Item itemClass))
-                {
-                    return itemClass;
-                }
-                else if (Enum.TryParse(scalar.Value.Replace(" ", "").Replace("-", ""), true, out Item item))
+                var item = Items.ParseFromString(scalar.Value);
+                if (item != null)
                 {
                     return item;
                 }
@@ -396,6 +398,8 @@ namespace MapAssist.Helpers
             var isFilled = node.IconColor != null && node.IconColor.A > 0;
             var isOutline = node.IconOutlineColor != null && node.IconOutlineColor.A > 0;
 
+            if (node.IconOpacity == 0) return;
+
             if (isFilled)
             {
                 emitter.Emit(new Scalar(null, "IconColor"));
@@ -420,6 +424,11 @@ namespace MapAssist.Helpers
             {
                 emitter.Emit(new Scalar(null, "IconThickness"));
                 emitter.Emit(new Scalar(null, node.IconThickness.ToString()));
+            }
+
+            if (node.IconOpacity < 1) { 
+                emitter.Emit(new Scalar(null, "IconOpacity"));
+                emitter.Emit(new Scalar(null, node.IconOpacity.ToString()));
             }
         }
 
