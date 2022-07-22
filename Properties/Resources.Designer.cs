@@ -273,16 +273,6 @@ namespace MapAssist.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ClawsOfThunder {
-            get {
-                object obj = ResourceManager.GetObject("ClawsOfThunder", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Cleansing {
             get {
                 object obj = ResourceManager.GetObject("Cleansing", resourceCulture);

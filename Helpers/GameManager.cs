@@ -290,21 +290,6 @@ namespace MapAssist.Helpers
             }
         }
 
-        public static IntPtr PetsOffset
-        {
-            get
-            {
-                if (_PetsOffsetOffset != IntPtr.Zero)
-                {
-                    return _PetsOffsetOffset;
-                }
-
-                PopulateMissingOffsets();
-
-                return _PetsOffsetOffset;
-            }
-        }
-
         private static void PopulateMissingOffsets()
         {
             // The fact we are here means we are missing some offset,
@@ -360,12 +345,6 @@ namespace MapAssist.Helpers
                 {
                     _PetsOffsetOffset[pid] = processContext.GetPetsOffset(buffer);
                     _log.Info($"Found offset {nameof(_PetsOffsetOffset)} 0x{_PetsOffsetOffset[pid].ToInt64() - processContext.BaseAddr.ToInt64():X}");
-                }
-
-                if (_PetsOffsetOffset == IntPtr.Zero)
-                {
-                    _PetsOffsetOffset = processContext.GetPetsOffset(buffer);
-                    _log.Info($"Found offset {nameof(_PetsOffsetOffset)} 0x{_PetsOffsetOffset.ToInt64() - processContext.BaseAddr.ToInt64():X}");
                 }
             }
         }
